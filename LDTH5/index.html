@@ -1,0 +1,4210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>LDTools Log Searcher</title>
+<link rel="icon" href="Img/LDTLS.ico">
+<style>
+/* ==================== CSS 变量（主题色集中管理） ==================== */
+:root{
+  --bg:#f1f5f9;            /* 页面背景 */
+  --card-bg:#ffffff;       /* 卡片背景 */
+  --text:#0f172a;          /* 主文字 */
+  --text-muted:#64748b;    /* 次要文字 */
+  --text-light:#94a3b8;    /* 辅助文字 */
+  --primary:#1a56db;       /* 蓝色主色 */
+  --primary-light:#dbeafe;  /* 主色浅色 */
+  --primary-dark:#1e40af;  /* 主色深色 */
+  --border:#e2e8f0;        /* 边框 */
+  --border-strong:#cbd5e1; /* 强边框 */
+  --success:#16a34a;       /* 成功 */
+  --failed:#dc2626;        /* 失败 */
+  --partial:#ea580c;       /* 部分 */
+  --skipped:#64748b;       /* 跳过 */
+  --success-bg:#dcfce7;
+  --failed-bg:#fee2e2;
+  --partial-bg:#fed7aa;
+  --skipped-bg:#e2e8f0;
+  --highlight:#fef08a;     /* 搜索高亮黄底 */
+  --highlight-text:#0f172a;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-hover:0 6px 16px rgba(0,0,0,.12);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.2);
+  --radius:10px;
+  --radius-sm:6px;
+  --max-width:1100px;
+}
+
+/* ==================== 基础重置 ==================== */
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:40px;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input{font-family:inherit;}
+pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
+
+/* ==================== 容器 ==================== */
+.container{
+  max-width:var(--max-width);
+  margin:0 auto;
+  padding:0 16px;
+}
+
+/* ==================== 头部 ==================== */
+.header{
+  padding:24px 0 16px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.header h1{
+  font-size:1.5rem;
+  font-weight:700;
+  letter-spacing:-.02em;
+}
+.header h1 .accent{color:var(--primary);}
+.logo-img{width:28px;height:28px;vertical-align:-4px;margin-right:6px;border-radius:4px;}
+.header .stats{
+  font-size:.85rem;
+  color:var(--text-muted);
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.header .stats b{color:var(--text);font-weight:600;}
+.btn-home{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:7px 14px;
+  font-size:.88rem;
+  font-weight:600;
+  color:#fff;
+  background:var(--primary, #3b82f6);
+  border-radius:var(--radius-sm, 8px);
+  text-decoration:none;
+  box-shadow:0 2px 6px rgba(59,130,246,.25);
+  transition:background .2s,transform .15s;
+}
+.btn-home:hover{
+  background:var(--primary-strong, #2563eb);
+  transform:translateY(-1px);
+}
+.btn-home:active{transform:translateY(0);}
+
+/* ==================== 工具栏 ==================== */
+.toolbar{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px 16px;
+  margin-bottom:20px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  position:sticky;
+  top:8px;
+  z-index:50;
+  border:1px solid var(--border);
+}
+.search-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+#searchInput{
+  flex:1;
+  min-width:160px;
+  padding:9px 14px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  font-size:.92rem;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  background:var(--bg);
+}
+#searchInput:focus{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-light);
+  background:#fff;
+}
+#searchInput::-webkit-search-cancel-button{cursor:pointer;}
+
+/* 开关 Toggle */
+/* [2026-08-20] hidden 属性强制生效（.toggle 的 display:inline-flex 会覆盖 UA 默认的 display:none） */
+[hidden]{display:none !important;}
+
+.toggle{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  cursor:pointer;
+  user-select:none;
+  white-space:nowrap;
+  font-size:.85rem;
+  color:var(--text-muted);
+}
+.toggle input{display:none;}
+.toggle-track{
+  width:36px;
+  height:20px;
+  background:var(--border-strong);
+  border-radius:10px;
+  position:relative;
+  transition:background .25s;
+  flex-shrink:0;
+}
+.toggle-thumb{
+  position:absolute;
+  top:2px;left:2px;
+  width:16px;height:16px;
+  background:#fff;
+  border-radius:50%;
+  box-shadow:0 1px 3px rgba(0,0,0,.3);
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.toggle input:checked + .toggle-track{background:var(--primary);}
+.toggle input:checked + .toggle-track .toggle-thumb{transform:translateX(16px);}
+.toggle:hover .toggle-label{color:var(--text);}
+
+/* 筛选行 */
+.filter-row{
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  justify-content:space-between;
+}
+.date-group{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  flex-wrap:wrap;
+}
+/* 三段式日期组件（年/月/日独立段，滚轮悬停改该段） */
+.date-seg-group{
+  display:inline-flex;
+  align-items:center;
+  padding:2px 4px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  background:var(--bg);
+  transition:border-color .2s,box-shadow .2s;
+}
+.date-seg-group:focus-within{
+  border-color:var(--primary);
+  box-shadow:0 0 0 3px var(--primary-light);
+  background:#fff;
+}
+.date-seg-group .seg{
+  width:2.1em;
+  text-align:center;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:.85rem;
+  color:var(--text);
+  padding:5px 2px;
+  border-radius:4px;
+  cursor:ns-resize;            /* 暗示可上下滚轮调节 */
+  font-family:inherit;
+  transition:background .15s,color .15s;
+}
+.date-seg-group .seg[data-unit="year"]{ width:3.2em; }
+.date-seg-group .seg:hover,
+.date-seg-group .seg:focus{
+  background:var(--primary-light);
+  color:var(--primary);
+}
+.date-seg-group .seg-unit{
+  color:var(--text-light);
+  font-size:.76rem;
+  margin:0 1px;
+  user-select:none;
+}
+.date-sep{color:var(--text-light);font-size:.9rem;user-select:none;}
+.date-group .btn-mini{padding:7px 11px;}
+
+/* 应用日期按钮（修改后高亮显现，点击才查询） */
+.btn-apply-date{
+  padding:6px 13px;
+  border:1.5px solid var(--primary);
+  background:var(--primary);
+  color:#fff;
+  border-radius:var(--radius-sm);
+  font-size:.82rem;
+  font-weight:600;
+  cursor:pointer;
+  animation:pulseApply 1.6s ease-in-out infinite;
+}
+.btn-apply-date:hover{ filter:brightness(1.08); }
+@keyframes pulseApply{
+  0%,100%{ box-shadow:0 0 0 0 rgba(26,86,219,.40); }
+  50%{ box-shadow:0 0 0 5px rgba(26,86,219,.06); }
+}
+/* 跨度过大提示（双边模式且 >30 天） */
+.date-span-hint{
+  width:100%;
+  font-size:.74rem;
+  color:#d97706;
+  margin-top:2px;
+}
+
+/* 开关行 */
+.toggle-row{
+  display:flex;
+  gap:16px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+/* 筛选面板 */
+.filter-panel{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* 筛选按钮（仅移动端显示） */
+.filter-toggle-btn{
+  display:none;
+}
+
+/* 数据按钮组 */
+.data-buttons{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+
+/* 状态筛选 chips */
+.status-chips{
+  display:flex;
+  gap:6px;
+  flex-wrap:wrap;
+}
+.chip{
+  padding:5px 11px;
+  border-radius:20px;
+  font-size:.78rem;
+  font-weight:500;
+  border:1.5px solid var(--border);
+  background:var(--card-bg);
+  color:var(--text-muted);
+  transition:all .2s;
+  white-space:nowrap;
+}
+.chip:hover{border-color:var(--border-strong);color:var(--text);}
+.chip.active{background:var(--primary);border-color:var(--primary);color:#fff;}
+.chip.active[data-status="success"]{background:var(--success);border-color:var(--success);}
+.chip.active[data-status="failed"]{background:var(--failed);border-color:var(--failed);}
+.chip.active[data-status="partial"]{background:var(--partial);border-color:var(--partial);}
+.chip.active[data-status="skipped"]{background:var(--skipped);border-color:var(--skipped);}
+
+/* ==================== 日志列表 ==================== */
+.log-list{display:flex;flex-direction:column;gap:20px;}
+
+/* 日期分组（accordion 下拉式，标题位于卡片顶部） */
+.day-group{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  border:1px solid var(--border);
+  overflow:hidden;
+}
+.day-group-header{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:13px 16px;
+  cursor:pointer;
+  user-select:none;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  transition:background .2s;
+}
+.day-group-header:hover{background:#e2e8f0;}
+.day-group-header.collapsed{background:var(--card-bg);border-bottom-color:transparent;}
+.day-group-header .arrow{
+  width:18px;height:18px;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .2s;
+  color:var(--text-muted);
+  font-size:.7rem;
+  flex-shrink:0;
+}
+.day-group-header.collapsed .arrow{transform:rotate(-90deg);}
+.day-group-title{
+  font-size:1rem;
+  font-weight:600;
+  color:var(--text);
+}
+.day-date-sub{
+  font-size:.72rem;
+  font-weight:400;
+  color:var(--text-light);
+  margin-left:4px;
+}
+.day-group-count{
+  font-size:.78rem;
+  color:var(--text-muted);
+  background:var(--border);
+  padding:1px 9px;
+  border-radius:10px;
+  font-weight:500;
+}
+.day-group-content{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  padding:14px 16px;
+  overflow:hidden;
+  transition:max-height .3s ease,opacity .2s ease;
+}
+.day-group-content.hidden{display:none;}
+
+/* 搜索结果分组（与日期分组同样的 accordion 卡片样式） */
+.search-group-header{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding:13px 16px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+}
+.search-group-title{
+  font-size:1.05rem;
+  font-weight:700;
+  color:var(--primary);
+}
+.search-group-title .kw{color:var(--text);}
+.search-subtitle{
+  font-size:.8rem;
+  color:var(--text-muted);
+}
+
+/* ==================== 日志卡片 ==================== */
+.log-card{
+  width:100%;
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-left:4px solid var(--border-strong);
+  transition:box-shadow .2s,transform .2s;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.log-card:hover{box-shadow:var(--shadow-hover);transform:translateY(-1px);}
+.log-card[data-status="success"]{border-left-color:var(--success);}
+.log-card[data-status="failed"]{border-left-color:var(--failed);}
+.log-card[data-status="partial"]{border-left-color:var(--partial);}
+.log-card[data-status="skipped"]{border-left-color:var(--skipped);}
+
+.card-top{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-bottom:8px;
+}
+.card-machine{font-size:.85rem;color:var(--text);font-weight:600;}
+.card-sn{
+  font-size:.78rem;color:var(--text-muted);
+  background:var(--bg);padding:1px 7px;border-radius:4px;
+  font-family:"Cascadia Code",Consolas,monospace;
+}
+
+.card-datetime{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.78rem;
+  padding:3px 10px;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  white-space:nowrap;
+}
+.card-datetime-label{
+  color:var(--text-light);
+  font-weight:600;
+}
+.card-datetime-value{
+  color:var(--text);
+  font-variant-numeric:tabular-nums;
+}
+
+/* 功能摘要 */
+.feature-summary{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 10px;
+  margin:8px 0;
+  font-size:.84rem;
+}
+.feat{
+  display:inline-flex;
+  align-items:center;
+  gap:3px;
+  padding:1px 7px;
+  border-radius:4px;
+  background:var(--bg);
+}
+.feat .ico{font-weight:700;}
+.feat[data-result="success"] .ico{color:var(--success);}
+.feat[data-result="failed"] .ico{color:var(--failed);}
+.feat[data-result="partial"] .ico{color:var(--partial);}
+.feat[data-result="skipped"] .ico{color:var(--skipped);}
+.feat[data-result="success"]{background:var(--success-bg);}
+.feat[data-result="failed"]{background:var(--failed-bg);}
+.feat[data-result="partial"]{background:var(--partial-bg);}
+.feat[data-result="skipped"]{background:var(--skipped-bg);}
+
+/* 元数据行 */
+.card-meta{
+  font-size:.78rem;
+  color:var(--text-muted);
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 12px;
+  margin-bottom:8px;
+}
+.card-meta .meta-item{display:inline-flex;align-items:center;gap:4px;}
+.card-meta .meta-label{color:var(--text-light);}
+
+/* 卡片底部操作区 */
+.card-bottom{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.card-actions{display:flex;gap:8px;flex-shrink:0;}
+.btn-mini{
+  font-size:.78rem;
+  padding:5px 11px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);
+  background:var(--card-bg);
+  color:var(--text-muted);
+  transition:all .2s;
+  white-space:nowrap;
+  text-decoration:none; /* [2026-08-21] 去掉<a>默认下划线（官网驱动按钮） */
+}
+.btn-mini:hover{text-decoration:none;} /* 保险:hover 时也不显示下划线 */
+.btn-mini:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+.btn-icon{width:14px;height:14px;vertical-align:-2px;margin-right:3px;}
+/* 鼠标靠近或按下时图标循环旋转 */
+.btn-mini:hover .btn-icon,
+.btn-mini:active .btn-icon{
+  animation:iconSpin .9s linear infinite;
+}
+@keyframes iconSpin{
+  from{transform:rotate(0deg);}
+  to{transform:rotate(360deg);}
+}
+
+/* 备注区域 */
+.note-area{flex:0 1 auto;min-width:180px;}
+/* [2026-08-22 FIX] 备注块与出库按钮之间留 8px 间距，
+   避免两者紧贴（截图：+ 添加备注 和 📦 出库记录 边框几乎挨在一起） */
+.note-area > .note-empty,
+.note-area > .note-display,
+.note-area > .note-edit{margin-right:8px;}
+.note-display{
+  font-size:.8rem;
+  color:var(--text);
+  background:var(--highlight);
+  background:rgba(254,240,138,.35);
+  border:1px dashed var(--border-strong);
+  border-radius:var(--radius-sm);
+  padding:6px 10px;
+  cursor:pointer;
+  transition:background .2s;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.note-display:hover{background:rgba(254,240,138,.6);}
+.note-display .note-text{flex:1;word-break:break-word;}
+.note-display .note-del{
+  font-size:.9rem;
+  opacity:.5;
+  transition:opacity .2s;
+  flex-shrink:0;
+}
+.note-display .note-del:hover{opacity:1;color:var(--failed);}
+.note-empty{
+  font-size:.78rem;
+  color:var(--text-light);
+  border:1px dashed var(--border);
+  border-radius:var(--radius-sm);
+  padding:5px 10px;
+  cursor:pointer;
+  transition:all .2s;
+  display:inline-block;
+}
+.note-empty:hover{border-color:var(--primary);color:var(--primary);}
+.note-edit{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.note-edit textarea{
+  width:100%;
+  min-height:50px;
+  padding:7px 10px;
+  border:1.5px solid var(--primary);
+  border-radius:var(--radius-sm);
+  font-size:.82rem;
+  resize:vertical;
+  outline:none;
+  font-family:inherit;
+  box-shadow:0 0 0 3px var(--primary-light);
+}
+.note-edit .note-btns{display:flex;gap:6px;}
+.note-edit .btn-save{
+  font-size:.76rem;padding:4px 12px;border-radius:5px;
+  background:var(--primary);color:#fff;font-weight:500;
+}
+.note-edit .btn-cancel{
+  font-size:.76rem;padding:4px 12px;border-radius:5px;
+  border:1px solid var(--border-strong);color:var(--text-muted);background:#fff;
+}
+
+/* ==================== [2026-08-22] 备注服务端持久化：暂存区 + 冲突气泡 + 上传确认卡 ==================== */
+/* 卡片上的"待上传"入口（暂不修改的冲突备注存在本地时显示） */
+.note-pending{
+  font-size:.78rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:5px 10px;
+  background:rgba(251,146,60,.15);
+  border:1px dashed #fb923c;
+  border-radius:var(--radius-sm);
+  color:var(--text);
+}
+.note-pending-text{flex:1;word-break:break-word;min-width:0;color:#c2410c;}
+.note-pending-btn{
+  flex-shrink:0;
+  font-size:.76rem;padding:3px 10px;border-radius:5px;
+  background:#fb923c;color:#fff;font-weight:500;border:none;cursor:pointer;
+  white-space:nowrap;
+}
+.note-pending-btn:hover{background:#ea580c;}
+.note-pending-del{
+  flex-shrink:0;font-size:.9rem;opacity:.5;cursor:pointer;
+}
+.note-pending-del:hover{opacity:1;color:var(--failed);}
+
+/* 备注冲突气泡（红色警告，样式基于 .log-notify） */
+.note-conflict{
+  position:fixed;
+  top:24px;right:24px;
+  z-index:9999;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px 18px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-radius:var(--radius);
+  box-shadow:0 4px 24px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.06);
+  border:2px solid #ef4444;
+  max-width:440px;
+  animation:notifySlideIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.note-conflict-icon{
+  flex-shrink:0;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;color:#ef4444;line-height:1;
+}
+.note-conflict-body{flex:1;min-width:0;}
+.note-conflict-title{
+  font-size:.9rem;font-weight:600;color:#ef4444;margin-bottom:4px;
+}
+.note-conflict-sn{font-size:.78rem;color:var(--text-muted);margin-bottom:6px;word-break:break-all;}
+.note-conflict-current{
+  font-size:.8rem;color:var(--text);
+  background:var(--failed-bg);
+  border:1px solid rgba(239,68,68,.35);
+  border-radius:var(--radius-sm);
+  padding:6px 10px;margin-bottom:10px;
+  word-break:break-word;line-height:1.45;
+}
+.note-conflict-current .label{font-weight:600;color:#ef4444;margin-right:6px;}
+.note-conflict-current .subtime{display:block;margin-top:3px;font-size:.72rem;color:var(--text-muted);}
+.note-conflict-current .hint{margin-top:6px;font-size:.82rem;color:var(--text);font-weight:500;}
+.note-conflict-current b{color:var(--text);font-weight:600;}
+.note-conflict-btns{display:flex;gap:8px;}
+.note-conflict-btns .btn-overwrite{
+  padding:6px 14px;border-radius:var(--radius-sm);
+  background:#ef4444;color:#fff;font-size:.8rem;font-weight:500;border:none;cursor:pointer;
+  white-space:nowrap;
+}
+.note-conflict-btns .btn-overwrite:hover{background:#dc2626;}
+.note-conflict-btns .btn-keeplocal{
+  padding:6px 14px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);color:var(--text-muted);background:#fff;
+  font-size:.8rem;cursor:pointer;white-space:nowrap;
+}
+.note-conflict-btns .btn-keeplocal:hover{color:var(--text);}
+.note-conflict-close{
+  flex-shrink:0;width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;color:var(--text-muted);cursor:pointer;border:none;background:none;
+  border-radius:4px;line-height:1;
+}
+.note-conflict-close:hover{color:var(--text);background:var(--bg);}
+
+/* 上传备注二次确认卡（模态，样式基于 .auth-overlay） */
+.upload-confirm-overlay{
+  position:fixed;z-index:10001;inset:0;
+  background:rgba(15,23,42,.85);
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.upload-confirm-overlay.hidden{display:none;}
+.upload-confirm-card{
+  background:var(--card-bg);border-radius:16px;
+  padding:32px 30px;width:520px;max-width:92vw;
+  box-shadow:var(--shadow-lg);
+}
+.upload-confirm-card h3{
+  margin:0 0 6px;font-size:1.15rem;color:var(--text);font-weight:700;
+}
+.upload-confirm-card .sub{font-size:.82rem;color:var(--text-muted);margin-bottom:18px;}
+.upload-confirm-compare{
+  display:flex;gap:12px;margin-bottom:18px;
+}
+.upload-confirm-box{
+  flex:1;min-width:0;
+  border-radius:var(--radius);
+  padding:10px 12px;
+  font-size:.82rem;line-height:1.5;
+  word-break:break-word;
+}
+.upload-confirm-box .box-label{
+  font-size:.74rem;font-weight:600;margin-bottom:6px;display:block;
+}
+.upload-confirm-box.server{
+  background:var(--failed-bg);border:1px solid rgba(239,68,68,.35);
+}
+.upload-confirm-box.server .box-label{color:#ef4444;}
+.upload-confirm-box.local{
+  background:rgba(254,240,138,.35);border:1px dashed var(--border-strong);
+}
+.upload-confirm-box.local .box-label{color:#c2410c;}
+.upload-confirm-box.empty{color:var(--text-light);font-style:italic;}
+.upload-confirm-btns{display:flex;gap:10px;justify-content:flex-end;}
+.upload-confirm-btns .btn-confirm{
+  padding:8px 18px;border-radius:var(--radius-sm);
+  background:#ef4444;color:#fff;font-size:.86rem;font-weight:500;border:none;cursor:pointer;
+}
+.upload-confirm-btns .btn-confirm:hover{background:#dc2626;}
+.upload-confirm-btns .btn-confirm:disabled{opacity:.6;cursor:not-allowed;}
+.upload-confirm-btns .btn-cancel2{
+  padding:8px 18px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);color:var(--text-muted);background:transparent;
+  font-size:.86rem;cursor:pointer;
+}
+.upload-confirm-btns .btn-cancel2:hover{color:var(--text);}
+@media(max-width:560px){
+  .upload-confirm-compare{flex-direction:column;}
+  .note-conflict{top:12px;right:12px;left:12px;max-width:none;}
+}
+
+/* ==================== [2026-08-24 OUTBOUND] 出库记录（由 CPU 拍照记录就地改造） ==================== */
+/* 卡片入口按钮（与备注并列；有档案时绿色） */
+.ob-btn{
+  font-size:.78rem;
+  /* [2026-08-22 FIX] 显式设置 line-height 匹配 .note-empty（span 继承 body 的 1.6，
+     button 在 UA 样式表里 line-height:normal ≈1.2，会比 span 矮 ~7px） */
+  line-height:1.6;
+  color:var(--text-light);
+  border:1px dashed var(--border);
+  border-radius:var(--radius-sm);
+  padding:5px 10px;
+  cursor:pointer;
+  transition:all .2s;
+  display:inline-block;
+  background:var(--card-bg);
+  white-space:nowrap;
+}
+.ob-btn:hover{border-color:var(--primary);color:var(--primary);}
+.ob-btn.has-record{
+  border:1px solid rgba(34,197,94,.45);
+  color:#15803d;
+  background:rgba(34,197,94,.1);
+}
+.ob-btn.has-record:hover{background:rgba(34,197,94,.2);}
+
+/* 弹层（上传/查看双模式） */
+.ob-modal-overlay{
+  position:fixed;z-index:10002;inset:0;
+  background:rgba(15,23,42,.85);
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.ob-modal-overlay.hidden{display:none;}
+.ob-modal-card{
+  background:var(--card-bg);border-radius:16px;
+  padding:26px 28px;width:560px;max-width:94vw;
+  max-height:88vh;overflow-y:auto;
+  box-shadow:var(--shadow-lg);
+}
+.ob-modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.ob-modal-head h3{margin:0;font-size:1.12rem;color:var(--text);font-weight:700;}
+.ob-modal-close{
+  font-size:1rem;color:var(--text-muted);cursor:pointer;border:none;background:none;
+  border-radius:4px;line-height:1;padding:4px;
+}
+.ob-modal-close:hover{color:var(--text);background:var(--bg);}
+.ob-modal-sn{font-size:.8rem;color:var(--text-muted);margin-bottom:16px;font-family:"Cascadia Code",Consolas,monospace;}
+
+/* 上传模式：图片选择框（参考身份证上传布局） */
+.ob-upload-box{margin-bottom:14px;}
+.ob-upload-label{font-size:.8rem;font-weight:600;color:var(--text);margin-bottom:6px;}
+.ob-upload-label .opt{font-weight:400;color:var(--text-light);font-size:.74rem;}
+.ob-upload-drop{
+  border:2px dashed var(--border-strong);
+  border-radius:var(--radius);
+  padding:14px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;transition:all .2s;
+  background:var(--bg);
+  min-height:96px;
+}
+.ob-upload-drop:hover{border-color:var(--primary);background:var(--primary-light);}
+.ob-upload-drop.selected{border-style:solid;border-color:var(--success,#22c55e);}
+.ob-upload-thumb{
+  width:86px;height:86px;flex-shrink:0;
+  border-radius:var(--radius-sm);
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.72rem;color:var(--text-light);text-align:center;
+  overflow:hidden;
+}
+.ob-upload-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+.ob-upload-info{flex:1;min-width:0;font-size:.8rem;color:var(--text);}
+.ob-upload-info .fname{word-break:break-all;}
+.ob-upload-info .fhint{font-size:.74rem;color:var(--text-muted);margin-top:4px;}
+
+/* 上传进度条（XHR） */
+.ob-progress-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.ob-progress-bar{
+  flex:1;height:8px;border-radius:4px;overflow:hidden;
+  background:var(--bg);border:1px solid var(--border);
+}
+.ob-progress-bar > div{
+  height:100%;width:0%;background:var(--primary);
+  transition:width .15s linear;
+}
+.ob-progress-text{font-size:.78rem;color:var(--text-muted);white-space:nowrap;min-width:64px;text-align:right;}
+
+/* 查看模式 */
+.ob-view-info{font-size:.8rem;color:var(--text-muted);margin-bottom:12px;line-height:1.7;}
+.ob-view-info b{color:var(--text);font-weight:600;}
+.ob-view-imgs{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.ob-view-item{
+  flex:1;min-width:200px;max-width:100%;
+  border:1px solid var(--border);border-radius:var(--radius);
+  overflow:hidden;cursor:zoom-in;transition:border-color .2s;
+  background:var(--bg);
+}
+.ob-view-item:hover{border-color:var(--primary);}
+.ob-view-item img{width:100%;max-height:200px;object-fit:contain;display:block;background:#0f172a08;}
+.ob-view-broken{
+  width:100%;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);color:var(--text-muted);font-size:.78rem;text-align:center;
+  border:1px dashed var(--border);border-radius:6px;padding:16px 8px;gap:6px;
+  background:#fef2f2;color:#b91c1c;border-color:#fecaca;
+}
+.ob-view-broken-meta{font-size:.68rem;color:#9ca3af;font-family:"Cascadia Code",Consolas,monospace;word-break:break-all;}
+.ob-view-tag{
+  font-size:.74rem;font-weight:600;color:var(--primary);
+  padding:6px 10px 2px;
+}
+.ob-view-meta{
+  font-size:.7rem;color:var(--text-muted);padding:2px 10px 8px;
+  word-break:break-all;font-family:"Cascadia Code",Consolas,monospace;
+}
+
+/* 弹层底部按钮 */
+.ob-modal-btns{display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+.ob-btn-save{
+  padding:8px 20px;border-radius:var(--radius-sm);
+  background:var(--primary);color:#fff;font-size:.86rem;font-weight:500;border:none;cursor:pointer;
+}
+.ob-btn-save:hover{background:var(--primary-dark);}
+.ob-btn-save:disabled{opacity:.6;cursor:not-allowed;}
+.ob-btn-plain{
+  padding:8px 18px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);color:var(--text-muted);background:transparent;
+  font-size:.86rem;cursor:pointer;
+}
+.ob-btn-plain:hover{color:var(--text);}
+.ob-btn-danger{
+  padding:8px 18px;border-radius:var(--radius-sm);
+  background:#ef4444;color:#fff;font-size:.86rem;font-weight:500;border:none;cursor:pointer;
+}
+.ob-btn-danger:hover{background:#dc2626;}
+
+/* 大图查看层（点击图片放大） */
+.ob-img-viewer{
+  position:fixed;z-index:10003;inset:0;
+  background:rgba(0,0,0,.92);
+  display:flex;align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+.ob-img-viewer.hidden{display:none;}
+.ob-img-viewer img{
+  max-width:94vw;max-height:90vh;
+  object-fit:contain;
+  border-radius:4px;
+}
+.ob-img-viewer-close{
+  position:absolute;top:18px;right:22px;
+  font-size:1.5rem;color:#fff;cursor:pointer;border:none;background:none;
+  opacity:.7;
+}
+.ob-img-viewer-close:hover{opacity:1;}
+
+@media(max-width:560px){
+  .ob-modal-card{padding:20px 16px;}
+  .ob-view-imgs{flex-direction:column;}
+}
+
+
+/* 匹配片段预览（搜索时显示匹配到的 consoleLog/config 片段） */
+.match-snippet{
+  font-size:.76rem;
+  color:var(--text-muted);
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  padding:5px 9px;
+  margin-top:6px;
+  border-left:2px solid var(--primary);
+  font-family:"Cascadia Code",Consolas,monospace;
+  white-space:pre-wrap;
+  word-break:break-word;
+  max-height:60px;
+  overflow:hidden;
+  user-select:text;
+  -webkit-user-select:text;
+}
+
+/* ==================== 卡片展开详情 ==================== */
+.log-card{cursor:pointer;}
+.log-card.expanded{box-shadow:var(--shadow-hover);}
+.card-detail{
+  margin-top:10px;
+  padding-top:10px;
+  border-top:1px dashed var(--border);
+  animation:detailFadeIn .2s ease;
+  user-select:text;
+  -webkit-user-select:text;
+}
+@keyframes detailFadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.card-detail.hidden{display:none;}
+
+/* 详情区块 */
+.detail-section{margin-bottom:14px;}
+.detail-section:last-child{margin-bottom:0;}
+.detail-section-title{
+  font-size:.78rem;
+  font-weight:700;
+  color:var(--primary);
+  margin-bottom:6px;
+  padding-bottom:3px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+/* 信息气泡（纵向堆叠） */
+.bubble-list{display:flex;flex-direction:column;gap:4px;}
+.bubble{
+  display:flex;
+  align-items:flex-start;
+  gap:6px;
+  padding:5px 10px;
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  font-size:.78rem;
+  line-height:1.5;
+  border:1px solid var(--border);
+  word-break:break-word;
+}
+.bubble-label{
+  color:var(--text-light);
+  font-weight:600;
+  white-space:nowrap;
+  flex-shrink:0;
+  min-width:60px;
+}
+.bubble-value{
+  color:var(--text);
+  flex:1;
+  word-break:break-word;
+}
+.bubble-value.mono{font-family:"Cascadia Code",Consolas,monospace;font-size:.76rem;}
+
+/* 功能执行日志区块 */
+.detail-feature{
+  margin-bottom:10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  overflow:hidden;
+}
+.detail-feature:last-child{margin-bottom:0;}
+.detail-feature-header{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:5px 10px;
+  background:var(--bg);
+  font-size:.78rem;
+  font-weight:600;
+  cursor:pointer;
+  user-select:none;
+}
+.detail-feature-header .feat-result-ico{font-weight:700;}
+.detail-feature-logs{
+  padding:6px 10px;
+  font-size:.74rem;
+  font-family:"Cascadia Code",Consolas,monospace;
+  color:var(--text-muted);
+  white-space:pre-wrap;
+  word-break:break-word;
+  max-height:200px;
+  overflow:auto;
+  background:#fafbfc;
+  border-top:1px solid var(--border);
+}
+/* 历史执行折叠区（合并日志后同功能多次执行） */
+.exec-history{
+  border-top:1px solid var(--border);
+}
+.exec-history summary{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  font-size:.72rem;
+  color:var(--text-light);
+  cursor:pointer;
+  user-select:none;
+  list-style:none;
+  background:var(--bg);
+}
+.exec-history summary::-webkit-details-marker{display:none;}
+.exec-history summary .exec-toggle{color:var(--text-light);font-size:.68rem;transition:transform .15s;}
+.exec-history[open] summary .exec-toggle{transform:rotate(90deg);}
+.exec-history summary .exec-result-ico{font-weight:700;font-size:.72rem;}
+.exec-history .exec-body{
+  padding:0 0 4px 0;
+}
+.exec-badge{
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:0 6px;
+  font-size:.66rem;
+  font-weight:600;
+  color:var(--text-light);
+}
+.detail-feature-configs{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  padding:6px 10px;
+  font-size:.74rem;
+  border-top:1px solid var(--border);
+  background:#fafbfc;
+}
+.detail-config-row{
+  display:flex;
+  gap:6px;
+  font-family:"Cascadia Code",Consolas,monospace;
+}
+.detail-config-key{color:var(--text-light);min-width:100px;}
+.detail-config-val{color:var(--text);word-break:break-word;}
+
+/* 子任务明细（V2.4+ 日志结构） */
+.detail-subtasks{
+  padding:6px 10px;
+  font-size:.74rem;
+  border-top:1px solid var(--border);
+  background:#fafbfc;
+}
+.detail-subtask-head{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  font-weight:600;
+  color:var(--text-light);
+  margin-bottom:4px;
+}
+.detail-subtask-head .st-count{font-weight:400;color:var(--text-muted);}
+.detail-subtask-row{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:2px 0;
+}
+.status-dot{
+  width:8px;height:8px;border-radius:50%;
+  flex-shrink:0;
+}
+.status-dot.success{background:var(--success);}
+.status-dot.failed{background:var(--failed);}
+.status-dot.skipped{background:var(--skipped);}
+.status-dot.partial{background:var(--partial);}
+.detail-subtask-key{color:var(--text);font-weight:600;min-width:110px;}
+.detail-subtask-status{color:var(--text-light);font-size:.68rem;}
+.detail-subtask-dur{margin-left:auto;color:var(--text-muted);font-family:"Cascadia Code",Consolas,monospace;font-size:.68rem;}
+.detail-subtask-change{
+  margin:1px 0 2px 14px;
+  color:var(--text-muted);
+  font-family:"Cascadia Code",Consolas,monospace;
+  word-break:break-word;
+}
+.detail-subtask-change .ch-before{color:var(--text-light);}
+.detail-subtask-change .ch-arrow{color:var(--text-light);margin:0 4px;}
+.detail-subtask-change .ch-after{color:var(--text);}
+.detail-subtask-detail{
+  margin:0 0 3px 14px;
+  color:var(--text-light);
+  word-break:break-word;
+}
+
+/* ==================== 搜索高亮 ==================== */
+.highlight{
+  background:var(--highlight);
+  color:var(--highlight-text);
+  border-radius:2px;
+  padding:0 1px;
+  font-weight:600;
+}
+
+/* ==================== 空状态 ==================== */
+.empty-state{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-light);
+}
+.empty-state .empty-icon{font-size:2.5rem;margin-bottom:12px;opacity:.5;}
+.empty-state .empty-text{font-size:.95rem;}
+
+/* ==================== 响应式：手机端 ==================== */
+@media (max-width:600px){
+  .container{padding:0 10px;}
+  .header{padding:16px 0 12px;}
+  .header h1{font-size:1.2rem;}
+  .header .stats{font-size:.78rem;gap:8px;}
+  .toolbar{padding:10px 12px;top:0;border-radius:8px;}
+  .search-row{flex-direction:row;align-items:center;gap:8px;}
+  #searchInput{flex:1;min-width:0;}
+
+  /* 筛选按钮 - 移动端显示 */
+  .filter-toggle-btn{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:8px 12px;
+    border:1.5px solid var(--border-strong);
+    border-radius:var(--radius-sm);
+    font-size:.82rem;
+    color:var(--text-muted);
+    background:var(--bg);
+    white-space:nowrap;
+    flex-shrink:0;
+    transition:all .2s;
+  }
+  .filter-toggle-btn:hover{border-color:var(--primary);color:var(--primary);}
+  .filter-toggle-btn.active{
+    background:var(--primary-light);
+    border-color:var(--primary);
+    color:var(--primary);
+    font-weight:600;
+  }
+  .filter-toggle-btn .arrow-icon{font-size:.7rem;transition:transform .2s;}
+  .filter-toggle-btn.active .arrow-icon{transform:rotate(180deg);}
+
+  /* 筛选面板 - 默认收起 */
+  .filter-panel{
+    display:none;
+  }
+  .filter-panel.expanded{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    animation:panelSlideDown .2s ease;
+    padding-top:4px;
+  }
+  @keyframes panelSlideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+
+  /* 开关行 */
+  .toggle-row{gap:14px;}
+
+  /* 筛选行 - 纵向堆叠 */
+  .filter-row{flex-direction:column;align-items:stretch;gap:10px;}
+
+  /* 日期范围 + 数据按钮 - 拆两行 */
+  .date-group{flex-wrap:wrap;gap:6px;}
+  .date-seg-group .seg{font-size:.8rem;padding:4px 2px;}
+  .date-seg-group .seg[data-unit="year"]{width:2.9em;}
+  .date-sep{flex-shrink:0;}
+  .data-buttons{width:100%;display:flex;gap:8px;}
+  .data-buttons .btn-mini{flex:1;padding:7px 0;text-align:center;font-size:.76rem;}
+
+  /* 状态 chips - 自动换行 */
+  .status-chips{justify-content:flex-start;flex-wrap:wrap;overflow-x:visible;padding-bottom:0;}
+
+  /* 卡片 meta - 2列网格 */
+  .card-meta{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:3px 8px;
+  }
+  .card-meta .meta-item{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  .day-group-header{padding:11px 12px;}
+  .day-group-content{padding:12px;}
+  .log-card{padding:12px;}
+  .card-top{gap:6px;}
+  .card-datetime{font-size:.74rem;padding:2px 8px;}
+  .card-machine{font-size:.82rem;}
+  .feature-summary{font-size:.8rem;gap:3px 6px;}
+  .card-bottom{flex-direction:column;align-items:stretch;}
+  .card-actions{justify-content:flex-end;}
+  .note-area{width:100%;}
+  .btn-mini{font-size:.74rem;padding:5px 9px;}
+  .bubble{font-size:.74rem;padding:4px 8px;}
+  .bubble-label{min-width:50px;}
+  .detail-feature-logs{font-size:.7rem;}
+  .detail-config-row{flex-direction:column;gap:0;}
+  .detail-config-key{min-width:0;}
+  .detail-subtask-key{min-width:76px;}
+  .detail-subtask-row{flex-wrap:wrap;}
+}
+
+/* ==================== 加载遮罩 ==================== */
+.loading-overlay{
+  position:fixed;inset:0;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  z-index:200;gap:16px;
+  transition:opacity .3s;
+}
+.loading-overlay.hidden{opacity:0;pointer-events:none;}
+.loading-spinner{
+  width:40px;height:40px;
+  border:3px solid var(--border);
+  border-top-color:var(--primary);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:.95rem;color:var(--text);font-weight:500;}
+.loading-progress{font-size:.8rem;color:var(--text-muted);font-family:"Cascadia Code",Consolas,monospace;}
+.loading-bar-wrap{width:220px;height:4px;background:var(--border);border-radius:2px;overflow:hidden;}
+.loading-bar{height:100%;background:var(--primary);border-radius:2px;transition:width .3s;width:0;}
+
+/* 数据来源标识 */
+.data-source{
+  font-size:.72rem;
+  padding:2px 8px;
+  border-radius:4px;
+  font-weight:500;
+  white-space:nowrap;
+}
+.data-source[data-src="real"]{background:var(--success-bg);color:var(--success);}
+.data-source[data-src="sample"]{background:var(--skipped-bg);color:var(--skipped);}
+
+/* [2026-08-21] 版本号徽章（头部标题，与数据来源徽章同规格·灰色低调） */
+.version-badge{
+  font-size:.72rem;
+  padding:2px 8px;
+  border-radius:4px;
+  font-weight:500;
+  white-space:nowrap;
+  background:var(--border);
+  color:var(--text-muted);
+}
+
+/* ==================== 动画 ==================== */
+@keyframes cardEnter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.log-card{animation:cardEnter .25s ease both;}
+/* ==================== 日志变更提醒气泡 ==================== */
+.log-notify{
+  position:fixed;
+  top:24px;
+  right:24px;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 18px;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  border-radius:var(--radius);
+  box-shadow:0 4px 24px rgba(0,0,0,.15),0 0 0 1px rgba(0,0,0,.06);
+  border:2px solid #eab308;
+  max-width:420px;
+  animation:notifySlideIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.log-notify-icon{
+  flex-shrink:0;
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.25rem;
+  color:#eab308;
+  line-height:1;
+}
+.log-notify-text{
+  flex:1;
+  font-size:.88rem;
+  color:var(--text);
+  line-height:1.45;
+  min-width:0;
+}
+.log-notify-btn{
+  flex-shrink:0;
+  padding:6px 14px;
+  border-radius:var(--radius-sm);
+  background:var(--primary);
+  color:#fff;
+  font-size:.82rem;
+  font-weight:500;
+  border:none;
+  cursor:pointer;
+  transition:background .2s;
+  white-space:nowrap;
+}
+.log-notify-btn:hover{background:var(--primary-dark);}
+.log-notify-close{
+  flex-shrink:0;
+  width:24px;height:24px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:1rem;
+  color:var(--text-muted);
+  cursor:pointer;
+  border:none;
+  background:none;
+  border-radius:4px;
+  transition:color .2s,background .2s;
+  line-height:1;
+}
+.log-notify-close:hover{color:var(--text);background:var(--bg);}
+.log-notify.hiding{
+  animation:notifySlideOut .2s ease forwards;
+}
+@keyframes notifySlideIn{from{opacity:0;transform:translateY(-12px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes notifySlideOut{from{opacity:1;transform:translateY(0) scale(1)}to{opacity:0;transform:translateY(-8px) scale(.95)}}
+
+/* 响应式：小屏时占满宽度 */
+@media(max-width:480px){
+  .log-notify{
+    top:12px;right:12px;left:12px;
+    max-width:none;
+  }
+}
+
+/* ==================== 无限滚动：底部加载提示 ==================== */
+.load-more-area{
+  text-align:center;
+  padding:18px 12px;
+  color:var(--text-muted);
+  font-size:.82rem;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.load-more-area.hidden{display:none;}
+.load-more-dot{
+  display:inline-block;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:var(--primary);
+  animation:dotPulse 1.2s ease-in-out infinite;
+}
+.load-more-dot:nth-child(2){animation-delay:.2s;}
+.load-more-dot:nth-child(3){animation-delay:.4s;}
+@keyframes dotPulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+
+.load-more-done{
+  color:var(--text-light);
+  font-size:.8rem;
+}
+
+/* ==================== 已全部加载气泡弹窗 ==================== */
+.toast-all-loaded{
+  position:fixed;
+  right:24px;
+  bottom:80px;
+  z-index:9998;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding:12px 18px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-radius:var(--radius);
+  box-shadow:0 4px 20px rgba(0,0,0,.12),0 0 0 1px rgba(0,0,0,.05);
+  border:2px solid #22c55e;
+  max-width:320px;
+  font-size:.85rem;
+  color:var(--text);
+  opacity:0;
+  transform:translateY(8px);
+  pointer-events:none;
+  transition:opacity .35s,transform .35s;
+}
+.toast-all-loaded.show{
+  opacity:1;
+  transform:translateY(0);
+}
+.toast-all-loaded-icon{font-size:1.1rem;flex-shrink:0;color:#22c55e;}
+.toast-all-loaded-text{line-height:1.4;}
+@media(max-width:480px){
+  .toast-all-loaded{right:12px;left:12px;max-width:none;bottom:24px;}
+}
+
+/* ==================== 登录认证遮罩 ==================== */
+.auth-overlay{
+  position:fixed;z-index:10000;inset:0;
+  background:rgba(15,23,42,.85);
+  display:flex;align-items:center;justify-content:center;
+  backdrop-filter:blur(8px);
+}
+.auth-overlay.hidden{display:none;}
+.auth-card{
+  background:var(--card-bg);border-radius:16px;
+  padding:40px 36px;width:380px;max-width:92vw;
+  box-shadow:var(--shadow-lg);text-align:center;
+}
+.auth-header{margin-bottom:28px;}
+.auth-logo{width:48px;height:48px;margin-bottom:12px;}
+.auth-header h2{font-size:1.4rem;color:var(--text);margin:0 0 6px;font-weight:700;}
+.auth-header p{color:var(--text-muted);font-size:.9rem;margin:0;}
+.auth-card input[type="password"]{
+  width:100%;padding:12px 16px;border:2px solid var(--border);
+  border-radius:var(--radius);font-size:1rem;text-align:center;
+  letter-spacing:4px;outline:none;transition:border-color .2s;
+  background:var(--bg);color:var(--text);
+}
+.auth-card input[type="password"]:focus{border-color:var(--primary);}
+.auth-card input[type="password"]::placeholder{letter-spacing:normal;color:var(--text-light);}
+.auth-card button{
+  width:100%;margin-top:16px;padding:12px;
+  background:var(--primary);color:#fff;border:none;
+  border-radius:var(--radius);font-size:1rem;font-weight:600;
+  cursor:pointer;transition:background .2s,opacity .2s;
+}
+.auth-card button:hover{background:var(--primary-dark);}
+.auth-card button:disabled{opacity:.6;cursor:not-allowed;}
+.auth-error{
+  margin-top:14px;padding:10px 16px;
+  background:var(--failed-bg);color:var(--failed);
+  border-radius:var(--radius-sm);font-size:.88rem;display:none;
+}
+
+@media(max-width:640px){
+  .auth-card{padding:32px 24px;max-width:90vw;}
+}
+</style>
+</head>
+<body>
+<!-- 日志变更提醒气泡（初始隐藏） -->
+<div class="log-notify" id="logNotify" style="display:none">
+  <div class="log-notify-icon">⚠</div>
+  <div class="log-notify-text">日志文件已更新，请刷新页面获取最新数据。</div>
+  <button class="log-notify-btn" onclick="location.reload()">刷新</button>
+  <button class="log-notify-close" onclick="dismissLogNotification()">✕</button>
+</div>
+
+<!-- 已全部加载气泡弹窗 -->
+<div class="toast-all-loaded" id="allLoadedToast">
+  <span class="toast-all-loaded-icon">✅</span>
+  <span class="toast-all-loaded-text">范围内的数据已完全加载</span>
+</div>
+
+<!-- [2026-08-22] 备注冲突气泡（红色警告，初始隐藏） -->
+<div class="note-conflict" id="noteConflict" style="display:none">
+  <div class="note-conflict-icon">⚠</div>
+  <div class="note-conflict-body">
+    <div class="note-conflict-title" id="noteConflictTitle">备注冲突</div>
+    <div class="note-conflict-sn" id="noteConflictSn"></div>
+    <div class="note-conflict-current" id="noteConflictCurrent"></div>
+    <div class="note-conflict-btns">
+      <button class="btn-overwrite" id="noteConflictOverwrite" onclick="conflictOverwrite()">覆盖</button>
+      <button class="btn-keeplocal" id="noteConflictKeep" onclick="conflictKeepLocal()">暂不修改（存本地）</button>
+    </div>
+  </div>
+  <button class="note-conflict-close" onclick="dismissNoteConflict()">✕</button>
+</div>
+
+<!-- [2026-08-22] 备注操作结果 toast（右下角，自动消失） -->
+<div class="toast-all-loaded" id="noteToast" style="border-color:#64748b">
+  <span class="toast-all-loaded-icon" id="noteToastIcon">📝</span>
+  <span class="toast-all-loaded-text" id="noteToastText"></span>
+</div>
+
+<!-- [2026-08-22] 上传备注二次确认卡（模态，初始隐藏） -->
+<div class="upload-confirm-overlay hidden" id="uploadConfirmOverlay">
+  <div class="upload-confirm-card">
+    <h3>📤 上传备注（二次确认）</h3>
+    <div class="sub">将用本地暂存的备注 <b>覆盖</b> 服务器上的现有备注，此操作不可撤销。</div>
+    <div class="upload-confirm-compare">
+      <div class="upload-confirm-box server">
+        <span class="box-label">🖥 服务器现有备注</span>
+        <span id="uploadConfirmServerText"></span>
+      </div>
+      <div class="upload-confirm-box local">
+        <span class="box-label">📤 本地暂存备注（待上传）</span>
+        <span id="uploadConfirmLocalText"></span>
+      </div>
+    </div>
+    <div class="upload-confirm-btns">
+      <button class="btn-cancel2" onclick="closeUploadConfirm()">取消</button>
+      <button class="btn-confirm" id="uploadConfirmBtn" onclick="confirmUploadPending()">确认覆盖上传</button>
+    </div>
+  </div>
+</div>
+
+<!-- [2026-08-24 OUTBOUND] 出库记录弹层（上传/查看双模式；回滚：删除本段 + JS outboundArchive 段 + CSS） -->
+<div class="ob-modal-overlay hidden" id="obModalOverlay" onclick="if(event.target===this)closeOutboundModal()">
+  <div class="ob-modal-card">
+    <div class="ob-modal-head">
+      <h3 id="obModalTitle">📦 出库记录</h3>
+      <button class="ob-modal-close" onclick="closeOutboundModal()" title="关闭">✕</button>
+    </div>
+    <div class="ob-modal-sn" id="obModalSn"></div>
+    <div id="obModalBody"></div>
+  </div>
+  <!-- 隐藏文件输入：capture=environment 移动端直调后置摄像头；桌面端忽略该属性无副作用 -->
+  <input type="file" id="obFileInput" hidden
+         accept="image/jpeg,image/png,image/webp" capture="environment">
+</div>
+
+<!-- [2026-08-24 OUTBOUND] 大图查看层（点击缩略图放大原图） -->
+<div class="ob-img-viewer hidden" id="obImgViewer" onclick="closeObImageViewer()">
+  <button class="ob-img-viewer-close" onclick="event.stopPropagation();closeObImageViewer()" title="关闭">✕</button>
+  <img id="obImgViewerImg" src="" alt="出库记录大图">
+</div>
+
+<!-- 加载遮罩 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">正在加载日志数据...</div>
+  <div class="loading-bar-wrap"><div class="loading-bar" id="loadingBar"></div></div>
+  <div class="loading-progress" id="loadingProgress"></div>
+</div>
+
+<!-- 登录认证遮罩 -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="Img/LDTLS.png" alt="" class="auth-logo">
+      <h2>LDTools</h2>
+      <p>请输入访问密码</p>
+    </div>
+    <form id="authForm" autocomplete="off" onsubmit="return false">
+      <input type="password" id="authPassword"
+             placeholder="访问密码" autofocus
+             maxlength="64" autocomplete="off">
+      <button type="submit" id="authSubmitBtn">验证</button>
+    </form>
+    <div class="auth-error" id="authError" style="display:none"></div>
+  </div>
+</div>
+
+<div class="container">
+  <!-- 头部 -->
+  <header class="header">
+    <h1><img src="Img/LDTLS.png" alt="" class="logo-img">LDTools <span class="accent">Log </span>Searcher <span class="version-badge" id="versionBadge" hidden></span><span class="data-source" id="dataSourceBadge" data-src="real">📡 FTP</span></h1>
+    <a href="/" class="btn-home" id="homeBtn" title="返回 WSDI 主页">🏠 返回主页</a>
+    <div class="stats" id="stats"></div>
+  </header>
+
+  <!-- 工具栏 -->
+  <div class="toolbar" id="toolbar">
+    <div class="search-row">
+      <input type="search" id="searchInput" placeholder="搜索：关键词" autocomplete="off">
+      <button class="filter-toggle-btn" id="filterToggleBtn">筛选 <span class="arrow-icon">▾</span></button>
+    </div>
+    <div class="filter-panel" id="filterPanel">
+      <div class="toggle-row">
+        <label class="toggle" title="开启时：修改起始日期→结束日期自动+30天，修改结束日期→起始日期自动-30天&#10;关闭时：两端日期完全独立，可自由设定任意跨度">
+          <input type="checkbox" id="link30Toggle" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">30天联动</span>
+        </label>
+        <!-- [2026-08-20] 隐藏模糊匹配开关（智能匹配已默认开启并优先于模糊）；恢复：去掉 hidden 属性即可 -->
+        <label class="toggle" title="精确匹配：保留格式·大小写不敏感&#10;模糊匹配：净化符号后·大小写不敏感" hidden>
+          <input type="checkbox" id="fuzzyToggle">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">模糊匹配</span>
+        </label>
+        <!-- [2026-08-21] 隐藏智能匹配开关：搜索已统一为单一匹配模式（空格分词AND + 整体净化子串 + 同义词自动展开），无需手动切换；恢复：去掉 hidden 属性并还原 JS 开关监听 -->
+        <label class="toggle" title="统一匹配：空格分隔多个关键词，全部命中才匹配（AND）&#10;整体净化匹配：忽略符号与大小写，如「16g」可命中「16GB」&#10;同义词自动展开：mt↔tower、usdt↔tiny、mff↔micro、dt↔desktop" hidden>
+          <input type="checkbox" id="smartToggle" checked>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">智能匹配</span>
+        </label>
+        <!-- [2026-08-20] 隐藏详细数据开关；恢复：去掉 hidden 属性即可 -->
+        <label class="toggle" title="展开卡片详情时显示功能的更详细数据" hidden>
+          <input type="checkbox" id="configsToggle">
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          <span class="toggle-label">详细数据</span>
+        </label>
+      </div>
+      <div class="filter-row">
+        <div class="date-group">
+          <div class="date-seg-group" data-field="start" title="起始日期：滚轮调节年/月/日（悬停某段滚该段），点击可输入，↑↓键微调">
+            <input class="seg" data-unit="year" type="text" inputmode="numeric" maxlength="4" aria-label="起始年">
+            <span class="seg-unit">年</span>
+            <input class="seg" data-unit="month" type="text" inputmode="numeric" maxlength="2" aria-label="起始月">
+            <span class="seg-unit">月</span>
+            <input class="seg" data-unit="day" type="text" inputmode="numeric" maxlength="2" aria-label="起始日">
+            <span class="seg-unit">日</span>
+          </div>
+          <span class="date-sep">~</span>
+          <div class="date-seg-group" data-field="end" title="结束日期：滚轮调节年/月/日（悬停某段滚该段），点击可输入，↑↓键微调">
+            <input class="seg" data-unit="year" type="text" inputmode="numeric" maxlength="4" aria-label="结束年">
+            <span class="seg-unit">年</span>
+            <input class="seg" data-unit="month" type="text" inputmode="numeric" maxlength="2" aria-label="结束月">
+            <span class="seg-unit">月</span>
+            <input class="seg" data-unit="day" type="text" inputmode="numeric" maxlength="2" aria-label="结束日">
+            <span class="seg-unit">日</span>
+          </div>
+          <button class="btn-apply-date" id="applyDateBtn" style="display:none" title="应用当前日期范围（查询数据）">✓ 应用</button>
+          <div class="data-buttons">
+            <input type="file" id="fileLoader" accept=".json,application/json" multiple style="display:none">
+            <!-- <button class="btn-mini" id="loadFilesBtn" title="加载本地明文 JSON 日志文件">📂 加载本地日志</button> -->
+            <button class="btn-mini" id="refreshBtn" title="重新从 FTP 服务器拉取日志数据（清空内存缓存）"><img src="Img/refresh.png" alt="" class="btn-icon">刷新数据</button>
+          </div>
+          <div class="date-span-hint" id="dateSpanHint" style="display:none"></div>
+        </div>
+        <div class="status-chips" id="statusChips">
+          <button class="chip active" data-status="all">全部</button>
+          <button class="chip" data-status="success">✓ 成功</button>
+          <button class="chip" data-status="partial">⚠ 部分</button>
+          <button class="chip" data-status="failed">✗ 失败</button>
+          <button class="chip" data-status="skipped">⊘ 跳过</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 日志列表 -->
+  <div class="log-list" id="logList"></div>
+</div>
+
+
+<script>
+"use strict";
+/* ====================================================================
+ * LDTools 运行日志查看器  —  纯前端单页应用
+ * 数据结构依据 RunLog_JSON_Structure.md (V2.5)
+ * 功能：分组浏览 / 关键词搜索(精确+模糊) / 日期范围筛选 / 备注
+ * ==================================================================== */
+
+/* ==================== 一、配置常量 ==================== */
+
+// 功能定义（featureId 对照表，来自真实数据）
+const FEATURE_DEFS = [
+  { id:1, name:'硬件信息',       short:'硬件' },
+  { id:2, name:'更新时间及机型', short:'时间' },
+  { id:3, name:'系统综合调试',    short:'调试' },
+  { id:4, name:'驱动管理',       short:'驱动' },
+  { id:5, name:'音频测试',       short:'音频' },
+];
+
+// result 值 → 显示标签 & 图标
+const RESULT_META = {
+  success: { ico:'✓', label:'成功' },
+  failed:  { ico:'✗', label:'失败' },
+  partial: { ico:'⚠', label:'部分' },
+  skipped: { ico:'⊘', label:'跳过' },
+};
+
+// localStorage 备注键名
+const NOTES_KEY = 'log_viewer_notes';
+// [2026-08-22] 冲突"暂不修改"的本地暂存区（独立于主备注，仅存待上传的冲突备注）
+const PENDING_NOTES_KEY = 'log_viewer_pending_notes';
+// 无限滚动：每批加载的日期分组数
+const DATE_PAGE_SIZE = 10;
+
+/* ==================== 访问认证 ==================== */
+const AUTH_TOKEN_KEY = 'ldtools_auth_token';
+
+function getAuthToken(){
+  return sessionStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+function setAuthToken(token){
+  sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+}
+
+function clearAuthToken(){
+  sessionStorage.removeItem(AUTH_TOKEN_KEY);
+}
+
+/** 带认证的 fetch 封装，自动附加 Authorization header */
+async function apiFetch(url, options = {}){
+  const token = getAuthToken();
+  if(!token) throw new Error('未登录');
+  const headers = Object.assign({}, options.headers || {}, {
+    'Authorization': 'Bearer ' + token
+  });
+  // [2026-08-22 STALE-FIX] 强制绕开浏览器 HTTP 缓存
+  // 根因：localhost origin 存有旧的 /api/manifest 等响应缓存，普通模式复用导致
+  // "数据始终旧一天"（192.168.1.127 是新 origin 缓存为空故正常）。
+  // fetch cache 模式 'no-store' 让请求永不读缓存，与服务端 no-store 头双保险。
+  const opts = Object.assign({}, options, { headers, cache: 'no-store' });
+  const resp = await fetch(url, opts);
+  if(resp.status === 401){
+    // token 过期或无效 → 清除并显示登录界面
+    clearAuthToken();
+    showAuthOverlay();
+    throw new Error('登录已过期，请重新输入密码');
+  }
+  return resp;
+}
+
+/** 显示登录遮罩 */
+function showAuthOverlay(){
+  const overlay = document.getElementById('authOverlay');
+  const pwInput = document.getElementById('authPassword');
+  const errEl   = document.getElementById('authError');
+  if(overlay) overlay.classList.remove('hidden');
+  if(pwInput){ pwInput.value = ''; pwInput.focus(); }
+  if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
+  // 隐藏主界面
+  document.querySelector('.loading-overlay')?.classList.add('hidden');
+}
+
+/** 隐藏登录遮罩，开始加载数据 */
+function hideAuthOverlay(){
+  const overlay = document.getElementById('authOverlay');
+  if(overlay) overlay.classList.add('hidden');
+}
+
+/** 登录验证 */
+async function doLogin(password){
+  const btn = document.getElementById('authSubmitBtn');
+  const errEl = document.getElementById('authError');
+  btn.disabled = true;
+  btn.textContent = '验证中...';
+  errEl.style.display = 'none';
+
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password }),
+    });
+    const data = await resp.json();
+    if(data.ok && data.token){
+      setAuthToken(data.token);
+      hideAuthOverlay();
+      init();  // 认证成功后启动应用
+    } else {
+      errEl.textContent = data.message || '密码错误';
+      errEl.style.display = 'block';
+    }
+  } catch(e){
+    errEl.textContent = '网络错误，请检查服务是否启动';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '验证';
+  }
+}
+
+// ---- 绑定登录事件 ----
+document.addEventListener('DOMContentLoaded', function(){
+  const form = document.getElementById('authForm');
+  const input = document.getElementById('authPassword');
+  if(form){
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      doLogin(input.value);
+    });
+  }
+
+  // 返回主页按钮：经 WSDI 代理 (/LDTH5) 访问时，主页是站点根路径 /；
+  // 若直接访问 LDTH5 根路径（非代理，当前页就是首页），则隐藏该按钮避免无效跳转
+  const homeBtn = document.getElementById('homeBtn');
+  if(homeBtn){
+    const path = location.pathname.toLowerCase();
+    const isDirectRoot = (path === '/' || path === '/index.html');
+    if(isDirectRoot){
+      homeBtn.hidden = true;
+    } else {
+      // 经 /LDTH5 代理访问：主页指向站点根路径
+      homeBtn.href = '/';
+    }
+  }
+
+  // 检查是否已有 token → 验证有效性
+  const token = getAuthToken();
+  if(token){
+    apiFetch('/api/version')
+      .then(function(r){ return r.json(); })
+      .then(function(){ hideAuthOverlay(); init(); })
+      .catch(function(){
+        // 401/网络错误已在 apiFetch/showAuthOverlay 中处理
+        // 此处仅确保不执行 init
+      });
+  } else {
+    showAuthOverlay();
+  }
+});
+
+
+/* ==================== 二、工具函数 ==================== */
+
+// HTML 转义（防 XSS）
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// 净化字符串：移除所有非字母数字字符（模糊匹配用）
+function purify(s){ return String(s).toLowerCase().replace(/[^a-z0-9]/g,''); }
+
+// 日期格式化：Date → "YYYY-MM-DD"
+function fmtDate(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
+// 时间格式化：Date → "YYYY-MM-DD HH:mm:ss"
+function fmtTime(d){
+  return fmtDate(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+}
+
+// 日期字符串 → Date（当天 00:00）
+function parseDate(s){ const d=new Date(s+'T00:00:00'); return isNaN(d)?null:d; }
+
+
+/* ==================== 二-A、文件名解析 & 日志对象构建 ==================== */
+
+// 从文件名解析时间戳和型号
+// 文件名格式: YYMMDD-HHMMSS_<型号>_<序列号>.json
+//   例: 260710-162648_YangTianM460-20IAB_GM0SV8FR.json
+function parseFileName(fname){
+  const base = fname.replace(/\.json$/i, '');
+  const usIdx = base.indexOf('_');
+  if(usIdx < 0) return { uploadTime: null, fileModel: '' };
+
+  const tsPart = base.substring(0, usIdx);        // "260710-162648"
+  const rest   = base.substring(usIdx + 1);       // "YangTianM460-20IAB_GM0SV8FR"
+
+  // 解析时间: YYMMDD-HHMMSS → Date
+  let uploadTime = null;
+  const m = tsPart.match(/^(\d{2})(\d{2})(\d{2})-(\d{2})(\d{2})(\d{2})$/);
+  if(m){
+    const d = new Date(
+      2000 + parseInt(m[1], 10),  // year
+      parseInt(m[2], 10) - 1,    // month (0-based)
+      parseInt(m[3], 10),         // day
+      parseInt(m[4], 10),         // hours
+      parseInt(m[5], 10),         // minutes
+      parseInt(m[6], 10)          // seconds
+    );
+    if(!isNaN(d)) uploadTime = d;
+  }
+
+  // 提取型号: 第一个 _ 到最后一个 _ 之间的部分，_ 替换为空格
+  const lastUs = rest.lastIndexOf('_');
+  let fileModel;
+  if(lastUs > 0){
+    fileModel = rest.substring(0, lastUs).replace(/_/g, ' ');
+  } else {
+    fileModel = rest.replace(/_/g, ' ');
+  }
+
+  return { uploadTime, fileModel };
+}
+
+// 从原始 JSON 数据 + 文件名构建日志对象
+function buildLogFromRaw(rawData, fname){
+  const parsed = parseFileName(fname);
+  const hw = rawData.hardware || {};
+
+  // 时间: 优先用 meta.generatedAt，回退到文件名解析
+  let uploadTime = parsed.uploadTime;
+  if(rawData.meta && rawData.meta.generatedAt){
+    const d = new Date(rawData.meta.generatedAt);
+    if(!isNaN(d)) uploadTime = d;
+  }
+
+  // SN: 从 bios.serialNumber 取值，回退到 lenovoInfo.machineNo
+  const sn = (hw.bios && hw.bios.serialNumber && hw.bios.serialNumber.trim()) ||
+             (hw.lenovoInfo && hw.lenovoInfo.machineNo && hw.lenovoInfo.machineNo.trim()) ||
+             '';
+
+  // 功能摘要: 每个 feature 取最后一次执行结果
+  const featureSummary = (rawData.features || []).map(f => {
+    const execs = f.executions || [];
+    const last = execs[execs.length - 1] || { result: 'skipped' };
+    const def = FEATURE_DEFS.find(d => d.id === f.featureId);
+    const name = def ? def.name : (f.featureName || '功能' + f.featureId);
+    const rMeta = RESULT_META[last.result] || RESULT_META.skipped;
+    return { featureId: f.featureId, name, result: last.result, ico: rMeta.ico };
+  });
+
+  // 总体结果: failed > partial > success > skipped
+  const results = featureSummary.map(f => f.result);
+  let overallResult = 'skipped';
+  if(results.includes('failed')){
+    overallResult = 'failed';
+  } else if(results.includes('partial')){
+    overallResult = 'partial';
+  } else if(results.includes('success')){
+    overallResult = 'success';
+  }
+
+  // 构建 fullContent：将所有可搜索文本拼接为一个字符串，供 matchLog 匹配
+  const contentParts = [fname, parsed.fileModel || '', sn];
+  if(hw.hostModel) contentParts.push(hw.hostModel);
+  if(hw.windowsPassword) contentParts.push('Windows密码: ' + hw.windowsPassword);
+  (rawData.features || []).forEach(f => {
+    contentParts.push(f.featureName || '');
+    (f.executions || []).forEach(e => {
+      (e.consoleLogs || []).forEach(l => contentParts.push(l));
+      (e.configsBefore || []).forEach(c => contentParts.push(c.key + '=' + c.value));
+      (e.configsAfter || []).forEach(c => contentParts.push(c.key + '=' + c.value));
+      (e.subTasks || []).forEach(t => {
+        contentParts.push(t.key || '');
+        if(t.before) contentParts.push('变更前: ' + t.before);
+        if(t.after)  contentParts.push('变更后: ' + t.after);
+        if(t.detail) contentParts.push(t.detail);
+      });
+    });
+  });
+
+  // 硬件信息加入搜索索引
+  if(hw.cpuName)          contentParts.push('CPU: ' + hw.cpuName);
+  if(hw.cpuCores)         contentParts.push('CPU核心: ' + hw.cpuCores);
+  if(hw.cpuMaxSpeed)      contentParts.push('CPU频率: ' + hw.cpuMaxSpeed);
+  if(Array.isArray(hw.memory)){
+    hw.memory.forEach((m,i) => {
+      contentParts.push('内存条'+(i+1)+': ' + (m.capacityGB||'') + 'GB ' + (m.manufacturer||'') + ' ' + (m.partNumber||'') + ' ' + (m.speed||'') + 'MHz');
+    });
+  }
+  if(hw.motherboard){
+    contentParts.push('主板: ' + (hw.motherboard.manufacturer||'') + ' ' + (hw.motherboard.product||'') + ' SN:' + (hw.motherboard.serialNumber||''));
+  }
+  if(hw.bios){
+    contentParts.push('BIOS: ' + (hw.bios.name||'') + ' ' + (hw.bios.version||'') + ' ' + (hw.bios.manufacturer||'') + ' SN:' + (hw.bios.serialNumber||''));
+  }
+  if(Array.isArray(hw.disks)){
+    hw.disks.forEach((d,i) => {
+      contentParts.push('磁盘'+(i+1)+': ' + (d.sizeGB||'') + 'GB ' + (d.model||'') + ' ' + (d.partitions||'') + ' SN:' + (d.serialNumber||''));
+    });
+  }
+  if(Array.isArray(hw.removableDisks)){
+    hw.removableDisks.forEach((d,i) => {
+      contentParts.push('移动磁盘'+(i+1)+': ' + (d.sizeGB||'') + 'GB ' + (d.model||'') + ' ' + (d.partitions||'') + ' SN:' + (d.serialNumber||''));
+    });
+  }
+  if(Array.isArray(hw.gpus)){
+    hw.gpus.forEach((g,i) => {
+      contentParts.push('显卡'+(i+1)+': ' + (g.name||'') + ' 显存:' + (g.adapterRAM_GB||0) + 'GB 驱动:' + (g.driverVersion||''));
+    });
+  }
+  if(Array.isArray(hw.networkAdapters)){
+    hw.networkAdapters.forEach((n,i) => {
+      contentParts.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||''));
+    });
+  }
+  if(Array.isArray(hw.bluetooths) && hw.bluetooths.length){
+    hw.bluetooths.forEach((b,i) => {
+      contentParts.push('蓝牙'+(i+1)+': ' + (b.name||'') + ' 驱动:' + (b.driverVersion||'') + (b.status ? ' ' + b.status : ''));
+    });
+  }
+  if(hw.windowsVersion)   contentParts.push('Windows版本: ' + hw.windowsVersion);
+  if(hw.windowsLicenseStatus) contentParts.push('许可证状态: ' + hw.windowsLicenseStatus);
+  if(hw.oobeStatus)       contentParts.push('OOBE状态: ' + hw.oobeStatus);
+  if(hw.lenovoInfo){
+    const li = hw.lenovoInfo;
+    if(li.productModel) contentParts.push('官方型号: ' + li.productModel);
+    if(li.productLine)  contentParts.push('产品线: ' + li.productLine);
+    if(li.machineName)  contentParts.push('出厂配置: ' + li.machineName);
+    if(li.machineNo)    contentParts.push('主机序列号: ' + li.machineNo);
+  }
+
+  return {
+    id:              fname,              // 唯一标识（文件名唯一）
+    fileName:        fname,
+    fileModel:       parsed.fileModel,   // 从文件名提取的型号
+    sn,
+    uploadTime,
+    uploadDateStr:   uploadTime ? fmtDate(uploadTime) : '',
+    rawData,
+    overallResult,
+    featureSummary,
+    fullContent:     contentParts.join('\n'),
+  };
+}
+
+
+/* ==================== 二-B、数据加载（通过 /api 接口） ==================== */
+
+// 加载遮罩操作
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loadingText    = document.getElementById('loadingText');
+const loadingBar     = document.getElementById('loadingBar');
+const loadingProgress= document.getElementById('loadingProgress');
+
+function showLoading(text){
+  loadingText.textContent = text;
+  loadingBar.style.width = '0%';
+  loadingProgress.textContent = '';
+  loadingOverlay.classList.remove('hidden');
+}
+function updateLoadingProgress(done, total, currentFile){
+  const pct = total > 0 ? Math.round(done / total * 100) : 100;
+  loadingBar.style.width = pct + '%';
+  loadingProgress.textContent = `${done} / ${total}  ${currentFile || ''}`;
+}
+function hideLoading(){
+  loadingOverlay.classList.add('hidden');
+}
+
+// 加载文件清单，解析文件名日期
+async function loadManifest(){
+  const resp = await apiFetch('/api/manifest');
+  if(!resp.ok){
+    const err = await resp.json().catch(()=>({code:'ERR_UNKNOWN',message:'未知错误'}));
+    throw { code: err.code || 'ERR_'+resp.status, message: err.message || resp.statusText };
+  }
+  const manifest = await resp.json();
+  if(!manifest.files || manifest.files.length === 0) return false;
+
+  state.manifestFiles = manifest.files;
+  state.fileDateMap = {};
+  const dates = [];
+  for(const fname of manifest.files){
+    const parsed = parseFileName(fname);
+    if(parsed && parsed.uploadTime && !isNaN(parsed.uploadTime)){
+      const ds = fmtDate(parsed.uploadTime);
+      state.fileDateMap[fname] = ds;
+      dates.push(ds);
+    } else {
+      state.fileDateMap[fname] = '';
+    }
+  }
+  dates.sort();
+  state.dataMinDate = dates[0] || '';
+  state.dataMaxDate = dates[dates.length-1] || '';
+
+  // [2026-08-22 STALE-FIX] 服务端元数据兜底（双保险）
+  // 服务端从文件名提取的日期范围更可靠；前端 parseFileName 若有遗漏
+  // （例如某文件名解析失败没进 dates），用服务端值修正，防止
+  // dataMaxDate 落后 → getDefaultDateRange clamp 掉最新数据
+  if(manifest.earliestDate && (!state.dataMinDate || manifest.earliestDate < state.dataMinDate)){
+    state.dataMinDate = manifest.earliestDate;
+  }
+  if(manifest.latestDate && (!state.dataMaxDate || manifest.latestDate > state.dataMaxDate)){
+    state.dataMaxDate = manifest.latestDate;
+  }
+  return true;
+}
+
+// 计算默认日期范围：今天往前推 9 天（共 10 天），clamp 到数据范围
+function getDefaultDateRange(){
+  const today = new Date();
+  const nineDaysAgo = new Date(today.getTime() - 9 * 86400000);
+  let start = fmtDate(nineDaysAgo);
+  let end = fmtDate(today);
+  // clamp 到数据范围
+  if(state.dataMinDate && start < state.dataMinDate) start = state.dataMinDate;
+  if(state.dataMaxDate && end > state.dataMaxDate) end = state.dataMaxDate;
+  // 如果 start > end（数据全在 10 天前），显示数据最后 10 天
+  if(start > end){
+    end = state.dataMaxDate;
+    const d = new Date(parseDate(end).getTime() - 9 * 86400000);
+    start = fmtDate(d);
+    if(start < state.dataMinDate) start = state.dataMinDate;
+  }
+  return { start, end };
+}
+
+// 加载指定日期范围内的文件（增量，跳过已加载的）
+async function decryptFilesInDateRange(dateStart, dateEnd){
+  // 筛选出需要加载的文件
+  const needDecrypt = state.manifestFiles.filter(fname=>{
+    if(state.decryptedSet.has(fname)) return false;
+    const ds = state.fileDateMap[fname];
+    if(!ds) return false;
+    return ds >= dateStart && ds <= dateEnd;
+  });
+
+  if(needDecrypt.length === 0) return 0;
+
+  state.isLoading = true;
+  if(needDecrypt.length > 3) showLoading('正在加载 ' + needDecrypt.length + ' 个日志文件...');
+
+  // ==================== 批量加载（方案B，2026-08-25） ====================
+  // [ROLLBACK] 如需回退旧的逐文件并发加载，删除下方批量块，恢复：
+  //   const CONCURRENCY = 6;
+  //   逐个 apiFetch('/api/file?name=' + encodeURIComponent(fname)) 并发加载
+  // 批量接口 /api/files 在后端复用单条 FTP 连接下载多个文件，
+  // 大幅减少每文件建连/退出的开销，日志多时加载明显更快。
+  const BATCH_SIZE = 12;              // 每批文件数
+  const BATCH_CONCURRENCY = 3;        // 同时进行的批次数量
+  const total = needDecrypt.length;
+  let success = 0, done = 0;
+
+  // 把待加载列表切分为多个批次
+  const batches = [];
+  for(let i = 0; i < needDecrypt.length; i += BATCH_SIZE){
+    batches.push(needDecrypt.slice(i, i + BATCH_SIZE));
+  }
+  const queue = batches.slice();
+
+  async function batchWorker(){
+    while(queue.length > 0){
+      const batch = queue.shift();
+      try{
+        const resp = await apiFetch('/api/files', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ names: batch })
+        });
+        if(resp.ok){
+          const data = await resp.json();
+          const files = data.files || {};
+          for(const fname of batch){
+            const rawData = files[fname];
+            if(rawData){
+              const log = buildLogFromRaw(rawData, fname);
+              state.logs.push(log);
+              state.decryptedSet.add(fname);
+              success++;
+            }
+            done++;
+            if(total > 3) updateLoadingProgress(done, total, fname);
+          }
+        } else {
+          // 整批失败：逐文件重试一次单文件接口（兼容旧后端无批量接口的情况）
+          for(const fname of batch){
+            try{
+              const fr = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
+              if(fr.ok){
+                const rawData = await fr.json();
+                const log = buildLogFromRaw(rawData, fname);
+                state.logs.push(log);
+                state.decryptedSet.add(fname);
+                success++;
+              }
+            }catch(err){
+              console.warn('加载失败:', fname, err.message);
+              state.decryptedSet.add(fname);
+            }
+            done++;
+            if(total > 3) updateLoadingProgress(done, total, fname);
+          }
+        }
+      }catch(err){
+        // 批量请求整体异常：逐个尝试单文件接口，避免一次失败丢整批
+        console.warn('批量加载失败，逐文件重试:', err.message);
+        for(const fname of batch){
+          try{
+            const fr = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
+            if(fr.ok){
+              const rawData = await fr.json();
+              const log = buildLogFromRaw(rawData, fname);
+              state.logs.push(log);
+              state.decryptedSet.add(fname);
+              success++;
+            }
+          }catch(e){
+            console.warn('加载失败:', fname, e.message);
+            state.decryptedSet.add(fname);
+          }
+          done++;
+          if(total > 3) updateLoadingProgress(done, total, fname);
+        }
+      }
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(BATCH_CONCURRENCY, batches.length)}, batchWorker));
+  // ==================== 批量加载结束 ====================
+
+  // 重新排序（新加入的日志需要合并到正确位置）
+  state.logs.sort((a, b) => b.uploadTime - a.uploadTime);
+
+  if(needDecrypt.length > 3){
+    updateLoadingProgress(needDecrypt.length, needDecrypt.length, '');
+    hideLoading();
+  }
+  state.isLoading = false;
+  return success;
+}
+
+// 确保日期范围内文件已加载，然后渲染
+async function ensureDecryptedAndRender(){
+  if(state.isLoading) return; // 防止并发调用
+  // 用 do-while 循环：加载完成后重新检查，防止用户在加载期间又改了日期范围
+  let newCount;
+  do {
+    newCount = state.manifestFiles.filter(fname=>{
+      if(state.decryptedSet.has(fname)) return false;
+      const ds = state.fileDateMap[fname];
+      return ds && ds >= state.dateStart && ds <= state.dateEnd;
+    }).length;
+    if(newCount > 0){
+      await decryptFilesInDateRange(state.dateStart, state.dateEnd);
+    }
+  } while(newCount > 0);
+  render();
+  updateSpanHint();  // [2026-08-22] 加载完成后待处理数变为 0，刷新提示（口径B）
+}
+
+// 从 File 对象加载（支持加密文件和明文 JSON）
+async function loadFromFiles(files){
+  showLoading('正在解析文件...');
+  const logs = [];
+  let plainCount = 0, failCount = 0;
+
+  for(let i = 0; i < files.length; i++){
+    const file = files[i];
+    updateLoadingProgress(i, files.length, file.name);
+    try{
+      const text = await file.text();
+      const rawData = JSON.parse(text);
+      logs.push(buildLogFromRaw(rawData, file.name));
+      plainCount++;
+    }catch(err){
+      console.warn('文件解析失败:', file.name, err.message);
+      failCount++;
+    }
+  }
+
+  if(logs.length === 0){
+    hideLoading();
+    alert('解析失败：没有有效的日志文件');
+    return;
+  }
+
+  logs.sort((a, b) => b.uploadTime - a.uploadTime);
+  // 合并到缓存
+  for(const log of logs){
+    state.logs.push(log);
+    state.decryptedSet.add(log.fileName);
+  }
+  state.logs.sort((a, b) => b.uploadTime - a.uploadTime);
+  state.dataSource = 'real';
+  console.log(`✓ 加载完成: ${plainCount} 明文, ${failCount} 失败`);
+
+  // 更新数据范围
+  const dates = state.logs.map(l=>l.uploadDateStr).sort();
+  if(dates.length > 0){
+    if(!state.dataMinDate || dates[0] < state.dataMinDate) state.dataMinDate = dates[0];
+    if(!state.dataMaxDate || dates[dates.length-1] > state.dataMaxDate) state.dataMaxDate = dates[dates.length-1];
+  }
+  updateDateInputs();
+  resetDateState();
+  state.collapsedGroups.clear();
+  state.expandedCards.clear();
+  hideLoading();
+  updateDataSourceBadge();
+  render();
+}
+
+
+/* ==================== 四、状态管理 ==================== */
+
+// [2026-08-21] 应用版本号：升级版本只改此处一处，头部标题徽章自动更新
+// 版本依据（SemVer，按记忆日志的迭代里程碑计算）：
+//   v1.0 07-29初版 / v1.1 FTP加密接入+服务端解密 / v1.2 交互打磨 / v1.3 V2.5适配
+//   v1.4 变更提醒+驱动按钮 / v1.5 子目录检索 / v1.6 日期重构+无限滚动 / v1.7 密码认证
+//   v1.8 subTasks+驱动档案 / v1.9 历史执行折叠 / v2.0 智能匹配+并发加载+统一搜索重构
+//   v2.1 CPU拍照记录（PSN/FPO 图片档案：上传/查看/删除，方案见 Docs/CPU-Photo-Archive-Plan.md）
+// 注意：server.py 的 /api/version 返回的是文件缓存版本号（_file_version），与本应用版本无关
+const APP_VERSION = 'v2.1';
+document.getElementById('versionBadge').textContent = APP_VERSION;
+document.getElementById('versionBadge').hidden = false;
+
+const state = {
+  logs: [],              // 已加载的日志（缓存，按时间排序）
+  manifestFiles: [],     // manifest.json 中的文件名列表
+  fileDateMap: {},       // { fileName: dateStr } 文件名→日期映射
+  decryptedSet: new Set(),// 已加载文件名集合（避免重复加载）
+  dataMinDate: '',       // 数据最早日期（来自 manifest）
+  dataMaxDate: '',       // 数据最晚日期（来自 manifest）
+  searchTerm: '',        // 搜索关键词
+  // [2026-08-21] 搜索模式开关已移除：统一匹配 = 空格分词AND + 整体净化子串 + 同义词触点自动展开
+  // 回滚标记：恢复三档模式需还原 fuzzy/smart 字段及 matchLog/highlight/findMatchSnippet/execMatchesKw 的模式分支
+  showConfigs: false,    // 变更前后配置开关（默认关闭）
+  dateStart: '',         // 起始日期 YYYY-MM-DD
+  dateEnd: '',           // 结束日期
+  link30: true,          // 30天联动开关：true=改一端另一端±30天跟随，false=两端独立
+  dateDirty: false,      // 是否有未应用的日期修改（控制【应用】按钮显隐）
+  statusFilter: 'all',   // 状态筛选
+  collapsedGroups: new Set(), // 折叠的日期分组
+  expandedCards: new Set(),   // 展开的卡片 ID
+  notes: {},             // 备注 {SN: text}（渲染用平铺结构，来源为服务端 /api/notes）
+  noteMeta: {},          // [2026-08-22] 备注版本 {SN: updatedAt}（乐观锁基准，来自服务端）
+  pendingNotes: {},      // [2026-08-22] 冲突暂存区 {SN: text}（"暂不修改"的本地待上传备注）
+  editingNote: null,     // 正在编辑备注的 SN
+  outboundArchive: {},        // [2026-08-24 OUTBOUND] 出库档案摘要 {SN: {folder, uploadedAt, count}}（来自 /api/outbound-archive 全量接口）
+  dataSource: 'real',  // 数据来源（固定为 FTP 真实数据）
+  isLoading: false,      // 是否正在加载中
+  // ---- 无限滚动 ----
+  allDateKeys: [],       // 当前日期范围内所有有数据的日期（排序后）
+  loadedDateCount: DATE_PAGE_SIZE, // 当前已渲染的日期分组数
+};
+
+// ---- 日志变更提醒 ----
+let _logVersionBaseline = null;  // 页面加载时的版本号基线
+let _logNotifyDismissed = false; // 用户是否已关闭过提醒
+
+/** 弹出日志变更提醒气泡（同一时刻最多 1 条；已关闭则不再显示） */
+function notifyLogChanged(){
+  if(_logNotifyDismissed) return;
+  const el = document.getElementById('logNotify');
+  if(!el) return;
+  // 已显示则忽略（同一时刻只允许 1 条）
+  if(el.style.display !== 'none') return;
+  el.style.display = 'flex';
+  el.classList.remove('hiding');
+}
+
+/** 关闭提醒气泡（记录已忽略，页面刷新后重置） */
+function dismissLogNotification(){
+  _logNotifyDismissed = true;
+  const el = document.getElementById('logNotify');
+  if(!el) return;
+  el.classList.add('hiding');
+  el.addEventListener('animationend', function handler(){
+    el.removeEventListener('animationend', handler);
+    el.style.display = 'none';
+    el.classList.remove('hiding');
+  }, {once:true});
+}
+
+// 暴露到全局作用域（方便测试）
+window.notifyLogChanged = notifyLogChanged;
+window.dismissLogNotification = dismissLogNotification;
+
+// 设置日期输入框的值（三段式组件）
+function updateDateInputs(){
+  writeSegDate('start', state.dateStart);
+  writeSegDate('end', state.dateEnd);
+}
+
+// 重置日期状态（init/刷新/加载本地后调用，恢复初始 link30=ON 并隐藏应用按钮）
+function resetDateState(){
+  state.link30 = true;
+  const tog = document.getElementById('link30Toggle');
+  if(tog) tog.checked = true;
+  markDateDirty(false);
+  updateSpanHint();
+}
+
+// 更新数据来源标识
+function updateDataSourceBadge(){
+  const badge = document.getElementById('dataSourceBadge');
+  badge.textContent = '📡 FTP';
+  badge.dataset.src = 'real';
+}
+
+
+/* ==================== 五、搜索匹配与高亮 ==================== */
+
+// 判断日志是否匹配关键词
+// ===== 统一匹配：空格分词AND + 整体净化子串 + 同义词触点展开（单一模式，无开关） =====
+// [2026-08-21] 由三档模式（精确/模糊/智能）合并而来，修复 splitTokens 无差别字母数字切分
+// 导致「16g」被拆成「1 6 g」、AND 语义下大量误命中的问题
+// 机型形态同义词表：旧命名 → 规范形式，按需扩充即可
+// 例：Dell "OptiPlex 7020 MT"(旧) = "Tower Plus 7020"(新)，搜「7020mt」需归一为「tower」才能命中
+const TOKEN_SYNONYMS = {
+  'mt': 'tower', 'minitower': 'tower',   // Mini Tower → Tower
+  'usdt': 'tiny',                        // 联想 Ultra Small Desktop → Tiny
+  'usff': 'micro', 'mff': 'micro',       // Dell Ultra/Micro Form Factor → Micro
+  'dt': 'desktop'                        // Desktop
+};
+// 反向映射（tower → [mt, minitower]），高亮时双向形态都要标出
+const TOKEN_SYNONYMS_REV = {};
+Object.keys(TOKEN_SYNONYMS).forEach(k=>{
+  const v = TOKEN_SYNONYMS[k];
+  (TOKEN_SYNONYMS_REV[v] = TOKEN_SYNONYMS_REV[v] || []).push(k);
+});
+
+// 统一匹配净化：保留字母数字 + 中文（purify 会丢中文，统一匹配不能用）
+function smartPurify(s){ return String(s).toLowerCase().replace(/[^a-z0-9\u4e00-\u9fff]/g,''); }
+// 全部同义词 token（旧命名 + 规范形式），按长度降序——长词优先，避免「minitower」被「tower」误切
+const SYNONYM_TOKENS = Object.keys(TOKEN_SYNONYMS).concat(Object.keys(TOKEN_SYNONYMS_REV)).sort((a,b)=>b.length-a.length);
+// token 的全部等价形态：归一到规范形式后取整组
+// variantForms('mt') === variantForms('tower') → ['tower','mt','minitower']
+function variantForms(t){
+  const norm = TOKEN_SYNONYMS[t] || t;
+  const forms = new Set([norm]);
+  (TOKEN_SYNONYMS_REV[norm] || []).forEach(k=>forms.add(k));
+  return Array.from(forms);
+}
+// 同义词触点检测：仅当 token 位于关键词词首或词尾时才展开
+// 「7020mt」→ mt 在词尾 ✓；「width」中 dt 在词中间 ✗（不展开，避免误拆）
+function findBoundarySynonym(cleanKw){
+  for(const syn of SYNONYM_TOKENS){
+    let pos = -1;
+    if(cleanKw.startsWith(syn)) pos = 0;
+    else if(cleanKw.endsWith(syn)) pos = cleanKw.length - syn.length;
+    if(pos !== -1) return {syn, pos};
+  }
+  return null;
+}
+// 单关键词命中（不拆分字母数字）：
+// ① 整体净化子串——「16g」匹配「16GB」✓，但不会匹配「Gen」「16核」✗（修复旧拆分bug的关键）
+// ② 整体未命中且词首/词尾含同义词 → 拆分：其余部分整体命中 + 同义词任一等价形态命中
+//    例：「7020mt」整体未命中 → 7020 ✓ + tower/mt/minitower 任一 ✓ → 命中「Tower Plus 7020」
+function matchKeywordIn(kw, cleanContent){
+  const cleanKw = smartPurify(kw);
+  if(!cleanKw) return true;
+  if(cleanContent.includes(cleanKw)) return true;
+  const hit = findBoundarySynonym(cleanKw);
+  if(hit){
+    const before = cleanKw.slice(0, hit.pos);
+    const after = cleanKw.slice(hit.pos + hit.syn.length);
+    if((!before || cleanContent.includes(before)) && (!after || cleanContent.includes(after))){
+      if(variantForms(hit.syn).some(f => cleanContent.includes(f))) return true;
+    }
+  }
+  return false;
+}
+// 统一匹配：空格分隔多关键词，全部命中才匹配（AND 语义，顺序无关，含中文）
+// 例：「p360 16g」→ [p360] 与 [16g] 各自整体净化命中；「联想 16g」→ 中文词同样支持
+function matchUnified(fullContent, keyword){
+  if(!keyword || !String(keyword).trim()) return true;
+  const cleanContent = smartPurify(fullContent);
+  return String(keyword).trim().split(/\s+/).every(kw => matchKeywordIn(kw, cleanContent));
+}
+// 统一模式高亮：各关键词整体形态 + 同义词拆分部分 + 等价形态，全部高亮（合并重叠区间）
+// 例：搜「7020mt」→ 高亮 7020mt / 7020 / tower / mt / minitower；
+//     搜「16g」→ 仅高亮 16g（不会把 Gen 的 G 或 16核 的 16 单独标出）
+function highlightUnified(text, keyword){
+  const surfaces = new Set();
+  String(keyword || '').trim().split(/\s+/).forEach(kw=>{
+    const cleanKw = smartPurify(kw);
+    if(!cleanKw) return;
+    surfaces.add(cleanKw);
+    const hit = findBoundarySynonym(cleanKw);
+    if(hit){
+      const before = cleanKw.slice(0, hit.pos);
+      const after = cleanKw.slice(hit.pos + hit.syn.length);
+      if(before) surfaces.add(before);
+      if(after) surfaces.add(after);
+      variantForms(hit.syn).forEach(f=>surfaces.add(f));
+    }
+  });
+  if(surfaces.size === 0) return esc(text);
+  const charRe = /[a-z0-9\u4e00-\u9fff]/;
+  const lower = text.toLowerCase();
+  const map = [];
+  for(let i=0;i<text.length;i++){
+    if(charRe.test(lower[i])) map.push(i);
+  }
+  const cleanText = lower.replace(/[^a-z0-9\u4e00-\u9fff]/g,'');
+  // 收集所有命中区间（原始索引），排序后合并重叠
+  const ranges = [];
+  surfaces.forEach(s=>{
+    let pos = 0, idx;
+    while((idx = cleanText.indexOf(s, pos)) !== -1){
+      const sIdx = map[idx];
+      const eIdx = map[idx + s.length - 1];
+      if(sIdx !== undefined && eIdx !== undefined) ranges.push([sIdx, eIdx + 1]);
+      pos = idx + s.length;
+    }
+  });
+  if(ranges.length === 0) return esc(text);
+  ranges.sort((a,b)=>a[0]-b[0]);
+  const merged = [ranges[0]];
+  for(let i=1;i<ranges.length;i++){
+    const last = merged[merged.length-1];
+    if(ranges[i][0] <= last[1]) last[1] = Math.max(last[1], ranges[i][1]);
+    else merged.push(ranges[i]);
+  }
+  let result = '', lastEnd = 0;
+  merged.forEach(r=>{
+    result += esc(text.slice(lastEnd, r[0]));
+    result += '<span class="highlight">'+esc(text.slice(r[0], r[1]))+'</span>';
+    lastEnd = r[1];
+  });
+  result += esc(text.slice(lastEnd));
+  return result;
+}
+
+// 统一匹配入口（旧调用方传的第三参数 fuzzy 已忽略，保持签名兼容）
+function matchLog(fullContent, keyword){
+  if(!keyword) return true;
+  return matchUnified(fullContent, keyword);
+}
+
+// [2026-08-21] highlightPrecise / highlightFuzzy 已随三档模式移除（统一走 highlightUnified）
+// 回滚标记：如需恢复，从 git 历史或 2026-08-20 版本找回这两个函数及 highlight 的三分支
+
+// 统一高亮入口（旧调用方传的第三参数 fuzzy 已忽略，保持签名兼容）
+function highlight(text, keyword){
+  if(!keyword) return esc(text);
+  return highlightUnified(text, keyword);
+}
+
+// 查找匹配片段（用于卡片上显示 consoleLog/config 中匹配到的上下文）
+function findMatchSnippet(log, keyword, fuzzy){
+  if(!keyword) return null;
+  const lines = [];
+  const hw = log.rawData.hardware || {};
+  // 硬件关键字段
+  if(hw.windowsPassword) lines.push('Windows密码: '+hw.windowsPassword);
+  if(hw.hostModel) lines.push('设备型号: '+hw.hostModel);
+  if(hw.cpuName)          lines.push('CPU: ' + hw.cpuName);
+  if(hw.cpuCores)         lines.push('CPU核心: ' + hw.cpuCores);
+  if(hw.cpuMaxSpeed)      lines.push('CPU频率: ' + hw.cpuMaxSpeed);
+  if(Array.isArray(hw.memory)){
+    hw.memory.forEach((m,i) => {
+      lines.push('内存条'+(i+1)+': ' + (m.capacityGB||'') + 'GB ' + (m.manufacturer||'') + ' ' + (m.partNumber||'') + ' ' + (m.speed||'') + 'MHz');
+    });
+  }
+  if(hw.motherboard){
+    lines.push('主板: ' + (hw.motherboard.manufacturer||'') + ' ' + (hw.motherboard.product||'') + ' SN:' + (hw.motherboard.serialNumber||''));
+  }
+  if(hw.bios){
+    lines.push('BIOS: ' + (hw.bios.name||'') + ' ' + (hw.bios.version||'') + ' ' + (hw.bios.manufacturer||'') + ' SN:' + (hw.bios.serialNumber||''));
+  }
+  if(Array.isArray(hw.disks)){
+    hw.disks.forEach((d,i) => {
+      lines.push('磁盘'+(i+1)+': ' + (d.sizeGB||'') + 'GB ' + (d.model||'') + ' ' + (d.partitions||'') + ' SN:' + (d.serialNumber||''));
+    });
+  }
+  if(Array.isArray(hw.removableDisks)){
+    hw.removableDisks.forEach((d,i) => {
+      lines.push('移动磁盘'+(i+1)+': ' + (d.sizeGB||'') + 'GB ' + (d.model||'') + ' ' + (d.partitions||'') + ' SN:' + (d.serialNumber||''));
+    });
+  }
+  if(Array.isArray(hw.gpus)){
+    hw.gpus.forEach((g,i) => {
+      lines.push('显卡'+(i+1)+': ' + (g.name||'') + ' 显存:' + (g.adapterRAM_GB||0) + 'GB 驱动:' + (g.driverVersion||''));
+    });
+  }
+  if(Array.isArray(hw.networkAdapters)){
+    hw.networkAdapters.forEach((n,i) => {
+      lines.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||''));
+    });
+  }
+  if(Array.isArray(hw.bluetooths) && hw.bluetooths.length){
+    hw.bluetooths.forEach((b,i) => {
+      lines.push('蓝牙'+(i+1)+': ' + (b.name||'') + ' 驱动:' + (b.driverVersion||'') + (b.status ? ' ' + b.status : ''));
+    });
+  }
+  if(hw.windowsVersion)   lines.push('Windows版本: ' + hw.windowsVersion);
+  if(hw.windowsLicenseStatus) lines.push('许可证状态: ' + hw.windowsLicenseStatus);
+  if(hw.oobeStatus)       lines.push('OOBE状态: ' + hw.oobeStatus);
+  if(hw.lenovoInfo){
+    const li = hw.lenovoInfo;
+    if(li.productModel) lines.push('官方型号: ' + li.productModel);
+    if(li.productLine)  lines.push('产品线: ' + li.productLine);
+    if(li.machineName)  lines.push('出厂配置: ' + li.machineName);
+    if(li.machineNo)    lines.push('主机序列号: ' + li.machineNo);
+  }
+  (log.rawData.features||[]).forEach(f=>{
+    (f.executions||[]).forEach(e=>{
+      (e.consoleLogs||[]).forEach(l=>lines.push(l));
+      (e.configsBefore||[]).forEach(c=>lines.push(c.key+'='+c.value));
+      (e.configsAfter||[]).forEach(c=>lines.push(c.key+'='+c.value));
+      (e.subTasks||[]).forEach(t=>{
+        lines.push((t.key||'')+': '+(t.status||''));
+        if(t.before) lines.push('变更前: '+t.before);
+        if(t.after)  lines.push('变更后: '+t.after);
+        if(t.detail) lines.push(t.detail);
+      });
+    });
+  });
+  // 统一匹配：优先返回「全部关键词命中」的行；若关键词分散在多行，兜底返回命中数最多的行
+  const kws = String(keyword || '').trim().split(/\s+/).filter(k=>smartPurify(k));
+  if(kws.length > 0){
+    let bestLine = null, bestHits = 0;
+    for(const line of lines){
+      const lp = smartPurify(line);
+      let hits = 0;
+      kws.forEach(kw=>{ if(matchKeywordIn(kw, lp)) hits++; });
+      if(hits === kws.length) return line;
+      if(hits > bestHits){ bestHits = hits; bestLine = line; }
+    }
+    return bestLine;
+  }
+  return null;
+}
+
+
+/* ==================== 六、渲染函数 ==================== */
+
+const logListEl = document.getElementById('logList');
+const statsEl = document.getElementById('stats');
+
+// 渲染统计信息
+function renderStats(count, total){
+  const manifestTotal = state.manifestFiles.length;
+  const decryptedTotal = state.decryptedSet.size;
+  if(state.dataSource === 'real' && manifestTotal > 0){
+    statsEl.innerHTML = `已加载数据包 <b>${decryptedTotal}</b>/${manifestTotal} · 当前显示 <b>${count}</b> 条`;
+  } else {
+    statsEl.innerHTML = `共 <b>${total}</b> 条日志 · 当前显示 <b>${count}</b> 条`;
+  }
+}
+
+// 渲染单张日志卡片（可点击展开详情）
+function renderCard(log){
+  const kw = state.searchTerm;
+  const fuzzy = state.fuzzy;
+  const expanded = state.expandedCards.has(log.id);
+
+  // 卡片顶部
+  const hw = log.rawData.hardware || {};
+  const dateTimeStr = fmtTime(log.uploadTime);
+  const topParts = [
+    `<span class="card-datetime"><span class="card-datetime-label">出库日期</span><span class="card-datetime-value">${highlight(dateTimeStr, kw, fuzzy)}</span></span>`,
+    `<span class="card-machine">${highlight(log.fileModel || log.model || '', kw, fuzzy)}</span>`,
+    `<span class="card-sn">SN: ${highlight(log.sn, kw, fuzzy)}</span>`,
+  ];
+
+  // 功能摘要
+  const featHtml = log.featureSummary.map(f=>`<span class="feat" data-result="${f.result}">${highlight(f.name, kw, fuzzy)}<span class="ico">${f.ico}</span></span>`).join('');
+
+  // 元数据（折叠时显示的摘要行）
+  const totalMemGB = (hw.memory || []).reduce((sum, m) => sum + (parseFloat(m && m.capacityGB) || 0), 0);
+  const memGB = totalMemGB > 0 ? totalMemGB + 'GB' : 'N/A';
+  const metaItems = [
+    `<span class="meta-item"><span class="meta-label">版本</span> ${highlight(log.rawData.meta.toolVersion||'', kw, fuzzy)}</span>`,
+    `<span class="meta-item"><span class="meta-label">CPU</span> ${highlight(hw.cpuName||'', kw, fuzzy)}</span>`,
+    `<span class="meta-item"><span class="meta-label">内存</span> ${memGB}</span>`,
+    `<span class="meta-item"><span class="meta-label">系统</span> ${highlight(hw.windowsVersion||'', kw, fuzzy)}</span>`,
+  ];
+
+  // 备注（所有交互元素都 stopPropagation，避免触发展开）
+  const noteText = state.notes[log.sn] || '';
+  let noteHtml;
+  if(state.editingNote === log.sn){
+    noteHtml = `<div class="note-edit" onclick="event.stopPropagation()">
+      <textarea placeholder="输入备注…" id="noteTextarea-${log.sn}">${esc(noteText)}</textarea>
+      <div class="note-btns">
+        <button class="btn-save" onclick="event.stopPropagation();saveNote('${log.sn}')">保存</button>
+        <button class="btn-cancel" onclick="event.stopPropagation();cancelNote()">取消</button>
+      </div>
+    </div>`;
+  } else if(noteText){
+    noteHtml = `<div class="note-display" onclick="event.stopPropagation();editNote('${log.sn}')">
+      <span class="note-text">📝 ${highlight(noteText, kw, fuzzy)}</span>
+      <span class="note-del" onclick="event.stopPropagation();deleteNote('${log.sn}')" title="删除备注">🗑️</span>
+    </div>`;
+  } else {
+    noteHtml = `<span class="note-empty" onclick="event.stopPropagation();editNote('${log.sn}')">+ 添加备注</span>`;
+  }
+  // [2026-08-22] 冲突暂存区入口：该 SN 有待上传的本地备注时，显示"上传备注"行
+  if(state.pendingNotes[log.sn] !== undefined){
+    noteHtml += `<div class="note-pending" onclick="event.stopPropagation()">
+      <span class="note-pending-text">📤 本地暂存：${esc(state.pendingNotes[log.sn] || '（空）')}</span>
+      <button class="note-pending-btn" onclick="event.stopPropagation();openUploadConfirm('${log.sn}')">上传备注</button>
+      <span class="note-pending-del" onclick="event.stopPropagation();discardPendingNote('${log.sn}')" title="丢弃本地暂存">🗑️</span>
+    </div>`;
+  }
+
+  // [2026-08-24 OUTBOUND] 出库记录按钮（与备注并列；✓N = 已存档张数，元信息零图片流量）
+  const obRec = state.outboundArchive[log.sn];
+  const obBtnHtml = `<button class="ob-btn${obRec ? ' has-record' : ''}" ` +
+    `onclick="event.stopPropagation();openOutboundModal('${log.sn}', '${encodeURIComponent(log.fileModel || '')}')" ` +
+    `title="设备出库状态拍照记录${obRec ? '（已存 ' + obRec.count + ' 张）' : ''}">📦 出库记录${obRec ? ' ✓' + obRec.count : ''}</button>`;
+
+  // 匹配片段（搜索时显示）
+  let snippetHtml = '';
+  if(kw){
+    const snippet = findMatchSnippet(log, kw, fuzzy);
+    if(snippet) snippetHtml = `<div class="match-snippet" onclick="event.stopPropagation()">${highlight(snippet, kw, fuzzy)}</div>`;
+  }
+
+  // 展开详情
+  let detailHtml = '';
+  if(expanded){
+    detailHtml = renderCardDetail(log);
+  }
+
+  // 官网驱动按钮（根据 BIOS 厂商和序列号跳转品牌驱动页面）
+  let driverHtml = '';
+  const bios = hw.bios;
+  if(bios && bios.serialNumber && bios.manufacturer){
+    const mfr = bios.manufacturer.toLowerCase();
+    const sn = bios.serialNumber.trim();
+    let driverUrl = '';
+    if(mfr.includes('dell')){
+      driverUrl = `https://www.dell.com/support/product-details/zh-cn/servicetag/${sn}/drivers`;
+    } else if(mfr.includes('lenovo')){
+      driverUrl = `https://newsupport.lenovo.com.cn/driveList.html?fromsource=driveList&selname=${sn}`;
+    }
+    if(driverUrl){
+      driverHtml = `<a class="btn-mini" href="${esc(driverUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="前往品牌官网下载驱动">🔧 官网驱动</a>`;
+    }
+  }
+
+  return `<div class="log-card ${expanded?'expanded':''}" data-status="${log.overallResult}" data-id="${log.id}" onclick="toggleCardExpand('${log.id}')">
+    <div class="card-top">${topParts.join('')}</div>
+    <div class="feature-summary">${featHtml}</div>
+    <div class="card-meta">${metaItems.join('')}</div>
+    ${snippetHtml}
+    <div class="card-bottom">
+      <div class="note-area">${noteHtml}${obBtnHtml}</div>
+      <div class="card-actions">
+        ${driverHtml}
+        ${expanded ? `<button class="btn-mini" onclick="event.stopPropagation();toggleCardExpand('${log.id}')">收起详情</button>` : ''}
+      </div>
+    </div>
+    ${detailHtml}
+  </div>`;
+}
+
+// 格式化系统综合调试的日志行（将单行拆为多行，增强可读性）
+function formatSystemDebugLine(line){
+  const markers = [
+    { key:'OOBE', label:'系统环境状态' },
+    { key:'T.bat', label:'快速创建用户脚本' },
+    { key:'License', label:'系统许可证状态' },
+    { key:'Password', label:'开机密码状态' },
+    { key:'MAS', label:'激活工具运行状态' },
+    { key:'磁盘初始化', label:'磁盘初始化' },
+    { key:'Rename', label:'盘符重命名' },
+  ];
+
+  // 未命中系统综合调试关键字段时保持原样
+  const hasMarker = markers.some(m => line.indexOf(m.key + ':') !== -1);
+  if(!hasMarker) return line;
+
+  const hits = [];
+  markers.forEach(m => {
+    const idx = line.indexOf(m.key + ':');
+    if(idx !== -1) hits.push({ ...m, idx });
+  });
+
+  // 按出现位置排序，保留原始顺序
+  hits.sort((a,b) => a.idx - b.idx);
+
+  const parts = [];
+  for(let i = 0; i < hits.length; i++){
+    const h = hits[i];
+    const valueStart = h.idx + h.key.length + 1;
+    const valueEnd = i < hits.length - 1 ? hits[i+1].idx : line.length;
+    const value = line.substring(valueStart, valueEnd).trim();
+    parts.push(`${h.label} ${h.key}:${value}`);
+  }
+
+  return parts.join('\n');
+}
+
+// 子任务状态 → 显示标签 & 颜色类（与 RESULT_META 语义一致）
+const SUBTASK_STATUS_META = {
+  success: { label:'成功', cls:'success' },
+  failed:  { label:'失败', cls:'failed' },
+  partial: { label:'部分', cls:'partial' },
+  skipped: { label:'跳过', cls:'skipped' },
+};
+
+// 格式化子任务耗时：>=1s 显示 "X.Xs"，否则 "XXXms"
+function fmtSubTaskDur(ms){
+  if(!ms || ms <= 0) return '';
+  return ms >= 1000 ? (ms/1000).toFixed(1).replace(/\.0$/,'') + 's' : Math.round(ms) + 'ms';
+}
+
+// 渲染子任务明细（V2.4+ 结构：key/status/before/after/detail/durationMs）
+function renderSubTasks(subTasks, kw, fuzzy){
+  if(!subTasks || subTasks.length === 0) return '';
+  const h = highlight; // 简写
+
+  // 头部统计：成功 N · 失败 N · 跳过 N · 部分 N
+  const count = {};
+  subTasks.forEach(t => { const s = t.status || 'skipped'; count[s] = (count[s]||0) + 1; });
+  const statText = Object.keys(count).map(s => {
+    const meta = SUBTASK_STATUS_META[s];
+    return (meta ? meta.label : s) + ' ' + count[s];
+  }).join(' · ');
+
+  let html = '<div class="detail-subtasks">';
+  html += `<div class="detail-subtask-head">执行明细 <span class="st-count">${esc(statText)}</span></div>`;
+
+  subTasks.forEach(t => {
+    const st = t.status || 'skipped';
+    const meta = SUBTASK_STATUS_META[st] || { label: st, cls: 'skipped' };
+    const dur = fmtSubTaskDur(t.durationMs);
+
+    html += `<div class="detail-subtask-row">`;
+    html += `<span class="status-dot ${meta.cls}"></span>`;
+    html += `<span class="detail-subtask-key">${h(t.key || '', kw, fuzzy)}</span>`;
+    html += `<span class="detail-subtask-status">${esc(meta.label)}</span>`;
+    if(dur) html += `<span class="detail-subtask-dur">${dur}</span>`;
+    html += `</div>`;
+
+    // 变更行：仅当 before 非空且非 "-" 且与 after 不同才显示
+    const before = (t.before || '').trim();
+    const after  = (t.after || '').trim();
+    if(before && before !== '-' && before !== after){
+      html += `<div class="detail-subtask-change"><span class="ch-before">${h(before, kw, fuzzy)}</span><span class="ch-arrow">→</span><span class="ch-after">${h(after || '-', kw, fuzzy)}</span></div>`;
+    } else if(after && after !== '-'){
+      // 仅有 after 时，在变更行显示一次
+      html += `<div class="detail-subtask-change"><span class="ch-after">${h(after, kw, fuzzy)}</span></div>`;
+    }
+
+    // 补充说明行
+    if(t.detail && t.detail.trim()){
+      html += `<div class="detail-subtask-detail">${h(t.detail.trim(), kw, fuzzy)}</div>`;
+    }
+  });
+
+  html += '</div>';
+  return html;
+}
+
+// 判断某次执行记录是否命中搜索关键词（用于历史执行折叠区自动展开）
+function execMatchesKw(e, kw, fuzzy){
+  if(!kw || !e) return false;
+  const texts = [];
+  (e.consoleLogs || []).forEach(l => texts.push(l));
+  (e.configsBefore || []).forEach(c => texts.push(c.key + '=' + c.value));
+  (e.configsAfter || []).forEach(c => texts.push(c.key + '=' + c.value));
+  (e.subTasks || []).forEach(t => {
+    texts.push(t.key || '');
+    if(t.before) texts.push(t.before);
+    if(t.after)  texts.push(t.after);
+    if(t.detail) texts.push(t.detail);
+  });
+  if(e.timestamp) texts.push(e.timestamp);
+  // 统一匹配：任一文本块内全部关键词命中，即认为该执行记录命中（用于历史执行自动展开）
+  return texts.some(t => matchUnified(t, kw));
+}
+
+// 渲染单次执行记录的正文（子任务明细 + 控制台日志 + 变更配置），供最新执行与历史执行复用
+function renderExecBody(e, featureId, kw, fuzzy){
+  const h = highlight; // 简写
+  let html = '';
+
+  // 子任务明细（V2.4+ 结构化记录，旧日志无此字段自动跳过）
+  if(e.subTasks && e.subTasks.length > 0){
+    html += renderSubTasks(e.subTasks, kw, fuzzy);
+  }
+
+  // 控制台日志（系统综合调试做可读性格式化）
+  if(e.consoleLogs && e.consoleLogs.length > 0){
+    const isSysDebug = featureId === 3;
+    html += '<div class="detail-feature-logs">';
+    e.consoleLogs.forEach(line=>{
+      const out = isSysDebug ? formatSystemDebugLine(line) : line;
+      html += h(out, kw, fuzzy) + '\n';
+    });
+    html += '</div>';
+  }
+
+  // 变更前后配置（受开关控制，默认关闭）
+  const hasBefore = e.configsBefore && e.configsBefore.length > 0;
+  const hasAfter = e.configsAfter && e.configsAfter.length > 0;
+  if(state.showConfigs && (hasBefore || hasAfter)){
+    html += '<div class="detail-feature-configs">';
+    if(hasBefore){
+      html += '<div style="color:var(--text-light);font-weight:600;margin-bottom:2px;">变更前</div>';
+      e.configsBefore.forEach(c=>{
+        html += `<div class="detail-config-row"><span class="detail-config-key">${h(c.key, kw, fuzzy)}</span><span class="detail-config-val">${h(c.value, kw, fuzzy)}</span></div>`;
+      });
+    }
+    if(hasAfter){
+      if(hasBefore) html += '<div style="color:var(--text-light);font-weight:600;margin-top:4px;margin-bottom:2px;">变更后</div>';
+      else html += '<div style="color:var(--text-light);font-weight:600;margin-bottom:2px;">配置</div>';
+      e.configsAfter.forEach(c=>{
+        html += `<div class="detail-config-row"><span class="detail-config-key">${h(c.key, kw, fuzzy)}</span><span class="detail-config-val">${h(c.value, kw, fuzzy)}</span></div>`;
+      });
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+// 渲染卡片展开详情（气泡布局，纵向堆叠）
+function renderCardDetail(log){
+  const kw = state.searchTerm;
+  const fuzzy = state.fuzzy;
+  const hw = log.rawData.hardware || {};
+  const lic = log.rawData.license || {};
+  const meta = log.rawData.meta || {};
+  const features = log.rawData.features || [];
+  const h = highlight; // 简写
+
+  // 气泡生成器
+  function bubble(label, value, mono){
+    const cls = mono ? 'bubble-value mono' : 'bubble-value';
+    return `<div class="bubble"><span class="bubble-label">${h(label, kw, fuzzy)}</span><span class="${cls}">${h(value, kw, fuzzy)}</span></div>`;
+  }
+
+  let html = '<div class="card-detail" onclick="event.stopPropagation()">';
+
+  // ===== 硬件信息 =====
+  html += '<div class="detail-section"><div class="detail-section-title">🖥️ 硬件信息</div><div class="bubble-list">';
+  html += bubble('设备型号', log.fileModel || hw.hostModel || '');
+  const cpuParts = [hw.cpuName || ''].filter(Boolean);
+  if(hw.cpuCores) cpuParts.push(hw.cpuCores);
+  if(hw.cpuMaxSpeed) cpuParts.push(hw.cpuMaxSpeed);
+  if(cpuParts.length > 0) html += bubble('CPU', cpuParts.join(' | '));
+  // 内存
+  if(Array.isArray(hw.memory)){
+    hw.memory.forEach((m,i)=>{
+      const pn = (m.partNumber||'').trim();
+      html += bubble('内存条'+(i+1), `${m.capacityGB||'?'}GB | ${m.manufacturer||''} | ${pn} | ${m.speed||''}MHz`, true);
+    });
+  }
+  // 主板
+  if(hw.motherboard){
+    const sn = (hw.motherboard.serialNumber||'').trim();
+    html += bubble('主板', `${hw.motherboard.manufacturer||''} | ${hw.motherboard.product||''}${sn?' | SN: '+sn:''}`);
+  }
+  // BIOS
+  if(hw.bios){
+    const sn = (hw.bios.serialNumber||'').trim();
+    html += bubble('BIOS', `${hw.bios.name||''} | ${hw.bios.version||''} | ${hw.bios.manufacturer||''}${sn?' | SN: '+sn:''}`);
+  }
+  // 磁盘
+  if(Array.isArray(hw.disks)){
+    hw.disks.forEach((d,i)=>{
+      const sn = (d.serialNumber||'').trim();
+      html += bubble('磁盘'+(i+1), `${d.sizeGB||'?'}GB | ${d.model||''} | ${d.partitions||''}${sn?' | SN: '+sn:''}`, true);
+    });
+  }
+  // 显卡
+  if(Array.isArray(hw.gpus)){
+    hw.gpus.forEach((g,i)=>{
+      html += bubble('显卡'+(i+1), `${g.name||''} | 显存:${g.adapterRAM_GB||0}GB | 驱动:${g.driverVersion||''}`);
+    });
+  }
+  // 网卡
+  if(Array.isArray(hw.networkAdapters)){
+    hw.networkAdapters.forEach((n,i)=>{
+      html += bubble('网卡'+(i+1), `${n.name||''} | MAC:${n.macAddress||''}`, true);
+    });
+  }
+  // 蓝牙
+  if(Array.isArray(hw.bluetooths) && hw.bluetooths.length){
+    hw.bluetooths.forEach((b,i)=>{
+      const meta = [];
+      if(b.driverVersion) meta.push('驱动:'+b.driverVersion);
+      if(b.driverDate)    meta.push(b.driverDate);
+      if(b.manufacturer)  meta.push(b.manufacturer);
+      const parts = [b.name||''];
+      if(meta.length) parts.push(meta.join(' | '));
+      if(b.status)   parts.push(b.status);
+      html += bubble('蓝牙'+(i+1), parts.join(' | '), true);
+    });
+  }
+  html += '</div></div>';
+
+  // ===== 系统信息 =====
+  html += '<div class="detail-section"><div class="detail-section-title">💻 系统信息</div><div class="bubble-list">';
+  html += bubble('Windows版本', hw.windowsVersion || '');
+  html += bubble('Windows密码', hw.windowsPassword || 'N/A');
+  html += bubble('许可证状态', hw.windowsLicenseStatus || '');
+  html += bubble('OOBE状态', hw.oobeStatus || '');
+  if(hw.scanTimestamp) html += bubble('扫描时间', hw.scanTimestamp, true);
+  html += '</div></div>';
+
+  // ===== 联想在线信息 =====
+  if(hw.lenovoInfo){
+    const li = hw.lenovoInfo;
+    html += '<div class="detail-section"><div class="detail-section-title">🏢 联想在线信息</div><div class="bubble-list">';
+    html += bubble('主机序列号', li.machineNo || '', true);
+    html += bubble('官方型号', li.productModel || '');
+    if(li.productLine) html += bubble('产品线', li.productLine);
+    html += bubble('出厂配置', li.machineName || '');
+    html += bubble('出厂日期', li.productDate || '');
+    html += bubble('出库日期', li.scanDate || '');
+    // 保修状态
+    if(li.warrantyRemainingDays > 0){
+      html += bubble('保修剩余', `剩余 ${li.warrantyRemainingDays} 天`);
+    } else {
+      html += bubble('保修状态', '已过期');
+    }
+    if(li.error) html += bubble('查询错误', li.error);
+    html += '</div></div>';
+  }
+
+  // ===== 许可证信息 =====
+  html += '<div class="detail-section"><div class="detail-section-title">🔑 许可证信息</div><div class="bubble-list">';
+  html += bubble('用户', lic.userName || '');
+  // 工具盘（仅显示型号+容量）
+  if(Array.isArray(hw.removableDisks) && hw.removableDisks.length > 0){
+    hw.removableDisks.forEach((d,i)=>{
+      html += bubble('工具盘'+(i+1), `${d.model||''} | ${d.sizeGB||'?'}GB`, true);
+    });
+  }
+  html += bubble('签发时间', lic.issuedAtUtc || '', true);
+  html += bubble('到期时间', lic.expiryAtUtc || '', true);
+  html += '</div></div>';
+
+  // ===== 功能执行日志 =====
+  html += '<div class="detail-section"><div class="detail-section-title">📋 功能执行日志</div>';
+  features.forEach(f=>{
+    const execs = f.executions || [];
+    const last = execs[execs.length-1] || { result:'skipped' };
+    const rMeta = RESULT_META[last.result] || RESULT_META.skipped;
+    const def = FEATURE_DEFS.find(d=>d.id===f.featureId);
+    const name = def ? def.name : (f.featureName || '功能'+f.featureId);
+    const colorVar = last.result === 'success' ? 'var(--success)' :
+                     last.result === 'failed' ? 'var(--failed)' :
+                     last.result === 'partial' ? 'var(--partial)' : 'var(--skipped)';
+
+    html += '<div class="detail-feature">';
+    const badge = execs.length > 1 ? ` <span class="exec-badge">共${execs.length}次</span>` : '';
+    html += `<div class="detail-feature-header"><span>${h(name, kw, fuzzy)}</span>${badge} <span class="feat-result-ico" style="color:${colorVar}">${rMeta.ico} ${rMeta.label}</span><span style="color:var(--text-light);font-size:.68rem;margin-left:auto">${last.timestamp || ''}</span></div>`;
+
+    // 最新执行（默认展开）
+    html += renderExecBody(last, f.featureId, kw, fuzzy);
+
+    // 历史执行（合并日志后产生多条，倒序折叠；搜索命中自动展开）
+    for(let i = execs.length - 2; i >= 0; i--){
+      const e = execs[i];
+      const eMeta = RESULT_META[e.result] || RESULT_META.skipped;
+      const eColor = e.result === 'success' ? 'var(--success)' :
+                     e.result === 'failed' ? 'var(--failed)' :
+                     e.result === 'partial' ? 'var(--partial)' : 'var(--skipped)';
+      const openAttr = execMatchesKw(e, kw, fuzzy) ? ' open' : '';
+      html += `<details class="exec-history"${openAttr}>`;
+      html += `<summary><span class="exec-toggle">▶</span><span>历史执行 · 第${i+1}次</span> <span class="exec-result-ico" style="color:${eColor}">${eMeta.ico} ${eMeta.label}</span><span style="margin-left:auto;font-size:.66rem;">${e.timestamp || ''}</span></summary>`;
+      html += `<div class="exec-body">${renderExecBody(e, f.featureId, kw, fuzzy)}</div>`;
+      html += `</details>`;
+    }
+
+    html += '</div>'; // close detail-feature
+  });
+  html += '</div>'; // close detail-section
+
+  html += '</div>'; // close card-detail
+  return html;
+}
+
+// 日期 → 友好标签（最近三天显示"今天/昨天/前天" + 小字日期）
+function formatDayLabel(dateStr){
+  const today = new Date();
+  const todayStr = fmtDate(today);
+  const yesterdayStr = fmtDate(new Date(today.getTime() - 86400000));
+  const beforeYesterdayStr = fmtDate(new Date(today.getTime() - 2 * 86400000));
+  const md = dateStr.slice(5); // MM-DD
+  if(dateStr === todayStr) return `今天 <span class="day-date-sub">${md}</span>`;
+  if(dateStr === yesterdayStr) return `昨天 <span class="day-date-sub">${md}</span>`;
+  if(dateStr === beforeYesterdayStr) return `前天 <span class="day-date-sub">${md}</span>`;
+  return dateStr;
+}
+
+// 渲染日期分组视图（默认模式——无限滚动）
+function renderDateGroups(logs){
+  // 按日期分组
+  const groups = {};
+  logs.forEach(l=>{
+    if(!groups[l.uploadDateStr]) groups[l.uploadDateStr] = [];
+    groups[l.uploadDateStr].push(l);
+  });
+  // 所有有数据的日期（倒序：最新在前）
+  const allDates = Object.keys(groups).sort((a,b)=> b.localeCompare(a));
+  state.allDateKeys = allDates;
+
+  if(allDates.length === 0){
+    return `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">当前条件下没有日志</div></div>`;
+  }
+
+  // 只渲染前 loadedDateCount 个日期
+  const visibleCount = Math.min(state.loadedDateCount, allDates.length);
+  const dates = allDates.slice(0, visibleCount);
+
+  let html = '';
+  dates.forEach(date=>{
+    const items = groups[date];
+    const collapsed = state.collapsedGroups.has(date);
+    html += `<div class="day-group">
+      <div class="day-group-header ${collapsed?'collapsed':''}" onclick="toggleGroup('${date}')">
+        <span class="arrow">▼</span>
+        <span class="day-group-title">${formatDayLabel(date)}</span>
+        <span class="day-group-count">${items.length} 条</span>
+      </div>
+      <div class="day-group-content ${collapsed?'hidden':''}">
+        ${items.map(renderCard).join('')}
+      </div>
+    </div>`;
+  });
+
+  // 底部加载区域
+  const remaining = allDates.length - visibleCount;
+  if(remaining > 0){
+    // 用"正在加载更多"区域本身作为哨兵，避免多余的 hidden div 在视口内反复触发
+    html += `<div class="load-more-area" id="loadMoreSentinel">
+      <span class="load-more-dot"></span>
+      <span class="load-more-dot"></span>
+      <span class="load-more-dot"></span>
+      <span>正在加载更多...</span>
+    </div>`;
+  } else if(allDates.length > DATE_PAGE_SIZE){
+    // 全部加载完毕，且数据超过1页 → 显示"已加载全部"
+    html += `<div class="load-more-area load-more-done">— 已加载全部 ${allDates.length} 天 —</div>`;
+  }
+
+  return html;
+}
+
+// 渲染搜索结果视图
+function renderSearchResults(logs, keyword){
+  const matched = logs.filter(l=>matchLog(l.fullContent, keyword));
+  if(matched.length === 0){
+    return `<div class="empty-state"><div class="empty-icon">🔍</div><div class="empty-text">未找到匹配"${esc(keyword)}"的日志</div></div>`;
+  }
+  const dateRange = `${state.dateStart} ~ ${state.dateEnd}`;
+  return `<div class="day-group">
+    <div class="search-group-header">
+      <div class="search-group-title">搜索结果 · <span class="kw">"${esc(keyword)}"</span></div>
+      <div class="search-subtitle">${dateRange} · 匹配 ${matched.length} 条 · 统一匹配（空格分隔多词 AND）</div>
+    </div>
+    <div class="day-group-content">
+      ${matched.map(renderCard).join('')}
+    </div>
+  </div>`;
+}
+
+// 主渲染入口
+// 错误状态渲染（FTP 连接失败等）
+function renderErrorState(title, code, message){
+  const html = `
+    <div style="text-align:center;padding:60px 20px;">
+      <div style="font-size:3rem;margin-bottom:16px;">⚠️</div>
+      <div style="font-size:1.3rem;font-weight:600;color:var(--text);margin-bottom:8px;">${esc(title)}</div>
+      <div style="font-size:.85rem;color:var(--text-muted);margin-bottom:4px;">错误码: <code style="background:var(--bg);padding:2px 8px;border-radius:4px;font-family:'Cascadia Code',Consolas,monospace;">${esc(code)}</code></div>
+      <div style="font-size:.82rem;color:var(--text-light);margin-bottom:24px;">${esc(message)}</div>
+      <button class="btn-mini" style="padding:8px 20px;font-size:.85rem;" onclick="location.reload()"><img src="Img/refresh.png" alt="" class="btn-icon">重新连接</button>
+    </div>`;
+  logListEl.innerHTML = html;
+}
+
+function render(){
+  // 1. 先按日期范围过滤
+  let filtered = state.logs.filter(l=>{
+    return l.uploadDateStr >= state.dateStart && l.uploadDateStr <= state.dateEnd;
+  });
+  // 2. 按状态过滤
+  if(state.statusFilter !== 'all'){
+    filtered = filtered.filter(l=>l.overallResult === state.statusFilter);
+  }
+
+  const kw = state.searchTerm.trim();
+  if(kw){
+    // 搜索模式：折叠所有日期分组，显示搜索结果
+    logListEl.innerHTML = renderSearchResults(filtered, kw);
+    const matched = filtered.filter(l=>matchLog(l.fullContent, kw));
+    renderStats(matched.length, state.logs.length);
+    // 搜索模式断开无限滚动监听
+    disconnectInfiniteScroll();
+  } else {
+    // 默认模式：按日期分组（无限滚动）
+    // 非加载更多触发的 render → 重置分页
+    if(!_isLoadingMore){ state.loadedDateCount = DATE_PAGE_SIZE; }
+    logListEl.innerHTML = renderDateGroups(filtered);
+    renderStats(filtered.length, state.logs.length);
+    // 渲染完成后建立哨兵监听
+    setupInfiniteScroll();
+  }
+}
+
+// ========== 无限滚动逻辑 ==========
+let _isLoadingMore = false;
+let _infiniteScrollObserver = null;
+
+/** 断开旧的 IntersectionObserver */
+function disconnectInfiniteScroll(){
+  if(_infiniteScrollObserver){
+    _infiniteScrollObserver.disconnect();
+    _infiniteScrollObserver = null;
+  }
+}
+
+/** 加载下一批日期分组 */
+function loadMoreDates(){
+  if(_isLoadingMore) return;
+  const nextCount = Math.min(state.loadedDateCount + DATE_PAGE_SIZE, state.allDateKeys.length);
+  if(nextCount === state.loadedDateCount) return; // 无变化，忽略
+  _isLoadingMore = true;
+  state.loadedDateCount = nextCount;
+  render();
+  _isLoadingMore = false;
+
+  // 全部加载完成后弹出气泡提醒
+  if(state.loadedDateCount >= state.allDateKeys.length){
+    showAllLoadedToast();
+  }
+}
+
+/** 弹出"已全部加载"气泡（右下角，3.5s 自动消失） */
+let _toastTimer = null;
+function showAllLoadedToast(){
+  const el = document.getElementById('allLoadedToast');
+  if(!el) return;
+  // 防抖：上次还没消失，重置计时器
+  if(_toastTimer){ clearTimeout(_toastTimer); }
+  el.classList.add('show');
+  _toastTimer = setTimeout(()=>{
+    el.classList.remove('show');
+    _toastTimer = null;
+  }, 3500);
+}
+
+/** 建立无限滚动 IntersectionObserver，监听底部"正在加载更多"区域 */
+function setupInfiniteScroll(){
+  disconnectInfiniteScroll();
+  const sentinel = document.getElementById('loadMoreSentinel');
+  if(!sentinel) return; // 数据不足一页，无需监听
+
+  _infiniteScrollObserver = new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting){
+      loadMoreDates();
+    }
+  }, { rootMargin: '0px 0px 120px 0px', threshold: 0 });
+
+  _infiniteScrollObserver.observe(sentinel);
+}
+
+
+/* ==================== 七、事件处理 ==================== */
+
+// 搜索输入（带防抖）——搜索前先确保日期范围内文件已加载
+// 若日期有未应用的修改（dateDirty=true），不触发加载，等用户点【应用】一并执行
+let searchTimer = null;
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', e=>{
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(()=>{
+    state.searchTerm = e.target.value;
+    if(state.dateDirty) return;    // 日期待应用 → 搜索暂不触发，等【应用】按钮
+    ensureDecryptedAndRender();
+  }, 250);
+});
+
+// 30天联动开关
+document.getElementById('link30Toggle').addEventListener('change', e=>{
+  state.link30 = e.target.checked;
+  updateSpanHint();
+});
+
+// [2026-08-21] 模糊/智能匹配开关监听已移除：搜索统一为单一模式，开关 UI 已隐藏
+// 回滚标记：恢复时重新绑定 fuzzyToggle/smartToggle 的 change 事件并还原 state.fuzzy/state.smart 字段
+
+// 变更前后开关
+document.getElementById('configsToggle').addEventListener('change', e=>{
+  state.showConfigs = e.target.checked;
+  render();
+});
+
+// 移动端筛选面板展开/收起
+document.getElementById('filterToggleBtn').addEventListener('click', ()=>{
+  const panel = document.getElementById('filterPanel');
+  const btn = document.getElementById('filterToggleBtn');
+  panel.classList.toggle('expanded');
+  btn.classList.toggle('active');
+});
+
+// 状态筛选 chips
+document.getElementById('statusChips').addEventListener('click', e=>{
+  const chip = e.target.closest('.chip');
+  if(!chip) return;
+  document.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+  chip.classList.add('active');
+  state.statusFilter = chip.dataset.status;
+  render();
+});
+
+/* ==================== 日期范围：三段式滚轮 + 确认制 + 动态30天 ==================== */
+const SPAN_LIMIT = 30;   // 单边调节时另一端跟随的跨度（天）
+
+// 当月最大天数（y:年, m:1-12）
+function monthMaxDay(y, m){
+  return new Date(y, m, 0).getDate();
+}
+// (y,m,d) → 合法日期字符串，d 超出当月时 clamp 到月末（如 2月30 → 2月28）
+function safeDateStr(y, m, d){
+  const day = Math.min(Math.max(d, 1), monthMaxDay(y, m));
+  return `${y}-${String(m).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+}
+// 滚轮改变某段：dateStr + unit('year'|'month'|'day') + delta(±1) → 新日期字符串
+function shiftSeg(dateStr, unit, delta){
+  const d = parseDate(dateStr);
+  if(!d) return dateStr;
+  let y = d.getFullYear(), m = d.getMonth()+1, day = d.getDate();
+  if(unit === 'year'){
+    y += delta;
+  } else if(unit === 'month'){
+    let nm = m + delta;
+    while(nm < 1){ nm += 12; y -= 1; }
+    while(nm > 12){ nm -= 12; y += 1; }
+    m = nm;
+  } else { // day：交给 Date 处理进位
+    const nd = new Date(d.getTime());
+    nd.setDate(nd.getDate() + delta);
+    return fmtDate(nd);
+  }
+  return safeDateStr(y, m, day);
+}
+// 日期字符串 ± n 天
+function addDays(dateStr, n){
+  const d = parseDate(dateStr);
+  if(!d) return dateStr;
+  d.setDate(d.getDate() + n);
+  return fmtDate(d);
+}
+// clamp 到数据范围 [dataMinDate, dataMaxDate]
+function clampToDataRange(dateStr){
+  if(!dateStr) return dateStr;
+  if(state.dataMinDate && dateStr < state.dataMinDate) return state.dataMinDate;
+  if(state.dataMaxDate && dateStr > state.dataMaxDate) return state.dataMaxDate;
+  return dateStr;
+}
+// 从三段 input 读取日期字符串
+function readSegDate(field){
+  const g = document.querySelector(`.date-seg-group[data-field="${field}"]`);
+  if(!g) return '';
+  const y = parseInt(g.querySelector('[data-unit="year"]').value, 10);
+  const m = parseInt(g.querySelector('[data-unit="month"]').value, 10);
+  const d = parseInt(g.querySelector('[data-unit="day"]').value, 10);
+  if(!y || !m || !d) return '';
+  return safeDateStr(y, m, d);
+}
+// 把日期字符串写入三段 input
+function writeSegDate(field, dateStr){
+  const g = document.querySelector(`.date-seg-group[data-field="${field}"]`);
+  if(!g) return;
+  const d = parseDate(dateStr);
+  if(!d) return;
+  g.querySelector('[data-unit="year"]').value = d.getFullYear();
+  g.querySelector('[data-unit="month"]').value = String(d.getMonth()+1).padStart(2,'0');
+  g.querySelector('[data-unit="day"]').value = String(d.getDate()).padStart(2,'0');
+}
+
+// 核心：用户手动修改了某端日期 → 联动（不触发查询，仅联动 + 显【应用】按钮）
+//   link30=ON ：改一端，另一端自动 ±30天 跟随
+//   link30=OFF：两端独立，但保持至少 1 天范围（改端碰到另一端时，推开另一端 ±1天）
+function applyManualChange(which){
+  let v = readSegDate(which);
+  if(!v){ // 输入非法（空/非数字），恢复原值不动
+    writeSegDate(which, which === 'start' ? state.dateStart : state.dateEnd);
+    return;
+  }
+  const oldVal = which === 'start' ? state.dateStart : state.dateEnd;
+  v = clampToDataRange(v);
+
+  const other = which === 'start' ? 'end' : 'start';
+  let otherVal = which === 'start' ? state.dateEnd : state.dateStart;
+  let otherChanged = false;
+
+  if(state.link30){
+    // 30天联动：另一端 = v ± 30
+    otherVal = which === 'start' ? addDays(v, SPAN_LIMIT) : addDays(v, -SPAN_LIMIT);
+    otherVal = clampToDataRange(otherVal);
+    if(which === 'start' && otherVal < v) otherVal = v;
+    if(which === 'end' && otherVal > v) otherVal = v;
+    otherChanged = true;
+  } else {
+    // link30=OFF：两端独立，但保持至少 1 天范围
+    if(which === 'start' && v >= otherVal){
+      // 起始 ≥ 结束 → 推结束 = 起始 + 1
+      let newEnd = clampToDataRange(addDays(v, 1));
+      if(newEnd <= v){
+        // 结束无法 +1（数据上界）→ 起始后退到 结束 - 1
+        v = clampToDataRange(addDays(otherVal, -1));
+        newEnd = otherVal;
+      }
+      otherVal = newEnd;
+      otherChanged = true;
+    } else if(which === 'end' && v <= otherVal){
+      // 结束 ≤ 起始 → 推起始 = 结束 - 1
+      let newStart = clampToDataRange(addDays(v, -1));
+      if(newStart >= v){
+        // 起始无法 -1（数据下界）→ 结束前进到 起始 + 1
+        v = clampToDataRange(addDays(otherVal, 1));
+        newStart = otherVal;
+      }
+      otherVal = newStart;
+      otherChanged = true;
+    }
+    // else: 范围 ≥ 1 天，两端都接受
+  }
+
+  // 写入最终值
+  writeSegDate(which, v);
+  if(which === 'start') state.dateStart = v; else state.dateEnd = v;
+  if(otherChanged){
+    if(other === 'start') state.dateStart = otherVal; else state.dateEnd = otherVal;
+    writeSegDate(other, otherVal);
+  }
+
+  // 值未变化不触发（避免 blur 误触发）
+  if(v === oldVal && !otherChanged && !state.dateDirty) return;
+
+  markDateDirty(true);
+  updateSpanHint();
+}
+
+// 跨度/数据量过大提示（非阻塞）
+// [2026-08-22] 改版：口径B（待处理数 = 范围内尚未加载的文件数）+ 触发条件叠加文件数阈值
+// 回滚标记：如需恢复旧版，删除 PENDING_FILE_LIMIT/countPendingFiles，并将下方函数体还原为：
+//   if(!state.link30 && state.dateStart && state.dateEnd){
+//     const days = Math.round((parseDate(state.dateEnd) - parseDate(state.dateStart)) / 86400000);
+//     if(days > SPAN_LIMIT){
+//       hint.textContent = `⚠ 当前跨度 ${days} 天，查询可能较慢`;
+//       hint.style.display = 'block';
+//       return;
+//     }
+//   }
+//   hint.style.display = 'none';
+const PENDING_FILE_LIMIT = 50;  // 待处理文件数阈值：范围内未加载文件超过此数也触发提示
+
+// 统计 [dateStart, dateEnd] 范围内尚未加载的文件数（与 decryptFilesInDateRange 的筛选逻辑同源）
+// 返回 -1 表示 manifest 未加载，无法统计
+function countPendingFiles(){
+  if(!Array.isArray(state.manifestFiles) || !state.fileDateMap) return -1;
+  return state.manifestFiles.filter(fname=>{
+    if(state.decryptedSet.has(fname)) return false;
+    const ds = state.fileDateMap[fname];
+    return ds && ds >= state.dateStart && ds <= state.dateEnd;
+  }).length;
+}
+
+function updateSpanHint(){
+  const hint = document.getElementById('dateSpanHint');
+  if(!hint) return;
+  // [2026-08-22 修复] 移除旧版 !state.link30 门槛：文件数触发不依赖联动开关状态
+  // （跨度分支在 link30=ON 时恒 ≤30 天本就不会触发，门槛冗余且挡死文件数分支）
+  // 回滚：恢复为 if(!state.link30 && state.dateStart && state.dateEnd){
+  if(state.dateStart && state.dateEnd){
+    const days = Math.round((parseDate(state.dateEnd) - parseDate(state.dateStart)) / 86400000);
+    const pending = countPendingFiles();
+    // 触发条件（叠加）：跨度 > SPAN_LIMIT 或 待处理文件数 > PENDING_FILE_LIMIT
+    if(days > SPAN_LIMIT || pending > PENDING_FILE_LIMIT){
+      const pendingText = pending < 0 ? '统计中' : pending;
+      hint.textContent = `⚠ 注意：筛选时间范围 ${days} 天，数据量较大！预处理数据量 ${pendingText} 个`;
+      hint.style.display = 'block';
+      return;
+    }
+  }
+  hint.style.display = 'none';
+}
+
+// 【应用】按钮显隐
+function markDateDirty(dirty){
+  state.dateDirty = dirty;
+  const btn = document.getElementById('applyDateBtn');
+  if(btn) btn.style.display = dirty ? 'inline-block' : 'none';
+}
+
+// 点击【应用】：执行查询
+function applyDateRange(){
+  if(!state.dateDirty) return;
+  syncStateFromInputs();
+  markDateDirty(false);
+  ensureDecryptedAndRender();
+}
+window.applyDateRange = applyDateRange;
+
+// 绑定三段式组件事件（滚轮 / 手动输入 / ↑↓键）
+function setupSegGroup(field){
+  const group = document.querySelector(`.date-seg-group[data-field="${field}"]`);
+  if(!group) return;
+  group.querySelectorAll('.seg').forEach(seg=>{
+    // 滚轮：改变悬停的该段（编辑中不触发，避免打断输入）
+    seg.addEventListener('wheel', e=>{
+      e.preventDefault();
+      if(seg.dataset.editing === '1') return;
+      const delta = e.deltaY < 0 ? 1 : -1;
+      let nv = shiftSeg(readSegDate(field), seg.dataset.unit, delta);
+      nv = clampToDataRange(nv);
+      writeSegDate(field, nv);
+      applyManualChange(field);
+    }, { passive:false });
+    // 只允许输入数字
+    seg.addEventListener('input', ()=>{ seg.value = seg.value.replace(/[^\d]/g,''); });
+    // 聚焦进入编辑
+    seg.addEventListener('focus', ()=>{ seg.dataset.editing = '1'; seg.select(); });
+    // 失焦提交：值有变化才规整+联动（避免仅聚焦未改时误触发跟随）
+    seg.addEventListener('blur', ()=>{
+      seg.dataset.editing = '0';
+      const newVal = readSegDate(field);
+      const oldVal = field === 'start' ? state.dateStart : state.dateEnd;
+      if(newVal !== oldVal) applyManualChange(field);
+    });
+    // 键盘：回车提交，↑↓ 微调该段
+    seg.addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){ e.preventDefault(); seg.blur(); }
+      else if(e.key === 'ArrowUp' || e.key === 'ArrowDown'){
+        e.preventDefault();
+        if(seg.dataset.editing === '1') return;
+        const delta = e.key === 'ArrowUp' ? 1 : -1;
+        let nv = shiftSeg(readSegDate(field), seg.dataset.unit, delta);
+        nv = clampToDataRange(nv);
+        writeSegDate(field, nv);
+        applyManualChange(field);
+      }
+    });
+  });
+}
+['start','end'].forEach(setupSegGroup);
+
+// 【应用】按钮点击
+document.getElementById('applyDateBtn').addEventListener('click', applyDateRange);
+
+// 从输入框同步到 state（三段式）
+function syncStateFromInputs(){
+  state.dateStart = readSegDate('start');
+  state.dateEnd = readSegDate('end');
+}
+
+// 折叠/展开日期分组
+window.toggleGroup = function(date){
+  if(state.collapsedGroups.has(date)) state.collapsedGroups.delete(date);
+  else state.collapsedGroups.add(date);
+  render();
+};
+
+// 展开/折叠卡片详情
+window.toggleCardExpand = function(logId){
+  if(state.expandedCards.has(logId)) state.expandedCards.delete(logId);
+  else state.expandedCards.add(logId);
+  render();
+};
+
+// 加载本地日志文件（支持加密和明文 JSON）
+const fileLoader = document.getElementById('fileLoader');
+const loadFilesBtn = document.getElementById('loadFilesBtn');
+if(loadFilesBtn){
+  loadFilesBtn.addEventListener('click', ()=> fileLoader.click());
+}
+if(fileLoader){
+  fileLoader.addEventListener('change', async e=>{
+    const files = Array.from(e.target.files || []);
+    if(files.length === 0) return;
+    await loadFromFiles(files);
+    e.target.value = '';
+  });
+}
+
+// 刷新数据按钮：重新加载 manifest 并按当前日期范围加载
+document.getElementById('refreshBtn').addEventListener('click', async ()=>{
+  showLoading('正在重新加载数据...');
+  // 清空前端缓存
+  state.logs = [];
+  state.decryptedSet = new Set();
+  state.collapsedGroups.clear();
+  state.expandedCards.clear();
+  // 清空服务端数据缓存 + 刷新文件列表
+  try{ await apiFetch('/api/clear-decrypt-cache'); }catch(e){}
+  try{ await apiFetch('/api/refresh'); }catch(e){}
+  try{
+    const ok = await loadManifest();
+    if(ok){
+      state.dataSource = 'real';
+      const def = getDefaultDateRange();
+      state.dateStart = def.start;
+      state.dateEnd = def.end;
+      updateDateInputs();
+      resetDateState();
+      updateDataSourceBadge();
+      await decryptFilesInDateRange(state.dateStart, state.dateEnd);
+      hideLoading();
+      render();
+      updateSpanHint();  // [2026-08-22] 加载完成后刷新待处理数提示
+    } else {
+      hideLoading();
+      renderErrorState('未找到日志文件', 'ERR_EMPTY', 'FTP 服务器上没有 .json 日志文件');
+    }
+  }catch(err){
+    hideLoading();
+    renderErrorState('服务器无法连接', err.code || 'ERR_UNKNOWN', err.message || '连接失败');
+    render();
+  }
+});
+
+// ==================== 备注操作（[2026-08-22] 服务端持久化：方案A + 乐观锁 + 冲突流程） ====================
+// 回滚标记：如需恢复纯 localStorage 旧版，删除本段至 persistNotesLocal 结束，
+// 恢复旧实现（saveNote/deleteNote 直接改 state.notes + persistNotes；loadNotes 读 localStorage）。
+// 冲突上下文（气泡按钮使用）
+let _noteConflictCtx = null;   // { sn, localText, isDelete, current }
+
+window.editNote = function(sn){
+  state.editingNote = sn;
+  render();
+  // 聚焦到文本框
+  setTimeout(()=>{
+    const ta = document.getElementById('noteTextarea-'+sn);
+    if(ta){ ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }, 50);
+};
+window.cancelNote = function(){
+  state.editingNote = null;
+  render();
+};
+
+/** 保存备注（服务端为主，POST /api/notes，409 → 冲突气泡） */
+window.saveNote = async function(sn){
+  const ta = document.getElementById('noteTextarea-'+sn);
+  if(!ta) return;
+  const text = ta.value.trim();
+  await pushNote(sn, text, false);
+};
+/** 删除备注（text='' 即删除，同样走乐观锁）
+ *  先弹原生 confirm 兜底——避免点错；冲突时再走二次气泡确认。 */
+window.deleteNote = async function(sn){
+  if(!window.confirm('确定要删除该备注吗？此操作不可恢复。')) return;
+  await pushNote(sn, '', true);
+};
+
+/** 统一的备注提交：成功更新本地；409 弹冲突气泡；网络失败写 localStorage 兜底 */
+async function pushNote(sn, text, isDelete){
+  const base = state.noteMeta[sn] || null;   // 乐观锁基准（加载时看到的 updatedAt）
+  try{
+    const resp = await apiFetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sn, text, baseUpdatedAt: base, force: false })
+    });
+    const data = await resp.json();
+    if(resp.status === 409 && data.current !== undefined){
+      // 冲突：弹红色警告气泡，保留编辑现场
+      showNoteConflict(sn, text, isDelete, data.current);
+      return;
+    }
+    if(!resp.ok || data.error){
+      showNoteToast('❌', data.message || '备注保存失败', 'err');
+      return;
+    }
+    // 成功：更新本地状态 + localStorage 备份
+    if(text){ state.notes[sn] = text; state.noteMeta[sn] = data.updatedAt; }
+    else { delete state.notes[sn]; delete state.noteMeta[sn]; }
+    // 冲突暂存区里同 SN 的待上传备注若与本次提交一致（如用户主动重存），一并清掉
+    if(state.pendingNotes[sn] !== undefined && state.pendingNotes[sn] === text){
+      delete state.pendingNotes[sn]; persistPendingNotes();
+    }
+    persistNotesLocal();
+    state.editingNote = null;
+    render();
+    showNoteToast(isDelete ? '🗑️' : '📝', isDelete ? '备注已删除' : '备注已保存', 'ok');
+  }catch(err){
+    // 网络失败：写 localStorage 兜底（下次联网时数据不丢，但不自动同步）
+    if(text) state.notes[sn] = text; else delete state.notes[sn];
+    persistNotesLocal();
+    state.editingNote = null;
+    render();
+    showNoteToast('⚠', '服务器不可达，备注已暂存本地（下次保存时重新同步）', 'err');
+  }
+}
+
+// ---- 冲突气泡 ----
+// 编辑场景（isDelete=false）：气泡展示"服务器版本"+"覆盖/暂不修改"
+// 删除场景（isDelete=true）：气泡展示"服务器已被他人修改"+"确认删除/取消"
+function showNoteConflict(sn, localText, isDelete, current){
+  _noteConflictCtx = { sn, localText, isDelete, current: current || null };
+  const snEl = document.getElementById('noteConflictSn');
+  const curEl = document.getElementById('noteConflictCurrent');
+  const titleEl = document.getElementById('noteConflictTitle');
+  const btnOverwrite = document.getElementById('noteConflictOverwrite');
+  const btnKeep = document.getElementById('noteConflictKeep');
+  snEl.textContent = 'SN: ' + sn;
+  if(isDelete){
+    titleEl.textContent = '⚠ 确认删除？';
+    if(current && current.text){
+      curEl.innerHTML = '<span class="label">服务器上的备注已被他人修改为：</span>' +
+        '<b>' + esc(current.text) + '</b>' +
+        '<span class="subtime">（' + esc(current.updatedAt || '') + '）</span>' +
+        '<div class="hint">是否仍要删除？</div>';
+    }else{
+      curEl.innerHTML = '<span class="label">服务器上的备注已被删除</span>' +
+        '<span class="subtime">（可能他人操作）</span>' +
+        '<div class="hint">是否仍要删除（无实际效果）？</div>';
+    }
+    btnOverwrite.textContent = '确认删除';
+    btnKeep.textContent = '取消';
+  }else{
+    titleEl.textContent = '备注冲突';
+    if(current && current.text){
+      curEl.innerHTML = '<span class="label">服务器现有备注（' + esc(current.updatedAt || '') + '）：</span>' +
+        '<b>' + esc(current.text) + '</b>';
+    }else{
+      curEl.innerHTML = '<span class="label">服务器备注已不存在</span>（可能被他人删除）';
+    }
+    btnOverwrite.textContent = '覆盖';
+    btnKeep.textContent = '暂不修改（存本地）';
+  }
+  document.getElementById('noteConflict').style.display = 'flex';
+}
+window.dismissNoteConflict = function(){
+  _noteConflictCtx = null;
+  document.getElementById('noteConflict').style.display = 'none';
+};
+/** 冲突 → 覆盖：force=true 强写服务器 */
+window.conflictOverwrite = async function(){
+  if(!_noteConflictCtx) return;
+  const { sn, localText, isDelete } = _noteConflictCtx;
+  dismissNoteConflict();
+  try{
+    const resp = await apiFetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sn, text: localText, force: true })
+    });
+    const data = await resp.json();
+    if(!resp.ok || data.error){ showNoteToast('❌', data.message || '覆盖失败', 'err'); return; }
+    if(localText){ state.notes[sn] = localText; state.noteMeta[sn] = data.updatedAt; }
+    else { delete state.notes[sn]; delete state.noteMeta[sn]; }
+    if(state.pendingNotes[sn] !== undefined){ delete state.pendingNotes[sn]; persistPendingNotes(); }
+    persistNotesLocal();
+    state.editingNote = null;
+    render();
+    showNoteToast('✅', isDelete ? '已覆盖删除服务器备注' : '已覆盖服务器备注', 'ok');
+  }catch(err){
+    showNoteToast('⚠', '服务器不可达，覆盖失败', 'err');
+  }
+};
+/** 冲突 → 暂不修改：存入本地暂存区，卡片显示"上传备注"入口 */
+window.conflictKeepLocal = function(){
+  if(!_noteConflictCtx) return;
+  const { sn, localText } = _noteConflictCtx;
+  if(localText){ state.pendingNotes[sn] = localText; }
+  else { delete state.pendingNotes[sn]; }
+  persistPendingNotes();
+  dismissNoteConflict();
+  state.editingNote = null;
+  render();
+  showNoteToast('📤', '已存本地暂存区，可稍后通过"上传备注"覆盖', 'ok');
+};
+
+// ---- 暂存区备注的"上传备注"入口（二次确认卡） ----
+let _uploadConfirmSn = null;
+window.openUploadConfirm = async function(sn){
+  _uploadConfirmSn = sn;
+  const localText = state.pendingNotes[sn] || '';
+  document.getElementById('uploadConfirmLocalText').textContent = localText || '（空）';
+  const serverEl = document.getElementById('uploadConfirmServerText');
+  serverEl.textContent = '加载中...';
+  serverEl.parentElement.classList.remove('empty');
+  document.getElementById('uploadConfirmOverlay').classList.remove('hidden');
+  // 拉取服务器最新备注（实时，非缓存）
+  try{
+    const resp = await apiFetch('/api/notes');
+    const data = await resp.json();
+    const cur = data.notes && data.notes[sn];
+    if(cur && cur.text){
+      serverEl.textContent = cur.text + '（' + (cur.updatedAt || '') + '）';
+    }else{
+      serverEl.textContent = '（服务器上暂无备注）';
+      serverEl.parentElement.classList.add('empty');
+    }
+  }catch(err){
+    serverEl.textContent = '（服务器不可达）';
+    serverEl.parentElement.classList.add('empty');
+  }
+};
+window.closeUploadConfirm = function(){
+  _uploadConfirmSn = null;
+  document.getElementById('uploadConfirmOverlay').classList.add('hidden');
+};
+/** 确认覆盖上传：force=true 强写 */
+window.confirmUploadPending = async function(){
+  if(!_uploadConfirmSn) return;
+  const sn = _uploadConfirmSn;
+  const text = state.pendingNotes[sn] || '';
+  const btn = document.getElementById('uploadConfirmBtn');
+  btn.disabled = true;
+  try{
+    const resp = await apiFetch('/api/notes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sn, text, force: true })
+    });
+    const data = await resp.json();
+    if(!resp.ok || data.error){ showNoteToast('❌', data.message || '上传失败', 'err'); return; }
+    if(text){ state.notes[sn] = text; state.noteMeta[sn] = data.updatedAt; }
+    else { delete state.notes[sn]; delete state.noteMeta[sn]; }
+    delete state.pendingNotes[sn];
+    persistPendingNotes();
+    persistNotesLocal();
+    closeUploadConfirm();
+    render();
+    showNoteToast('✅', '备注已上传', 'ok');
+  }catch(err){
+    showNoteToast('⚠', '服务器不可达，上传失败', 'err');
+  }finally{
+    btn.disabled = false;
+  }
+};
+/** 丢弃本地暂存的待上传备注 */
+window.discardPendingNote = function(sn){
+  if(!confirm('确定丢弃该条本地暂存备注？此操作不可恢复。')) return;
+  delete state.pendingNotes[sn];
+  persistPendingNotes();
+  render();
+  showNoteToast('🗑️', '已丢弃本地暂存备注', 'ok');
+};
+
+// ---- localStorage 辅助 ----
+/** localStorage 主备份（服务端为主数据源，这里仅做离线兜底） */
+function persistNotesLocal(){
+  try{ localStorage.setItem(NOTES_KEY, JSON.stringify(state.notes)); }catch(e){ console.warn('备注本地备份失败', e); }
+}
+/** 冲突暂存区持久化 */
+function persistPendingNotes(){
+  try{ localStorage.setItem(PENDING_NOTES_KEY, JSON.stringify(state.pendingNotes)); }catch(e){ console.warn('暂存备注保存失败', e); }
+}
+/** 从 localStorage 恢复暂存区（每次启动都执行） */
+function loadPendingNotes(){
+  try{
+    const raw = localStorage.getItem(PENDING_NOTES_KEY);
+    if(raw) state.pendingNotes = JSON.parse(raw) || {};
+  }catch(e){ state.pendingNotes = {}; }
+}
+
+/**
+ * 从服务端加载备注（主数据源），含一次性迁移：
+ *   1. GET /api/notes → 填充 state.notes / state.noteMeta
+ *   2. 迁移：localStorage 旧备注中服务器没有的 SN → force 上传（旧 localStorage 数据无冲突概念）
+ *   3. 失败 → 回退 localStorage（旧版行为，离线可用）
+ */
+async function loadNotesRemote(){
+  loadPendingNotes();
+  try{
+    const resp = await apiFetch('/api/notes');
+    const data = await resp.json();
+    if(!resp.ok || data.error) throw new Error(data.message || '读取失败');
+    const remote = data.notes || {};
+    state.notes = {}; state.noteMeta = {};
+    for(const sn in remote){
+      state.notes[sn] = remote[sn].text;
+      state.noteMeta[sn] = remote[sn].updatedAt || '';
+    }
+    // ---- 一次性迁移：仅当服务端 firstBoot=true（notes.json 不存在，首次部署）时才迁移 ----
+    // [2026-08-22] 修复"备注复活"bug（方案B）：
+    //   旧版（上午方案A）判断 `Object.keys(state.notes).length === 0`——只防住"服务端有数据但漏一条"，
+    //   防不住"服务端被全删（如唯一的备注被删）→ state.notes 整体为空 → 进迁移 → 旧快照复活"。
+    //   现改由服务端 firstBoot 字段（notes.json 磁盘不存在时才 true）触发迁移，彻底封死复活路径。
+    //   回滚：把条件换回 `Object.keys(state.notes).length === 0` 即还原上午方案A。
+    if(data.firstBoot === true){
+      let local = {};
+      try{ local = JSON.parse(localStorage.getItem(NOTES_KEY) || '{}') || {}; }catch(e){}
+      let migrated = 0;
+      for(const sn in local){
+        if(local[sn]){
+          try{
+            const r = await apiFetch('/api/notes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sn, text: local[sn], force: true })
+            });
+            const d = await r.json();
+            if(r.ok && !d.error){
+              state.notes[sn] = local[sn];
+              state.noteMeta[sn] = d.updatedAt || '';
+              migrated++;
+            }
+          }catch(e){ /* 单条迁移失败不阻塞启动 */ }
+        }
+      }
+      if(migrated > 0){
+        console.log(`✓ 已迁移 ${migrated} 条本地备注到服务器`);
+        persistNotesLocal();
+      }
+    }
+  }catch(err){
+    // 服务端不可达 → 回退 localStorage（旧版行为）
+    console.warn('服务端备注加载失败，回退 localStorage:', err.message);
+    try{
+      const raw = localStorage.getItem(NOTES_KEY);
+      if(raw){
+        const local = JSON.parse(raw) || {};
+        state.notes = local; state.noteMeta = {};
+      }
+    }catch(e){ state.notes = {}; }
+  }
+}
+
+/** 通用备注 toast（右下角，自动消失；type: ok=灰边 / err=红边） */
+let _noteToastTimer = null;
+function showNoteToast(icon, text, type){
+  const el = document.getElementById('noteToast');
+  if(!el) return;
+  document.getElementById('noteToastIcon').textContent = icon;
+  document.getElementById('noteToastText').textContent = text;
+  el.style.borderColor = type === 'err' ? '#ef4444' : '#64748b';
+  if(_noteToastTimer){ clearTimeout(_noteToastTimer); }
+  el.classList.add('show');
+  _noteToastTimer = setTimeout(()=>{
+    el.classList.remove('show');
+    _noteToastTimer = null;
+  }, 3500);
+}
+
+
+/* ==================== [2026-08-24 OUTBOUND] 出库记录（上传/查看/删除） ==================== */
+// 由 CPU 拍照记录模块就地改造（[2026-08-22 CPU-ARCHIVE]），原始方案见 Docs/CPU-Photo-Archive-Plan.md
+// 服务端接口：GET/POST/DELETE /api/outbound-archive、GET /api/outbound-image（支持 ?token=）
+// 回滚标记：删除本段 + state.outboundArchive 字段 + renderCard 的 obBtnHtml + init 的
+//          loadOutboundArchive() 调用 + HTML 两个弹层（#obModalOverlay/#obImgViewer）+ CSS ob- 段。
+
+let _obCtx = null;        // { sn, model, mode: 'upload'|'view', files: {host: File, part: File} }
+let _obDetail = null;     // 查看模式：GET /api/outbound-archive?sn= 明细（含图片 URL）
+let _obUploading = false; // 上传进行中（防重复提交/防关闭弹层）
+
+/** 启动时拉取全量摘要（卡片徽章数据源）；失败不阻塞日志加载
+ *  [2026-08-22 CPU-ARCHIVE-bugfix → 2026-08-24 OUTBOUND] 完成时若日志已渲染，则主动 render() 一次
+ *  防 init() 中异步加载晚于首次 render 导致徽章丢失
+ */
+async function loadOutboundArchive(){
+  try{
+    const resp = await apiFetch('/api/outbound-archive');
+    const data = await resp.json();
+    state.outboundArchive = (data && data.archives) || {};
+  }catch(e){
+    console.warn('出库档案摘要加载失败:', e.message);
+    state.outboundArchive = {};
+  }
+  // 摘要回来时，如果数据源已加载完（日志已渲染过），立即重渲染让徽章即时生效
+  if(state.dataSource === 'real') render();
+}
+
+/** 弹层标题：设备型号 + 出库记录（[2026-08-24] 型号来自日志文件名解析，兜底空） */
+function obModalTitleOf(model, suffix){
+  return '📦 ' + (model ? model + ' ' : '') + '出库记录' + (suffix || '');
+}
+
+/** 打开弹层：按 state.outboundArchive[sn] 预判模式
+ *  - 无档案：upload 模式瞬开，零请求
+ *  - 有档案：view 模式需请求 detail 获取文件列表（数据本身所需，非兜底轮询）
+ *  一致性由服务端兜底：启动对齐磁盘（方案 A）+ detail 自愈（方案 B）
+ */
+window.openOutboundModal = async function(sn, modelEnc){
+  const model = decodeURIComponent(modelEnc || '');
+  _obCtx = { sn, model, mode: 'loading', files: {} };
+  _obDetail = null;
+  document.getElementById('obModalSn').textContent = 'SN: ' + sn;
+  document.getElementById('obModalTitle').textContent = obModalTitleOf(model);
+  document.getElementById('obModalOverlay').classList.remove('hidden');
+  if(state.outboundArchive[sn]){
+    document.getElementById('obModalBody').innerHTML =
+      '<div class="ob-view-info">加载档案信息中…</div>';
+    try{
+      const resp = await apiFetch('/api/outbound-archive?sn=' + encodeURIComponent(sn));
+      const data = await resp.json();
+      if(data && data.exists){
+        _obCtx.mode = 'view';
+        _obDetail = data;
+        state.outboundArchive[sn] = { folder: data.folder, uploadedAt: data.uploadedAt, count: (data.files || []).length };
+        obRenderViewMode();
+      }else{
+        // 服务端已无此档案（自愈）：清 state 徽章并转 upload
+        delete state.outboundArchive[sn];
+        if(state.dataSource === 'real') render();
+        _obCtx.mode = 'upload';
+        obRenderUploadMode();
+      }
+    }catch(e){
+      showNoteToast('⚠', '档案信息加载失败：' + e.message, 'err');
+      document.getElementById('obModalOverlay').classList.add('hidden');
+      _obCtx = null;
+    }
+  }else{
+    _obCtx.mode = 'upload';
+    obRenderUploadMode();
+  }
+};
+
+window.closeOutboundModal = function(){
+  if(_obUploading){ showNoteToast('⚠', '正在上传中，请稍候…', 'err'); return; }
+  document.getElementById('obModalOverlay').classList.add('hidden');
+  _obCtx = null;
+  _obDetail = null;
+};
+
+// ---- 上传模式 ----
+function obRenderUploadMode(){
+  const ctx = _obCtx;
+  if(!ctx) return;
+  document.getElementById('obModalTitle').textContent = obModalTitleOf(ctx.model, '（上传）');
+  const box = (type, label, optional) => `
+    <div class="ob-upload-box">
+      <div class="ob-upload-label">${label}${optional ? ' <span class="opt">（可不选）</span>' : ''}</div>
+      <div class="ob-upload-drop" id="obDrop_${type}" onclick="obPickFile('${type}')">
+        <div class="ob-upload-thumb" id="obThumb_${type}">拖拽/点选<br>上传图片</div>
+        <div class="ob-upload-info" id="obInfo_${type}">
+          <div class="fhint">支持 JPEG / PNG / WebP，单张 ≤ 35MB${optional ? '' : '（必选）'}</div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('obModalBody').innerHTML =
+    box('host', '主机记录', false) +
+    box('part', '配件记录', true) +
+    `<div class="ob-progress-wrap" id="obProgressWrap" hidden>
+       <div class="ob-progress-bar"><div id="obProgressBar"></div></div>
+       <span class="ob-progress-text" id="obProgressText">0%</span>
+     </div>
+     <div class="ob-modal-btns">
+       <button class="ob-btn-save" id="obSaveBtn" onclick="obUploadSubmit()">保存</button>
+       <button class="ob-btn-plain" onclick="closeOutboundModal()">取消</button>
+     </div>`;
+  ctx.files = {};
+}
+
+/** 点选图片：复用隐藏的 file input（capture=environment 移动端直调后摄） */
+window.obPickFile = function(type){
+  if(_obUploading) return;
+  const input = document.getElementById('obFileInput');
+  input.value = '';
+  input.onchange = () => obFileChosen(type, input.files && input.files[0]);
+  input.click();
+};
+
+function obFileChosen(type, file){
+  if(!file || !_obCtx) return;
+  // 客户端软校验（服务端仍强制魔数嗅探 + 35MB 上限）
+  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){
+    showNoteToast('⚠', '仅支持 JPEG / PNG / WebP 图片', 'err');
+    return;
+  }
+  if(file.size > 35 * 1024 * 1024){
+    showNoteToast('⚠', '图片超过 35MB 上限（当前 ' + (file.size / 1024 / 1024).toFixed(1) + 'MB）', 'err');
+    return;
+  }
+  _obCtx.files[type] = file;
+  // FileReader 本地预览（零上传流量，上传前即所见）
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const thumb = document.getElementById('obThumb_' + type);
+    if(thumb) thumb.innerHTML = '<img src="' + e.target.result + '">';
+    const info = document.getElementById('obInfo_' + type);
+    if(info) info.innerHTML =
+      '<div class="fname">✅ ' + esc(file.name) + '</div>' +
+      '<div class="fhint">' + Math.round(file.size / 1024) + ' KB · 点击虚线框可重新选择</div>';
+    const drop = document.getElementById('obDrop_' + type);
+    if(drop) drop.classList.add('selected');
+  };
+  reader.readAsDataURL(file);
+}
+
+/** 上传提交：XHR multipart（fetch 不支持上传进度） */
+window.obUploadSubmit = function(){
+  const ctx = _obCtx;
+  if(!ctx || _obUploading) return;
+  const host = ctx.files.host, part = ctx.files.part;
+  if(!host && !part){
+    showNoteToast('⚠', '请至少选择一张图片（主机记录必传，配件记录可选）', 'err');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('sn', ctx.sn);
+  if(host) fd.append('hostFile', host, host.name);
+  if(part) fd.append('partFile', part, part.name);
+
+  const xhr = new XMLHttpRequest();
+  const token = getAuthToken();
+  _obUploading = true;
+  const saveBtn = document.getElementById('obSaveBtn');
+  if(saveBtn){ saveBtn.disabled = true; saveBtn.textContent = '上传中…'; }
+  document.getElementById('obProgressWrap').hidden = false;
+  xhr.upload.onprogress = (e) => {
+    if(!e.lengthComputable) return;
+    const pct = Math.round(e.loaded * 100 / e.total);
+    document.getElementById('obProgressBar').style.width = pct + '%';
+    document.getElementById('obProgressText').textContent = pct + '%';
+  };
+  xhr.onload = () => {
+    _obUploading = false;
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = '保存'; }
+    let data = null;
+    try{ data = JSON.parse(xhr.responseText); }catch(_){}
+    if(xhr.status === 200 && data && data.ok){
+      // 更新摘要缓存 + 重渲染卡片徽章；重新以查看模式打开（刷新明细）
+      state.outboundArchive[ctx.sn] = { folder: data.folder, uploadedAt: data.uploadedAt,
+                                   count: (data.files || []).length };
+      render();
+      showNoteToast('📦', '出库记录已保存（' + (data.files || []).length + ' 张）', 'ok');
+      openOutboundModal(ctx.sn, encodeURIComponent(ctx.model || ''));
+    }else{
+      showNoteToast('❌', (data && data.message) || ('上传失败（HTTP ' + xhr.status + '）'), 'err');
+      document.getElementById('obProgressWrap').hidden = true;
+      document.getElementById('obProgressBar').style.width = '0%';
+    }
+  };
+  xhr.onerror = () => {
+    _obUploading = false;
+    if(saveBtn){ saveBtn.disabled = false; saveBtn.textContent = '保存'; }
+    showNoteToast('⚠', '网络错误，上传已中断', 'err');
+  };
+  xhr.open('POST', '/api/outbound-archive');
+  if(token) xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+  xhr.send(fd);
+};
+
+// ---- 查看模式 ----
+function obRenderViewMode(){
+  const d = _obDetail;
+  if(!d) return;
+  document.getElementById('obModalTitle').textContent = obModalTitleOf(_obCtx ? _obCtx.model : '');
+  const token = encodeURIComponent(getAuthToken() || '');
+  const tagMap = { host: '主机记录', part: '配件记录', other: '其他' };
+  const fmtSize = (n) => n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB';
+  const items = (d.files || []).map(f => {
+    const url = f.url + '&token=' + token + '&v=' + encodeURIComponent(d.folder);
+    const sha = (f.sha256 || '').slice(0, 16);
+    return `<div class="ob-view-item" onclick="obViewImage('${esc(url)}')" title="点击查看原图大图">
+      <div class="ob-view-tag">${tagMap[f.type] || esc(f.type)}</div>
+      <img src="${esc(url)}" loading="lazy"
+           onerror="this.outerHTML='<div class=&quot;ob-view-broken&quot;>⚠ 图片已失效（档案可能已被删除）<div class=&quot;ob-view-broken-meta&quot;>'+this.alt+'</div></div>'"
+           alt="${tagMap[f.type] || '出库记录'}">
+      <div class="ob-view-meta">${esc(f.name)} · ${fmtSize(f.size || 0)}${sha ? ' · SHA256: ' + esc(sha) + '…' : ''}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('obModalBody').innerHTML =
+    `<div class="ob-view-info">上传时间：<b>${esc(d.uploadedAt || '')}</b><br>` +
+    `档案夹：<b>${esc(d.folder)}</b> · 共 <b>${(d.files || []).length}</b> 张 · 点击图片查看原图</div>` +
+    `<div class="ob-view-imgs">${items}</div>` +
+    `<div class="ob-modal-btns">
+       <button class="ob-btn-danger" onclick="obDeleteRecord()">删除记录</button>
+       <button class="ob-btn-plain" onclick="obReupload()">重新上传</button>
+     </div>`;
+}
+
+/** 大图查看层（按需加载原图） */
+window.obViewImage = function(url){
+  document.getElementById('obImgViewerImg').src = url;
+  document.getElementById('obImgViewer').classList.remove('hidden');
+};
+window.closeObImageViewer = function(){
+  document.getElementById('obImgViewer').classList.add('hidden');
+  document.getElementById('obImgViewerImg').src = '';
+};
+
+/** 重新上传：二次确认 → 上传模式（覆盖 = 旧档永久删除，服务端原子保证） */
+window.obReupload = function(){
+  if(!_obCtx) return;
+  if(!window.confirm('重新上传将覆盖当前档案（旧档案将被永久删除），确定继续？')) return;
+  _obCtx.mode = 'upload';
+  obRenderUploadMode();
+};
+
+/** 删除记录：confirm → DELETE → 永久删除（不可恢复） */
+window.obDeleteRecord = async function(){
+  const ctx = _obCtx;
+  if(!ctx) return;
+  if(!window.confirm('确定要删除该出库记录吗？\n（永久删除，不可恢复）')) return;
+  try{
+    const resp = await apiFetch('/api/outbound-archive?sn=' + encodeURIComponent(ctx.sn), { method: 'DELETE' });
+    const data = await resp.json();
+    if(!resp.ok || data.error){
+      showNoteToast('❌', data.message || '删除失败', 'err');
+      return;
+    }
+    delete state.outboundArchive[ctx.sn];
+    render();
+    showNoteToast('🗑️', '出库记录已删除', 'ok');
+    closeOutboundModal();
+  }catch(e){
+    showNoteToast('⚠', '网络错误：' + e.message, 'err');
+  }
+};
+
+
+/* ==================== 八、初始化 ==================== */
+
+async function init(){
+  await loadNotesRemote();   // [2026-08-22] 服务端备注加载（含一次性迁移 + 离线回退）
+  // [2026-08-24 OUTBOUND] 必须 await：保证首次 render 拿到出库档案徽章数据
+  // 否则 fire-and-forget 模式下，render() 会在摘要回来前先跑，徽章全显示无记录（历史 bugfix 2026-08-22）
+  await loadOutboundArchive();
+  // 兼容旧调用点（同步等待完成后调用无副作用）
+  try{ await apiFetch('/api/refresh'); }catch(e){}
+
+  // 从 FTP 服务器加载真实数据（服务端处理，内存缓存）
+  try{
+    showLoading('正在读取日志清单...');
+    const ok = await loadManifest();
+    if(ok){
+      state.dataSource = 'real';
+      // 默认日期范围：今天往前推 9 天，clamp 到数据范围
+      const def = getDefaultDateRange();
+      state.dateStart = def.start;
+      state.dateEnd = def.end;
+      updateDateInputs();
+      resetDateState();
+      updateDataSourceBadge();
+      // 加载默认范围内的文件
+      await decryptFilesInDateRange(state.dateStart, state.dateEnd);
+      hideLoading();
+      render();
+      updateSpanHint();  // [2026-08-22] 加载完成后刷新待处理数提示
+
+      // ---- 版本轮询：检测日志文件新增 ----
+      // 记录页面加载时的版本基线
+      try{
+        const vi = await apiFetch('/api/version').then(r=>r.json());
+        _logVersionBaseline = vi.version;
+      }catch(_){}
+      // 每 30 秒轮询一次，版本号 > 基线则弹出提醒
+      setInterval(async ()=>{
+        if(_logNotifyDismissed) return;
+        try{
+          const vi = await apiFetch('/api/version').then(r=>r.json());
+          if(_logVersionBaseline !== null && vi.version > _logVersionBaseline){
+            notifyLogChanged();
+          }
+        }catch(_){}
+      }, 30000);
+      // --------------------------------------------------
+
+      return;
+    } else {
+      hideLoading();
+      renderErrorState('未找到日志文件', 'ERR_EMPTY', 'FTP 服务器上没有 .json 日志文件');
+      render();
+      return;
+    }
+  }catch(err){
+    console.warn('数据加载失败:', err);
+    hideLoading();
+    renderErrorState('服务器无法连接', err.code || 'ERR_UNKNOWN', err.message || '连接失败');
+    render();
+    return;
+  }
+}
+
+// 不再直接启动 init()，改为由认证流程控制启动时机
+// （DOMContentLoaded → 检查 token → 验证通过 → init() 或 显示登录遮罩）
+</script>
+</body>
+</html>

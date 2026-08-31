@@ -1,0 +1,37 @@
+# Cloudflare Tunnel 配置文件
+# 使用方法: cloudflared tunnel --config D:\WSDI\cloudflared-config.yml run
+
+# 主域名 tunnel (yanhong.online)
+tunnel: 2967bed7-9021-4ed4-bf20-9b2658ba516c
+credentials-file: C:\Users\Administrator\.cloudflared\2967bed7-9021-4ed4-bf20-9b2658ba516c.json
+no-autoupdate: true
+
+# 源站连接参数（默认值已经足够，但显式声明便于调整）
+originRequest:
+  # TCP 连接超时（默认 30s）
+  connectTimeout: 30s
+  # TLS 握手超时（默认 10s）
+  tlsTimeout: 30s
+  # TCP keepalive 探测间隔（默认 30s）
+  tcpKeepAlive: 60s
+  # 空闲 keepalive 连接过期时间（默认 1m30s）
+  keepAliveTimeout: 3m0s
+  # 最大空闲 keepalive 连接数（默认 100）
+  keepAliveConnections: 100
+  # 禁用 Happy Eyeballs（IPv4/IPv6 快速回退，默认 false）
+  noHappyEyeballs: false
+
+ingress:
+  # yanhong.online -> 本地 80 端口
+  - hostname: yanhong.online
+    service: http://localhost:80
+  # 独立服务域名：分别直连对应本地端口，不经过 WSDI 反向代理
+  - hostname: hfs.yanhong.online
+    service: http://localhost:8080
+  - hostname: logs.yanhong.online
+    service: http://localhost:9876
+  - hostname: "*.yanhong.online"
+    service: http://localhost:80
+  
+  # 默认规则：所有其他请求返回 404
+  - service: http_status:404

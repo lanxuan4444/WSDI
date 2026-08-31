@@ -1,0 +1,1412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>在线驱动安装 - Driver Install</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --accent: #58a6ff;
+            --green: #3fb950;
+            --red: #f85149;
+            --yellow: #d2991d;
+            --muted: #8b949e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 粒子背景 */
+        .bg-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 50px 20px 30px;
+        }
+
+        .header .icon {
+            width: 72px;
+            height: 72px;
+            background: linear-gradient(135deg, #58a6ff, #3fb950);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(88, 166, 255, 0.25);
+        }
+
+        .header .icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 17px;
+        }
+
+        /* 顶部导航 */
+        .top-nav {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        .top-nav a {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .top-nav a:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(88, 166, 255, 0.12);
+        }
+
+        .top-nav a.active {
+            background: rgba(88, 166, 255, 0.12);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .nav-sep {
+            width: 1px;
+            background: var(--border);
+            align-self: stretch;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.offline {
+            background: var(--red);
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* 步骤区 */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+
+        @media (max-width: 700px) {
+            .steps { grid-template-columns: 1fr; }
+        }
+
+        .step {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .step:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(88, 166, 255, 0.1);
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--green));
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+
+        .step:hover::before {
+            transform: scaleX(1);
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .step h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+            color: #f0f6fc;
+        }
+
+        .step p {
+            color: var(--muted);
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        /* 主卡片 */
+        .main-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 36px;
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .main-card h2 {
+            font-size: 22px;
+            color: #f0f6fc;
+            margin-bottom: 12px;
+        }
+
+        .main-card .subtitle {
+            color: var(--muted);
+            font-size: 15px;
+            margin-bottom: 28px;
+        }
+
+        /* 下载按钮 */
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #238636, #2ea043);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 16px 44px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(35, 134, 54, 0.3);
+        }
+
+        .btn-download:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(35, 134, 54, 0.4);
+        }
+
+        .btn-download:active {
+            transform: translateY(0);
+        }
+
+        .btn-download svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        .btn-download-sm {
+            padding: 10px 28px;
+            font-size: 14px;
+            box-shadow: none;
+        }
+
+        /* 命令复制框 */
+        .cmd-box {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px 6px 6px 18px;
+            margin: 0 auto 20px;
+            max-width: 640px;
+            gap: 10px;
+            transition: border-color 0.2s;
+        }
+
+        .cmd-box code {
+            flex: 1;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            color: #7ee787;
+            word-break: break-all;
+            user-select: all;
+        }
+
+        .btn-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-copy:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn-copy.copied {
+            background: var(--green);
+        }
+
+        /* 手动分析区 */
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 28px 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .upload-area {
+            background: var(--card);
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover,
+        .upload-area.drag-over {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.04);
+        }
+
+        .upload-area svg {
+            width: 40px;
+            height: 40px;
+            fill: var(--muted);
+            margin-bottom: 12px;
+        }
+
+        .upload-area p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .upload-area .highlight {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* 结果面板 */
+        .result-panel {
+            display: none;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .result-panel.active {
+            display: block;
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .result-header h3 {
+            color: #f0f6fc;
+            font-size: 18px;
+        }
+
+        .result-summary {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .summary-badge {
+            background: rgba(88, 166, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--accent);
+        }
+
+        .driver-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .driver-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .driver-item:hover {
+            border-color: var(--border);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .driver-cat {
+            font-size: 11px;
+            background: rgba(88, 166, 255, 0.15);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .driver-name {
+            color: var(--text);
+            font-size: 14px;
+        }
+
+        .driver-size {
+            color: var(--muted);
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .btn-dl {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-dl:hover {
+            filter: brightness(1.2);
+        }
+
+        /* 未匹配设备 */
+        .unmatched {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(210, 153, 29, 0.08);
+            border-radius: 8px;
+            border: 1px solid rgba(210, 153, 29, 0.2);
+        }
+
+        .unmatched h4 {
+            color: var(--yellow);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .unmatched-item {
+            color: var(--muted);
+            font-size: 12px;
+            padding: 3px 0;
+        }
+
+        /* 加载动画 */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-overlay {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading-overlay.active {
+            display: block;
+        }
+
+        .loading-overlay p {
+            color: var(--muted);
+            margin-top: 12px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 24px;
+            color: var(--text);
+            font-size: 14px;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            border-color: var(--green);
+        }
+
+        .toast.error {
+            border-color: var(--red);
+        }
+
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .main-card { padding: 28px 20px; }
+            .btn-download { padding: 14px 28px; font-size: 16px; }
+            .header h1 { font-size: 24px; }
+        }
+
+        /* 手动输入 */
+        .manual-input {
+            display: none;
+            margin-top: 16px;
+        }
+
+        .manual-input textarea {
+            width: 100%;
+            height: 150px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 12px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .manual-input textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-analyze {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: all 0.2s;
+        }
+
+        .btn-analyze:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn-analyze:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .info-box {
+            background: rgba(88, 166, 255, 0.06);
+            border: 1px solid rgba(88, 166, 255, 0.2);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 13px;
+            color: var(--text);
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .info-box .info-icon {
+            color: var(--accent);
+            font-size: 18px;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* 解锁密码计算器 */
+        .unlock-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 36px;
+            margin: 28px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .unlock-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--yellow), var(--accent));
+        }
+
+        .unlock-card h2 {
+            font-size: 20px;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .unlock-card h2 .icon {
+            font-size: 22px;
+        }
+
+        .unlock-card .desc {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .unlock-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .unlock-fields { grid-template-columns: 1fr; }
+        }
+
+        .unlock-field label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .unlock-field input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 12px 14px;
+            font-size: 18px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 2px;
+            transition: border-color 0.2s;
+        }
+
+        .unlock-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-unlock-calc {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #b08800, #d2991d);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(210, 153, 29, 0.25);
+        }
+
+        .btn-unlock-calc:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-unlock-calc:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .unlock-result {
+            display: none;
+            margin-top: 20px;
+            padding: 18px 20px;
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.35);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .unlock-result.show { display: block; }
+
+        .unlock-result .label {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .unlock-result .pwd {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--green);
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 8px;
+            user-select: all;
+            margin-bottom: 6px;
+        }
+
+        .unlock-result .copy-hint {
+            color: var(--muted);
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<canvas class="bg-canvas" id="bgCanvas"></canvas>
+
+<div class="container">
+
+    <!-- Header -->
+    <div class="header">
+        <a href="/client.bat" class="icon" title="下载 client.bat">
+            <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        </a>
+        <h1><a href="/client.bat" style="color:inherit;text-decoration:none;" title="下载 client.bat">在线驱动安装</a></h1>
+        <p>自动检测硬件 &middot; 智能匹配驱动</p>
+        <div class="top-nav">
+            <a href="/" class="active">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+                驱动安装
+            </a>
+            <a href="https://logs.yanhong.online/" target="_blank" rel="noopener" id="logLinkBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v10z"/><path d="M7 10h10v2H7zm0 4h7v2H7z"/></svg>
+                日志查看
+            </a>
+            <a href="https://hfs.yanhong.online/" target="_blank" rel="noopener" id="hfsLinkBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V9h-8l-2-5zm10 5v9H4V6h5.17l2 3H20z"/></svg>
+                文件分享
+            </a>
+            <a href="/tools">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+                实用工具
+            </a>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-item">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">检查服务器连接...</span>
+        </div>
+        <div class="status-item" id="driverCount" style="display:none;">
+            <span id="driverCountText"></span>
+        </div>
+    </div>
+
+    <!-- 三步说明 -->
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <h3>下载 client.bat</h3>
+            <p>点击下方按钮下载 <b>client.bat</b> 启动器（约 1KB）</p>
+        </div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <h3>双击运行</h3>
+            <p>把下载的文件放到任意目录，<b>双击</b>即可启动</p>
+        </div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <h3>自动安装</h3>
+            <p>自动从服务器拉取最新脚本，扫描硬件、匹配驱动、下载安装</p>
+        </div>
+
+    </div>
+
+    <!-- 主卡片 - 下载 client.bat -->
+    <div class="main-card">
+        <h2>一键在线更新您的驱动</h2>
+        <p class="subtitle">下载 client.bat，双击即可自动安装所有匹配的驱动</p>
+
+        <!-- 主下载按钮 -->
+        <a href="/client.bat" class="btn-download" id="btnDownloadBat">
+            <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+            下载 client.bat
+        </a>
+
+        <div class="info-box">
+            <span class="info-icon">&#9432;</span>
+            <span>client.bat 只是个启动器（~1KB），<b>运行时会自动从服务器拉取最新脚本</b>，无需手动更新。双击后窗口自动弹出，全程无需任何操作。</span>
+        </div>
+
+    </div>
+
+    <!-- 解锁密码计算器 -->
+    <div class="unlock-card" id="unlockCard">
+        <h2><span class="icon">🔓</span>JK 守护 · 解锁密码计算</h2>
+        <p class="desc">家长在设备锁屏界面上看到 <b>配对密钥</b> 和 <b>解锁码</b> 后，填入下方即可算出 6 位解锁密码。无需安装 App。</p>
+        <div class="unlock-fields">
+            <div class="unlock-field">
+                <label>配对密钥（设备锁屏上的密钥）</label>
+                <input type="text" id="unlockSeed" inputmode="numeric" placeholder="如 40922050" maxlength="8">
+            </div>
+            <div class="unlock-field">
+                <label>解锁码（设备锁屏上黄色数字）</label>
+                <input type="text" id="unlockCode" inputmode="numeric" placeholder="如 8099" maxlength="4">
+            </div>
+        </div>
+        <button class="btn-unlock-calc" id="btnUnlockCalc">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-2h2v2zm0-4H7v-2h2v2zm0-4H7V7h2v2zm6 8h-2v-2h2v2zm0-4h-2v-2h2v2zm0-4h-2V7h2v2zm2-4h-2v2h2V7zm0 4h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg>
+            计算解锁密码
+        </button>
+        <div class="unlock-result" id="unlockResult">
+            <div class="label">解锁密码（6 位）</div>
+            <div class="pwd" id="unlockResultPwd"></div>
+            <div class="copy-hint">在设备锁屏界面输入此密码即可解锁</div>
+        </div>
+    </div>
+
+    <!-- 手动上传区 -->
+    <div class="divider">或者手动上传硬件信息</div>
+
+    <div class="upload-area" id="uploadArea">
+        <svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+        <p>点击此处上传 <span class="highlight">hardware.json</span> 或粘贴 <span class="highlight">pnputil 输出</span></p>
+        <input type="file" id="fileInput" accept=".json,.txt" style="display:none;">
+        <div class="manual-input" id="manualInput">
+            <textarea id="manualText" placeholder="粘贴 pnputil /enum-devices /connected 的输出内容...&#10;&#10;格式示例：&#10;Instance ID:                PCI\VEN_10EC&DEV_8168&SUBSYS_...&#10;Device Description:         Realtek(R) PCI(e) Ethernet Controller&#10;Class Name:                 Net&#10;..."></textarea>
+            <br>
+            <button class="btn-analyze" id="btnManualAnalyze">分析硬件</button>
+        </div>
+    </div>
+
+    <!-- 加载中 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>正在分析硬件信息...</p>
+    </div>
+
+    <!-- 结果面板 -->
+    <div class="result-panel" id="resultPanel">
+        <div class="result-header">
+            <h3 id="resultTitle">分析结果</h3>
+            <div class="result-summary" id="resultSummary"></div>
+        </div>
+        <div class="driver-list" id="driverList"></div>
+        <div class="unmatched" id="unmatchedPanel" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============ API 基地址配置 ============
+// 空字符串 = 与当前页面同源（推荐：统一从后端 5000 端口访问）
+// 如果前端由 HFS 单独托管在 8080，后端在 5000，可改为 'http://localhost:5000'
+const API_BASE = '';
+
+
+
+// ============ 粒子背景 ============
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+class Particle {
+    constructor() {
+        this.reset();
+    }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 1.5 + 0.5;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.opacity = Math.random() * 0.4 + 0.1;
+    }
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+            this.reset();
+        }
+    }
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(88, 166, 255, ${this.opacity})`;
+        ctx.fill();
+    }
+}
+
+for (let i = 0; i < 60; i++) {
+    particles.push(new Particle());
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    // 连线
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+            const dx = particles[i].x - particles[j].x;
+            const dy = particles[i].y - particles[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 120) {
+                ctx.beginPath();
+                ctx.moveTo(particles[i].x, particles[i].y);
+                ctx.lineTo(particles[j].x, particles[j].y);
+                ctx.strokeStyle = `rgba(88, 166, 255, ${0.06 * (1 - dist / 120)})`;
+                ctx.stroke();
+            }
+        }
+    }
+    requestAnimationFrame(animate);
+}
+animate();
+
+// ============ Toast ============
+function showToast(msg, type = '') {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast ' + type + ' show';
+    setTimeout(() => { toast.className = 'toast'; }, 3000);
+}
+
+// ============ 命令复制 ============
+function copyCmd() {
+    const cmd = document.getElementById('cmdText').textContent;
+    const btn = document.getElementById('btnCopy');
+    const btnText = document.getElementById('copyBtnText');
+
+    navigator.clipboard.writeText(cmd).then(() => {
+        btn.classList.add('copied');
+        btnText.textContent = '已复制!';
+        setTimeout(() => {
+            btn.classList.remove('copied');
+            btnText.textContent = '复制命令';
+        }, 2000);
+    }).catch(() => {
+        // 降级方案：选中文本让用户手动复制
+        const range = document.createRange();
+        range.selectNode(document.getElementById('cmdText'));
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        btnText.textContent = '已选中，Ctrl+C';
+        setTimeout(() => { btnText.textContent = '复制命令'; }, 2000);
+    });
+}
+
+// ============ 服务器状态检测 ============
+async function checkServer() {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    try {
+        // 用 /api/analyze 的连通性间接判断（HEAD 不可行，这里用简单 GET 首页）
+        const resp = await fetch(`${API_BASE}/`, { method: 'GET' });
+        if (resp.ok) {
+            dot.classList.remove('offline');
+            text.textContent = '服务器在线';
+        } else {
+            throw new Error('bad status');
+        }
+    } catch (e) {
+        dot.classList.add('offline');
+        text.textContent = '服务器离线 - 请稍后再试';
+    }
+}
+
+
+
+checkServer();
+
+// ============ 解锁密码计算器 ============
+// 算法与 JKGuard App 的 UnlockAlgorithm 完全一致：
+//   input = 配对密钥(seed) + 解锁码(unlockCode)
+//   hash  = SHA256(input)
+//   取 hash 前 8 字节按大端拼成 64 位无符号整数
+//   密码   = (num mod 1000000) 格式化 6 位补零
+//
+// 注意：不使用 crypto.subtle（Web Crypto），因为它在 HTTP 非安全上下文下
+// 为 undefined，会报 "Cannot read properties of undefined (reading 'digest')"。
+// 这里内嵌纯 JS 标准 SHA-256 实现，任意环境下均可运行。
+
+/* SHA-256 纯 JS 实现（基于公共领域代码实现标准算法） */
+var sha256 = (function () {
+    function rotr(x, n) { return (x >>> n) | (x << (32 - n)); }
+    function S(x, n) { return x >>> n; }
+    function Ch(x, y, z) { return (x & y) ^ (~x & z); }
+    function Maj(x, y, z) { return (x & y) ^ (x & z) ^ (y & z); }
+    function Sigma0(x) { return rotr(x, 2) ^ rotr(x, 13) ^ rotr(x, 22); }
+    function Sigma1(x) { return rotr(x, 6) ^ rotr(x, 11) ^ rotr(x, 25); }
+    function sigma0(x) { return rotr(x, 7) ^ rotr(x, 18) ^ S(x, 3); }
+    function sigma1(x) { return rotr(x, 17) ^ rotr(x, 19) ^ S(x, 10); }
+
+    var K = [
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+    ];
+
+    function sha256Bytes(msg) {
+        // 消息先转 UTF-8 字节
+        var str = typeof msg === 'string' ? msg : String(msg);
+        var bytes = [];
+        for (var i = 0; i < str.length; i++) {
+            var c = str.charCodeAt(i);
+            if (c < 0x80) bytes.push(c);
+            else if (c < 0x800) {
+                bytes.push(0xc0 | (c >> 6), 0x80 | (c & 0x3f));
+            } else if (c < 0xd800 || c >= 0xe000) {
+                bytes.push(0xe0 | (c >> 12), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+            } else {
+                // 代理对
+                i++;
+                var c2 = str.charCodeAt(i);
+                c = 0x10000 + (((c & 0x3ff) << 10) | (c2 & 0x3ff));
+                bytes.push(0xf0 | (c >> 18), 0x80 | ((c >> 12) & 0x3f), 0x80 | ((c >> 6) & 0x3f), 0x80 | (c & 0x3f));
+            }
+        }
+        var len = bytes.length;
+        var bitLen = len * 8;
+        // padding: 1, zeros, then 64-bit bit length
+        var withOne = len + 1;
+        var padZeros = (withOne % 64 <= 56) ? (56 - (withOne % 64)) : (120 - (withOne % 64));
+        var totalLen = len + 1 + padZeros + 8;
+        var buf = new Uint8Array(totalLen);
+        buf.set(bytes, 0);
+        buf[len] = 0x80;
+        // 64-bit big-endian length (assume < 2^53)
+        var hi = Math.floor(bitLen / 0x100000000);
+        var lo = bitLen >>> 0;
+        buf[totalLen - 8] = (hi >>> 24) & 0xff;
+        buf[totalLen - 7] = (hi >>> 16) & 0xff;
+        buf[totalLen - 6] = (hi >>> 8) & 0xff;
+        buf[totalLen - 5] = hi & 0xff;
+        buf[totalLen - 4] = (lo >>> 24) & 0xff;
+        buf[totalLen - 3] = (lo >>> 16) & 0xff;
+        buf[totalLen - 2] = (lo >>> 8) & 0xff;
+        buf[totalLen - 1] = lo & 0xff;
+
+        var H = [
+            0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,
+            0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19
+        ];
+        var W = new Int32Array(64);
+
+        for (var offset = 0; offset < totalLen; offset += 64) {
+            for (var t = 0; t < 16; t++) {
+                var idx = offset + t * 4;
+                W[t] = (buf[idx] << 24) | (buf[idx + 1] << 16) | (buf[idx + 2] << 8) | buf[idx + 3];
+            }
+            for (var t = 16; t < 64; t++) {
+                W[t] = (sigma1(W[t - 2]) + W[t - 7] + sigma0(W[t - 15]) + W[t - 16]) | 0;
+            }
+            var a = H[0], b = H[1], c = H[2], d = H[3],
+                e = H[4], f = H[5], g = H[6], h = H[7];
+            for (var t = 0; t < 64; t++) {
+                var T1 = (h + Sigma1(e) + Ch(e, f, g) + K[t] + W[t]) | 0;
+                var T2 = (Sigma0(a) + Maj(a, b, c)) | 0;
+                h = g; g = f; f = e; e = (d + T1) | 0;
+                d = c; c = b; b = a; a = (T1 + T2) | 0;
+            }
+            H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0;
+            H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+            H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0;
+            H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+        }
+
+        var out = new Uint8Array(32);
+        for (var i = 0; i < 8; i++) {
+            out[i * 4] = (H[i] >>> 24) & 0xff;
+            out[i * 4 + 1] = (H[i] >>> 16) & 0xff;
+            out[i * 4 + 2] = (H[i] >>> 8) & 0xff;
+            out[i * 4 + 3] = H[i] & 0xff;
+        }
+        return out;
+    }
+    return sha256Bytes;
+})();
+
+function computeUnlockPassword(seed, unlockCode) {
+    var input = seed + unlockCode;
+    var hash = sha256(input);   // Uint8Array(32)
+    // 取前 8 字节，按大端拼成 64 位无符号整数（必须用 BigInt 避免精度丢失）
+    var num = 0n;
+    for (var i = 0; i < 8; i++) {
+        num = (num << 8n) | BigInt(hash[i]);
+    }
+    num = num % 1000000n;
+    return String(num).padStart(6, '0');
+}
+
+document.getElementById('btnUnlockCalc').addEventListener('click', async () => {
+    const seed = document.getElementById('unlockSeed').value.trim();
+    const code = document.getElementById('unlockCode').value.trim();
+    const result = document.getElementById('unlockResult');
+    const pwdEl = document.getElementById('unlockResultPwd');
+    const btn = document.getElementById('btnUnlockCalc');
+
+    if (!/^\d{6,8}$/.test(seed)) {
+        showToast('请输入 6-8 位数字配对密钥', 'error');
+        return;
+    }
+    if (!/^\d{4}$/.test(code)) {
+        showToast('请输入 4 位数字解锁码', 'error');
+        return;
+    }
+
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    try {
+        const pwd = await computeUnlockPassword(seed, code);
+        pwdEl.textContent = pwd;
+        result.classList.add('show');
+        // 尝试自动复制
+        try {
+            await navigator.clipboard.writeText(pwd);
+            showToast('解锁密码已复制', 'success');
+        } catch (_) {
+            showToast('解锁密码计算完成', 'success');
+        }
+    } catch (e) {
+        showToast('计算失败: ' + e.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.style.opacity = '';
+    }
+});
+
+// ============ 上传区域 ============
+const uploadArea = document.getElementById('uploadArea');
+const fileInput = document.getElementById('fileInput');
+const manualInput = document.getElementById('manualInput');
+const manualText = document.getElementById('manualText');
+
+uploadArea.addEventListener('click', () => {
+    if (manualInput.style.display === 'none') {
+        manualInput.style.display = 'block';
+        fileInput.style.display = 'block';
+    }
+});
+
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    manualText.value = text;
+    manualInput.style.display = 'block';
+});
+
+// 拖放支持
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('drag-over');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('drag-over');
+});
+
+uploadArea.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+        const text = await file.text();
+        manualText.value = text;
+        manualInput.style.display = 'block';
+    }
+});
+
+// ============ 手动分析 ============
+document.getElementById('btnManualAnalyze').addEventListener('click', async () => {
+    const text = manualText.value.trim();
+    if (!text) {
+        showToast('请先粘贴硬件信息', 'error');
+        return;
+    }
+
+    const hwids = parseHwids(text);
+    if (hwids.length === 0) {
+        showToast('未能解析到硬件信息，请检查格式', 'error');
+        return;
+    }
+
+    document.getElementById('loadingOverlay').classList.add('active');
+    document.getElementById('resultPanel').classList.remove('active');
+
+    try {
+        const resp = await fetch(`${API_BASE}/api/analyze`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hwids })
+        });
+        const data = await resp.json();
+        displayResults(data, hwids);
+        if (data.matched) {
+            showToast(`分析完成！匹配到 ${data.drivers.length} 个驱动包`, 'success');
+        } else {
+            showToast('未匹配到驱动包', 'error');
+        }
+    } catch (e) {
+        showToast('分析失败: ' + e.message, 'error');
+    } finally {
+        document.getElementById('loadingOverlay').classList.remove('active');
+    }
+});
+
+// ============ 解析硬件 ID ============
+// 支持从 pnputil 输出 / hardware.json / 纯 HWID 列表中提取 Instance ID
+function parseHwids(text) {
+    const hwids = [];
+    const lines = text.split('\n');
+    let inJson = false;
+    try {
+        const obj = JSON.parse(text);
+        if (Array.isArray(obj)) {
+            obj.forEach(d => {
+                if (typeof d === 'string') hwids.push(d);
+                else if (d && d.hwid) hwids.push(d.hwid);
+            });
+            return hwids;
+        } else if (obj && obj.hwids) {
+            return obj.hwids;
+        }
+    } catch (e) { /* not json, fall through */ }
+
+    for (const line of lines) {
+        const trimmed = line.trim();
+        // pnputil 格式: "Instance ID: PCI\VEN_..."
+        if (/^Instance ID:/i.test(trimmed)) {
+            const v = trimmed.replace(/^Instance ID:/i, '').trim();
+            if (v) hwids.push(v);
+        }
+        // 纯 HWID 行: 含反斜杠且像硬件 ID
+        else if (/^[A-Za-z0-9_]+\\/.test(trimmed)) {
+            hwids.push(trimmed);
+        }
+    }
+    // 去重
+    return [...new Set(hwids)];
+}
+
+// ============ 显示结果 ============
+function displayResults(data, hwids) {
+    const panel = document.getElementById('resultPanel');
+    const title = document.getElementById('resultTitle');
+    const summary = document.getElementById('resultSummary');
+    const list = document.getElementById('driverList');
+    const unmatched = document.getElementById('unmatchedPanel');
+
+    panel.classList.add('active');
+
+    const matchedCount = data.drivers ? data.drivers.length : 0;
+    title.textContent = `提交 ${hwids.length} 个设备，匹配 ${matchedCount} 个驱动包`;
+    summary.innerHTML = `
+        <span class="summary-badge">驱动包: ${matchedCount}</span>
+        <span class="summary-badge">总大小: ~${data.total_size_mb || 0} MB</span>
+    `;
+
+    if (data.gpu_notices && data.gpu_notices.length) {
+        const gpuBox = document.createElement('div');
+        gpuBox.className = 'unmatched-item';
+        gpuBox.style.marginBottom = '14px';
+        gpuBox.style.borderColor = 'rgba(210, 153, 29, 0.35)';
+        gpuBox.innerHTML = `<b>显卡驱动提示</b><br>${data.gpu_notices.map(t => `• ${t}`).join('<br>')}`;
+        list.appendChild(gpuBox);
+    }
+
+    if (matchedCount === 0) {
+        const emptyItem = document.createElement('div');
+        emptyItem.className = 'unmatched-item';
+        emptyItem.textContent = '未找到匹配的驱动包，设备可能已是最新驱动或无对应包。';
+        list.appendChild(emptyItem);
+    } else {
+        data.drivers.forEach(drv => {
+            const item = document.createElement('div');
+            item.className = 'driver-item';
+            const dlUrl = drv.url || `${API_BASE}/api/download_pkg/${encodeURIComponent(drv.pkg)}`;
+            const idxUrl = drv.index_url || (drv.index
+                ? `${API_BASE}/api/download_index/${encodeURIComponent(drv.index)}`
+                : '');
+            item.innerHTML = `
+                <div class="driver-info">
+                    <span class="driver-cat">驱动包</span>
+                    <span class="driver-name">${drv.pkg}</span>
+                </div>
+                <span class="driver-size">${drv.size_mb} MB</span>
+                <a href="${dlUrl}" class="btn-dl" target="_blank">下载包</a>
+                ${idxUrl ? `<a href="${idxUrl}" class="btn-dl" target="_blank">索引</a>` : ''}
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // 显示未匹配的设备
+    const matchedHwids = new Set();
+    if (data.matched_hwids) {
+        Object.keys(data.matched_hwids).forEach(h => matchedHwids.add(h.toUpperCase()));
+    }
+    const unmatchedList = (hwids || []).filter(h => !matchedHwids.has(h.toUpperCase()));
+    if (unmatchedList.length > 0) {
+        unmatched.style.display = 'block';
+        unmatched.innerHTML = `
+            <h4>${unmatchedList.length} 个设备未匹配驱动</h4>
+            ${unmatchedList.map(u => `<div class="unmatched-item">${u}</div>`).join('')}
+        `;
+    } else {
+        unmatched.style.display = 'none';
+    }
+}
+</script>
+
+</body>
+</html>

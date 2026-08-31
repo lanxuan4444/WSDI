@@ -1,0 +1,17 @@
+{
+  "uploadedAt": "2026-08-22 17:29:52",
+  "originalNames": {
+    "host": "1787390911949.jpg",
+    "part": "1787390984845.jpg"
+  },
+  "sizes": {
+    "host": 2905660,
+    "part": 3180586
+  },
+  "sha256": {
+    "host": "7035da9d2deea1c167345900b48b6405baf1834793ec51491a6e7bc8de20a189",
+    "part": "6a948e0db6e4b5d58914889865d35f9e0a012efbe860860da7ce8ff9346fcb7a"
+  },
+  "migratedFrom": "Batch_20260822-172952_YLX64SCF",
+  "migratedAt": "2026-08-24"
+}

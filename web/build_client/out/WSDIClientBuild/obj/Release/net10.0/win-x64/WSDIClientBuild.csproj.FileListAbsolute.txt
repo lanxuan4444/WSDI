@@ -1,0 +1,4 @@
+D:\WSDI\web\build_client\out\WSDIClientBuild\obj\Release\net10.0\win-x64\WSDIClientBuild.GeneratedMSBuildEditorConfig.editorconfig
+D:\WSDI\web\build_client\out\WSDIClientBuild\obj\Release\net10.0\win-x64\WSDIClientBuild.AssemblyInfoInputs.cache
+D:\WSDI\web\build_client\out\WSDIClientBuild\obj\Release\net10.0\win-x64\WSDIClientBuild.AssemblyInfo.cs
+D:\WSDI\web\build_client\out\WSDIClientBuild\obj\Release\net10.0\win-x64\WSDIClientBuild.csproj.CoreCompileInputs.cache

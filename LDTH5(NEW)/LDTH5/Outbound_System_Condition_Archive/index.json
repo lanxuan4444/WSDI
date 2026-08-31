@@ -1,0 +1,50 @@
+{
+  "YLX64SCF": {
+    "folder": "OSCA_20260822-172952_YLX64SCF",
+    "uploadedAt": "2026-08-22 17:29:52",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20260822-172952.jpg",
+        "size": 2905660,
+        "sha256": ""
+      },
+      {
+        "type": "part",
+        "name": "part_20260822-172952.jpg",
+        "size": 3180586,
+        "sha256": ""
+      }
+    ]
+  },
+  "D4WFN74": {
+    "folder": "OSCA_20260824-104609_D4WFN74",
+    "uploadedAt": "2026-08-24 10:46:09",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20260824-104609.jpg",
+        "size": 4045245,
+        "sha256": ""
+      },
+      {
+        "type": "part",
+        "name": "part_20260824-104609.jpg",
+        "size": 3740305,
+        "sha256": ""
+      }
+    ]
+  },
+  "YJ01TH8T": {
+    "folder": "OSCA_20260824-120038_YJ01TH8T",
+    "uploadedAt": "2026-08-24 12:00:38",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20260824-120038.jpg",
+        "size": 3804649,
+        "sha256": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+  正在确定要还原的项目…
+  已还原 D:\WSDI\web\build_client\out\WSDIClientBuild\WSDIClientBuild.csproj (用时 7.25 秒)。
+CSC : error CS5001: 程序不包含适合于入口点的静态 "Main" 方法 [D:\WSDI\web\build_client\out\WSDIClientBuild\WSDIClientBuild.csproj]
