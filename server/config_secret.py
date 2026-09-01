@@ -26,3 +26,6 @@ DRIVERS_DIR = r"D:\SDI\Drivers"
 INDEX_DIR = r"D:\SDI\Index\SDI"
 SDI_LITE_PATH = r"D:\WSDI\cache\sdi_lite\SDI_R2601.7z"
 ZIP_7Z_PATH = r"D:\WSDI\cache\tools\7z_portable.zip"
+
+# ---- 网络打印访问密码（外网用户远程打印需输入）----
+PRINT_ACCESS_PASSWORD = "19008"

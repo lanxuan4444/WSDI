@@ -6,6 +6,7 @@ WSDI Server - Remote Driver Installer Backend
 import json
 import os
 import io
+import tempfile
 import zipfile
 import urllib.request
 from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
@@ -337,6 +338,16 @@ class WSDIHandler(BaseHTTPRequestHandler):
         if path == "/api/health":
             self._send_json({"ok": True, "service": "wsdi"})
 
+        elif path == "/api/printers":
+            # 列出本机打印机（网络打印前端用）
+            import printer as printer_mod
+            self._send_json({
+                "ok": True,
+                "printers": printer_mod.list_printers(),
+                "available": printer_mod.printers_available(),
+                "default": printer_mod.get_default_printer(),
+            })
+
         elif path == "/api/sdi_lite":
             # SDI Lite: 优先走 B2（如果已上传），否则本地 serve
             try:
@@ -598,6 +609,8 @@ class WSDIHandler(BaseHTTPRequestHandler):
             self._proxy_hfs(parsed)
         elif path == "/api/analyze":
             self._handle_analyze()
+        elif path == "/api/print":
+            self._handle_print()
         else:
             self._send_json({"error": "not found"}, 404)
 
@@ -762,6 +775,139 @@ class WSDIHandler(BaseHTTPRequestHandler):
                 "detail": str(e),
                 "hint": "Make sure LDTH5 server is running on port 9876"
             }, 502)
+
+    def _handle_print(self):
+        """网络打印：接收上传文件 + 密码，用本机打印机打印。
+
+        POST /api/print?printer=<name>&password=<pwd>&filename=<xxx>
+        Body: 文件原始字节（application/octet-stream），文件名放 X-Filename 头或 filename 参数。
+        """
+        import printer as printer_mod
+
+        # 读取打印访问密码（优先 config_secret.py，回退环境变量）
+        try:
+            from config_secret import PRINT_ACCESS_PASSWORD as _pwd
+            print_password = _pwd
+        except Exception:
+            print_password = os.environ.get("PRINT_ACCESS_PASSWORD", "print2026")
+
+        # 参数解析：优先从 body 前缀读取 JSON meta（4 字节大端长度 + JSON）
+        parsed = urlparse(self.path)
+        qs = {}
+        if parsed.query:
+            for kv in parsed.query.split("&"):
+                if "=" in kv:
+                    k, v = kv.split("=", 1)
+                    qs[unquote(k)] = unquote(v)
+
+        printer_name = qs.get("printer", "")
+        password = qs.get("password", "")
+        filename = qs.get("filename", "")
+        settings = {}
+
+        # 读取 body（必须读取后才能 peek 前缀）
+        try:
+            length = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            length = 0
+        if length <= 0:
+            self._send_json({"ok": False, "error": "没有收到文件内容"}, 400)
+            return
+        if length > printer_mod.MAX_FILE_SIZE:
+            self._send_json({"ok": False, "error": "文件过大（上限 20MB）"}, 413)
+            return
+
+        raw_full = self.rfile.read(length)
+
+        # 尝试从 body 前 4 字节提取 JSON meta（前端新格式）
+        meta = None
+        if len(raw_full) >= 4:
+            try:
+                meta_len = int.from_bytes(raw_full[:4], "big")
+                if 0 < meta_len < 65536 and len(raw_full) >= 4 + meta_len:
+                    meta_str = raw_full[4:4 + meta_len].decode("utf-8", errors="replace")
+                    meta = json.loads(meta_str)
+                    raw = raw_full[4 + meta_len:]
+            except Exception:
+                meta = None
+
+        if meta is None:
+            # 回退到旧格式：URL 参数 + X-Filename 头
+            raw = raw_full
+            if not filename:
+                filename = self.headers.get("X-Filename", "")
+                if filename:
+                    try:
+                        filename = unquote(filename)
+                    except Exception:
+                        pass
+        else:
+            # 从 meta 取参数
+            if not printer_name:
+                printer_name = meta.get("printer", "")
+            if not password:
+                password = meta.get("password", "")
+            if not filename:
+                filename = meta.get("filename", "")
+            # 打印设置（份数/纸张/单双面/横向/页码范围）
+            if isinstance(meta.get("settings"), dict):
+                settings = meta["settings"]
+
+        # 1. 校验密码
+        if password != print_password:
+            self._send_json({"ok": False, "error": "打印密码错误"}, 401)
+            return
+
+        # 2. 校验打印机存在
+        if printer_name:
+            printers = printer_mod.list_printers()
+            if not any(p.lower() == printer_name.lower() for p in printers):
+                self._send_json({"ok": False, "error": "打印机不存在"}, 400)
+                return
+
+        # 3. 检查扩展名是否支持
+        if not filename:
+            # 无文件名，尝试从 content-type 推断
+            ct = self.headers.get("Content-Type", "")
+            if "pdf" in ct:
+                filename = "upload.pdf"
+            elif "image/png" in ct:
+                filename = "upload.png"
+            elif "image/jpeg" in ct or "image/jpg" in ct:
+                filename = "upload.jpg"
+            else:
+                filename = "upload.bin"
+
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in printer_mod.ALLOWED_EXT:
+            self._send_json({
+                "ok": False,
+                "error": f"不支持的文件类型: {ext or '(无扩展名)'}",
+                "allowed": list(printer_mod.ALLOWED_EXT.keys()),
+            }, 415)
+            return
+
+        # 5. 保存到临时目录
+        tmp_path = None
+        try:
+            fd, tmp_path = tempfile.mkstemp(suffix=ext, prefix="wsdi_print_")
+            with os.fdopen(fd, "wb") as f:
+                f.write(raw)
+        except Exception as e:
+            self._send_json({"ok": False, "error": f"保存文件失败: {e}"}, 500)
+            return
+
+        # 6. 打印（传递打印设置：份数/纸张/单双面/横向/页码范围）
+        try:
+            ok, msg = printer_mod.print_file(tmp_path, printer_name or None, settings or {})
+            resp = {"ok": ok, "message": msg, "filename": filename, "printer": printer_name or "默认"}
+            if settings:
+                resp["settings"] = settings
+            self._send_json(resp)
+        except Exception as e:
+            self._send_json({"ok": False, "error": f"打印异常: {e}"}, 500)
+        finally:
+            printer_mod.cleanup_temp(tmp_path)
 
     def _handle_analyze(self):
         """Receive HWID list, return matched driver packages + indexes.

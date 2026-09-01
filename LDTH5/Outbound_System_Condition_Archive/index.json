@@ -25,13 +25,13 @@
         "type": "host",
         "name": "host_20260824-104609.jpg",
         "size": 4045245,
-        "sha256": "20a9f0de3b889a5a36eb6f42fe959587b95ffe329fa903d2fd83da8813d25d8c"
+        "sha256": ""
       },
       {
         "type": "part",
         "name": "part_20260824-104609.jpg",
         "size": 3740305,
-        "sha256": "21eb0fc8246b37d14bf31a14ea3d1a12d04565c268139b5b3bf0fdd8897c9179"
+        "sha256": ""
       }
     ]
   },

@@ -792,6 +792,269 @@
             color: var(--muted);
             font-size: 12px;
         }
+
+        /* 网络打印机 */
+        .printer-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px 36px;
+            margin: 28px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .printer-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(90deg, var(--accent), #bc8cff);
+        }
+
+        .printer-card h2 {
+            font-size: 20px;
+            color: #f0f6fc;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .printer-card .desc {
+            color: var(--muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .printer-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .printer-fields { grid-template-columns: 1fr; }
+        }
+
+        /* 预览区 */
+        .printer-preview {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .preview-title {
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .preview-hint {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .preview-body {
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 12px;
+            max-height: 480px;
+            overflow: auto;
+            text-align: center;
+        }
+
+        .preview-body img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .preview-body embed,
+        .preview-body iframe {
+            width: 100%;
+            height: 460px;
+            border: 0;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .preview-body pre {
+            text-align: left;
+            color: var(--text);
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 440px;
+            overflow: auto;
+            margin: 0;
+            padding: 12px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+        }
+
+        .preview-body .preview-not-supported {
+            color: var(--muted);
+            font-size: 14px;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .preview-body .preview-not-supported .icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            opacity: 0.6;
+        }
+
+        /* 打印设置面板 */
+        .printer-settings {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .printer-settings { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 400px) {
+            .printer-settings { grid-template-columns: 1fr; }
+        }
+
+        .printer-settings .printer-field {
+            min-width: 0;
+        }
+
+        .printer-field label {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .printer-field select,
+        .printer-field input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            padding: 12px 14px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .printer-field select:focus,
+        .printer-field input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .printer-file-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .printer-file-area:hover,
+        .printer-file-area.drag-over {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.04);
+        }
+
+        .printer-file-area .file-name {
+            color: var(--accent);
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        .printer-file-area p {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .printer-file-area .type-hint {
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .btn-print {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #8957e5, #bc8cff);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s;
+            box-shadow: 0 4px 16px rgba(137, 87, 229, 0.3);
+        }
+
+        .btn-print:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+        }
+
+        .btn-print:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-print svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .printer-result {
+            display: none;
+            margin-top: 20px;
+            padding: 16px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .printer-result.show { display: block; }
+        .printer-result.success {
+            background: rgba(63, 185, 80, 0.08);
+            border: 1px solid rgba(63, 185, 80, 0.35);
+            color: var(--green);
+        }
+        .printer-result.error {
+            background: rgba(248, 81, 73, 0.08);
+            border: 1px solid rgba(248, 81, 73, 0.35);
+            color: var(--red);
+        }
     </style>
 </head>
 <body>
@@ -898,6 +1161,88 @@
             <div class="pwd" id="unlockResultPwd"></div>
             <div class="copy-hint">在设备锁屏界面输入此密码即可解锁</div>
         </div>
+    </div>
+
+    <!-- 网络打印机 -->
+    <div class="printer-card" id="printerCard">
+        <h2><span class="icon">🖨️</span>网络打印机</h2>
+        <p class="desc">选择本机打印机，上传 <b>PDF / 图片 / Word / Excel / 文本</b> 文件，即可远程打印到该打印机（需输入打印访问密码）。</p>
+
+        <div class="printer-fields">
+            <div class="printer-field">
+                <label>选择打印机</label>
+                <select id="printerSelect">
+                    <option value="">正在加载打印机...</option>
+                </select>
+            </div>
+            <div class="printer-field">
+                <label>打印访问密码</label>
+                <input type="password" id="printerPassword" placeholder="请输入打印密码" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="printer-file-area" id="printerFileArea">
+            <p>点击选择要打印的文件，或拖拽文件到此处</p>
+            <div class="file-name" id="printerFileName" style="display:none;"></div>
+            <div class="type-hint">支持格式：.pdf &nbsp;.png &nbsp;.jpg &nbsp;.jpeg &nbsp;.bmp &nbsp;.gif &nbsp;.doc/.docx &nbsp;.xls/.xlsx &nbsp;.txt &nbsp;.log（单个文件 ≤ 20MB）</div>
+            <input type="file" id="printerFileInput" style="display:none;" accept=".pdf,.png,.jpg,.jpeg,.bmp,.gif,.doc,.docx,.xls,.xlsx,.txt,.log">
+        </div>
+
+        <!-- 预览区 -->
+        <div class="printer-preview" id="printerPreviewBox" style="display:none;">
+            <div class="preview-header">
+                <span class="preview-title">📄 打印预览</span>
+                <span class="preview-hint" id="previewHint"></span>
+            </div>
+            <div class="preview-body" id="previewBody">
+                <!-- 预览内容动态插入 -->
+            </div>
+        </div>
+
+        <!-- 打印设置 -->
+        <div class="printer-settings">
+            <div class="printer-field">
+                <label>份数</label>
+                <input type="number" id="printerCopies" value="1" min="1" max="99">
+            </div>
+            <div class="printer-field">
+                <label>纸张</label>
+                <select id="printerPaper">
+                    <option value="Auto">自动</option>
+                    <option value="A4">A4</option>
+                    <option value="A5">A5</option>
+                    <option value="A3">A3</option>
+                    <option value="Letter">Letter</option>
+                    <option value="Legal">Legal</option>
+                </select>
+            </div>
+            <div class="printer-field">
+                <label>单面 / 双面</label>
+                <select id="printerDuplex">
+                    <option value="off">单面</option>
+                    <option value="long-edge">双面（长边翻页）</option>
+                    <option value="short-edge">双面（短边翻页）</option>
+                </select>
+            </div>
+            <div class="printer-field">
+                <label>方向</label>
+                <select id="printerOrientation">
+                    <option value="portrait">纵向</option>
+                    <option value="landscape">横向</option>
+                </select>
+            </div>
+            <div class="printer-field">
+                <label>页码范围（PDF/Word，如 1-3,5，留空=全部）</label>
+                <input type="text" id="printerPageRange" placeholder="如 1-3,5 或留空全部" autocomplete="off">
+            </div>
+        </div>
+
+        <button class="btn-print" id="btnPrint">
+            <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+            发送打印
+        </button>
+
+        <div class="printer-result" id="printerResult"></div>
     </div>
 
     <!-- 手动上传区 -->
@@ -1061,6 +1406,209 @@ async function checkServer() {
 
 
 checkServer();
+
+// ============ 网络打印机 ============
+const printerSelect = document.getElementById('printerSelect');
+const printerPassword = document.getElementById('printerPassword');
+const printerFileArea = document.getElementById('printerFileArea');
+const printerFileInput = document.getElementById('printerFileInput');
+const printerFileName = document.getElementById('printerFileName');
+const btnPrint = document.getElementById('btnPrint');
+const printerResult = document.getElementById('printerResult');
+let selectedPrintFile = null;
+
+// 加载打印机列表
+async function loadPrinters() {
+    try {
+        const resp = await fetch(`${API_BASE}/api/printers`);
+        const data = await resp.json();
+        printerSelect.innerHTML = '';
+        if (data.ok && data.printers && data.printers.length > 0) {
+            data.printers.forEach((name) => {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = name;
+                printerSelect.appendChild(opt);
+            });
+        } else {
+            printerSelect.innerHTML = '<option value="">本机没有可用打印机</option>';
+        }
+    } catch (e) {
+        printerSelect.innerHTML = '<option value="">打印机加载失败</option>';
+        console.error('loadPrinters:', e);
+    }
+}
+loadPrinters();
+
+// 选择文件 / 拖拽
+printerFileArea.addEventListener('click', () => printerFileInput.click());
+printerFileArea.addEventListener('dragover', (e) => { e.preventDefault(); printerFileArea.classList.add('drag-over'); });
+printerFileArea.addEventListener('dragleave', () => printerFileArea.classList.remove('drag-over'));
+printerFileArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    printerFileArea.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) {
+        setPrintFile(e.dataTransfer.files[0]);
+    }
+});
+printerFileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) setPrintFile(e.target.files[0]);
+});
+
+function setPrintFile(file) {
+    const allowed = ['.pdf','.png','.jpg','.jpeg','.bmp','.gif','.doc','.docx','.xls','.xlsx','.txt','.log'];
+    const ext = (file.name.split('.').pop() || '').toLowerCase();
+    if (file.size > 20 * 1024 * 1024) {
+        showToast('文件超过 20MB 上限', 'error');
+        return;
+    }
+    if (!allowed.includes('.' + ext)) {
+        showToast('不支持的文件类型: .' + ext, 'error');
+        return;
+    }
+    selectedPrintFile = file;
+    printerFileName.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    printerFileName.style.display = 'block';
+    printerFileArea.querySelector('p').style.display = 'none';
+    // 自动渲染预览
+    renderPreview(file, ext);
+}
+
+// ========= 预览功能 =========
+const printerPreviewBox = document.getElementById('printerPreviewBox');
+const previewBody = document.getElementById('previewBody');
+const previewHint = document.getElementById('previewHint');
+let _previewObjectUrl = null;
+
+function renderPreview(file, ext) {
+    // 清理旧的 Object URL 防止内存泄漏
+    if (_previewObjectUrl) {
+        try { URL.revokeObjectURL(_previewObjectUrl); } catch (e) {}
+        _previewObjectUrl = null;
+    }
+    previewBody.innerHTML = '';
+    printerPreviewBox.style.display = 'block';
+
+    // 图片：直接显示
+    if (['png','jpg','jpeg','bmp','gif'].includes(ext)) {
+        const url = URL.createObjectURL(file);
+        _previewObjectUrl = url;
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = file.name;
+        previewHint.textContent = `图片预览 · 原尺寸过大时会自动缩放显示`;
+        previewBody.appendChild(img);
+        return;
+    }
+
+    // PDF：用浏览器内置 PDF 查看器
+    if (ext === 'pdf') {
+        const url = URL.createObjectURL(file);
+        _previewObjectUrl = url;
+        const embed = document.createElement('embed');
+        embed.src = url;
+        embed.type = 'application/pdf';
+        previewHint.textContent = `PDF 预览 · 浏览器内置查看器`;
+        previewBody.appendChild(embed);
+        return;
+    }
+
+    // 文本：读取显示前 ~200 行
+    if (['txt','log'].includes(ext)) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const text = String(reader.result || '');
+            const lines = text.split(/\r?\n/);
+            const max = 200;
+            const shown = lines.length > max
+                ? lines.slice(0, max).join('\n') + `\n\n... (省略剩余 ${lines.length - max} 行)`
+                : text;
+            const pre = document.createElement('pre');
+            pre.textContent = shown;
+            previewHint.textContent = `文本预览 · ${lines.length} 行${lines.length > max ? '，仅显示前 ' + max + ' 行' : ''}`;
+            previewBody.appendChild(pre);
+        };
+        reader.readAsText(file, 'utf-8');
+        return;
+    }
+
+    // Word/Excel：浏览器不能直接预览
+    if (['doc','docx','xls','xlsx'].includes(ext)) {
+        previewHint.textContent = `文档预览 · 浏览器无法直接预览`;
+        const box = document.createElement('div');
+        box.className = 'preview-not-supported';
+        box.innerHTML = '<div class="icon">📑</div><div>该格式无法在浏览器中预览</div><div style="margin-top:8px;font-size:12px;color:var(--accent)">可直接打印 — 服务端会先转成 PDF 再用 GDI 打印</div>';
+        previewBody.appendChild(box);
+        return;
+    }
+
+    // 其他
+    previewHint.textContent = '未知类型';
+    previewBody.textContent = '(无法预览)';
+}
+
+// 发送打印
+btnPrint.addEventListener('click', async () => {
+    if (!selectedPrintFile) { showToast('请先选择要打印的文件', 'error'); return; }
+    const printer = printerSelect.value;
+    if (!printer) { showToast('请选择打印机', 'error'); return; }
+    const password = printerPassword.value.trim();
+    if (!password) { showToast('请输入打印访问密码', 'error'); return; }
+
+    printerResult.className = 'printer-result';
+    printerResult.classList.remove('show');
+    btnPrint.disabled = true;
+    btnPrint.style.opacity = '0.6';
+
+    try {
+        // 收集打印设置
+        const copies = parseInt(document.getElementById('printerCopies').value, 10) || 1;
+        const settings = {
+            copies: Math.max(1, Math.min(99, copies)),
+            paper: document.getElementById('printerPaper').value,
+            duplex: document.getElementById('printerDuplex').value,
+            orientation: document.getElementById('printerOrientation').value,
+            page_range: document.getElementById('printerPageRange').value.trim(),
+        };
+        // 打印机/密码/文件名/设置放 JSON body 传，避免 URL 参数在公网隧道里被截断或破坏
+        const meta = JSON.stringify({ printer, password, filename: selectedPrintFile.name, settings });
+        const metaBytes = new TextEncoder().encode(meta);
+        // 文件 body 前面追加 4 字节大端长度 + JSON meta，便于后端读取
+        const lenBytes = new Uint8Array(4);
+        new DataView(lenBytes.buffer).setUint32(0, metaBytes.length, false);
+        const combined = new Blob([lenBytes, metaBytes, selectedPrintFile]);
+
+        const resp = await fetch(`${API_BASE}/api/print`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/octet-stream',
+            },
+            body: combined,
+        });
+        const data = await resp.json();
+        if (resp.status === 401) {
+            showResult(data.error || '打印密码错误', false);
+            showToast('打印密码错误', 'error');
+        } else if (data.ok) {
+            showResult(data.message || '打印任务已提交', true);
+            showToast('打印任务已提交', 'success');
+        } else {
+            showResult(data.error || data.message || '打印失败', false);
+            showToast(data.error || '打印失败', 'error');
+        }
+    } catch (e) {
+        showResult('打印请求失败: ' + e.message, false);
+        showToast('打印请求失败', 'error');
+    } finally {
+        btnPrint.disabled = false;
+        btnPrint.style.opacity = '';
+    }
+});
+
+function showResult(msg, success) {
+    printerResult.textContent = msg;
+    printerResult.className = 'printer-result show ' + (success ? 'success' : 'error');
+}
 
 // ============ 解锁密码计算器 ============
 // 算法与 JKGuard App 的 UnlockAlgorithm 完全一致：
