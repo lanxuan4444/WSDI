@@ -1,0 +1,33 @@
+{
+  "sn": "7FV5TJ4",
+  "machineModel": "EBT2250",
+  "cpuModel": "",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "DELL 电源750W MODEL NO: L750EPS-O0 05TVR6",
+  "note": "",
+  "uploadedAt": "2026-10-08 16:35:18",
+  "originalNames": [
+    "cap_host_20261008_163447_352.jpg",
+    "cap_other_20261008_163343_423.jpg"
+  ],
+  "files": [
+    {
+      "type": "host",
+      "name": "host_20261008-163518_1.jpg",
+      "size": 731485,
+      "sha256": "1b1577c05917d1e7c979008c001c05b064ea5de29045d3e9c272ee36e45e7721"
+    },
+    {
+      "type": "other",
+      "name": "other_20261008-163518_1.jpg",
+      "size": 705522,
+      "sha256": "6177ff29cb56a79b094c586c1cc247114d8ddd99e704ac6d6d6fb64cfae7cf42"
+    }
+  ],
+  "editedAt": "2026-10-13 17:49:09",
+  "vendor": ""
+}

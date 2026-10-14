@@ -1,0 +1,47 @@
+{
+  "sn": "GM1DDHWJ",
+  "machineModel": "P3 Tiny Gen 2",
+  "cpuModel": "ULTRA 3 205",
+  "cpuBatch": "X609M803",
+  "cpuCode": "05378",
+  "ramInfo": "",
+  "ssdInfo": "UM 512GB NVMe\nRPEYJ512MML1QWQ\nPCLE GEN4 X4 NVME",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-09 18:37:05",
+  "originalNames": [
+    "cap_cpu_20261009_183427_898.jpg",
+    "cap_host_20261009_183621_393.jpg",
+    "cap_ssd_20261009_183525_769.jpg",
+    "cap_ssd_20261009_183550_981.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261009-183705_1.jpg",
+      "size": 502161,
+      "sha256": "40151c1a9c6fc51899507b0689cdf350026fedbcb987bf6e8c30b525f13cd1be"
+    },
+    {
+      "type": "host",
+      "name": "host_20261009-183705_1.jpg",
+      "size": 463784,
+      "sha256": "4d9e837acde4656df2da3fe2daec64cf635dca3a9bafc44f2625f93f8ca75068"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261009-183705_1.jpg",
+      "size": 652615,
+      "sha256": "b9245da80b7b3c129609005907b29cd136678f63045120f10e6cf3372221a4cc"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261009-183705_2.jpg",
+      "size": 608574,
+      "sha256": "3dc0232083ac1162e794dd5f8fbdc9cfb7e2e70cb1957348af5a031490d97267"
+    }
+  ],
+  "vendor": "",
+  "editedAt": "2026-10-13 17:48:26"
+}

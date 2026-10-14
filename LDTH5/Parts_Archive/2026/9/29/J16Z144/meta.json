@@ -1,0 +1,47 @@
+{
+  "sn": "J16Z144",
+  "cpuModel": "I7-14700T",
+  "cpuBatch": "L405E698",
+  "cpuCode": "03009",
+  "note": "主机型号: OptiPlex Micro 7020",
+  "uploadedAt": "2026-09-29 14:21:12",
+  "originalNames": [
+    "cap_cpu_20260929_141506_536.jpg",
+    "cap_cpu_20260929_141545_949.jpg",
+    "cap_cpu_20260929_141616_417.jpg",
+    "cap_cpu_20260929_141633_789.jpg",
+    "cap_host_20260929_141908_921.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20260929-142112_1.jpg",
+      "size": 4441376,
+      "sha256": "9d7426615c6fb450f0a0fe92b595b5ad0600a77aa1f042364101f4aa22e410a8"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20260929-142112_2.jpg",
+      "size": 4234020,
+      "sha256": "452deb30f19272104a0e90cab2d77aa91f868f1f3c932c3e1d3c5ea021e44305"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20260929-142112_3.jpg",
+      "size": 3918583,
+      "sha256": "76e0c83163d0c8a0f4126371a6f39dbf69e22b7cf682873525dd1ec557c15d48"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20260929-142112_4.jpg",
+      "size": 3424923,
+      "sha256": "ab251a0e312b2cb999e58491c370e3065ad75387f26b1b3a45ee881ea434d2ad"
+    },
+    {
+      "type": "host",
+      "name": "host_20260929-142112_1.jpg",
+      "size": 7637910,
+      "sha256": "438cabd515c42473d26bc581160b0876e5c983ec219cd3fab7d647ebc3e43abd"
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+  "sn": "JCXG7V3",
+  "machineModel": "Vostro 3020sff",
+  "cpuModel": "13100",
+  "cpuBatch": "X302M668",
+  "cpuCode": "01416",
+  "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F201227135030",
+  "ssdInfo": "WD 512GB NVMe x3 SN:244571800859",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 14:06:09",
+  "originalNames": [
+    "cap_cpu_20261012_140342_021.jpg",
+    "cap_cpu_20261012_140352_280.jpg",
+    "cap_host_20261012_140256_886.jpg",
+    "cap_ram_20261012_140135_547.jpg",
+    "cap_ssd_20261012_140157_410.jpg",
+    "cap_ssd_20261012_140212_275.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-140609_1.jpg",
+      "size": 454964,
+      "sha256": "4701659cecd9dd03607a52d77e969dbec0cd5a311351d266a36c2e0702f476f4"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-140609_2.jpg",
+      "size": 443850,
+      "sha256": "81ec2f7282797fa3b8199cccbd3b838342f00df1e8c50b4532bac0070e5b4061"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-140609_1.jpg",
+      "size": 475029,
+      "sha256": "85dd152ac65e9079160aab19ae32996440ca828b3c220da1d15ec63b74c4e8f6"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-140609_1.jpg",
+      "size": 563461,
+      "sha256": "a97f5374b330a1fe7b5a0e10886974624d515afd9521822f6dfae29788b13076"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-140609_1.jpg",
+      "size": 528041,
+      "sha256": "6a428cb3fdefd580f9fdb578e91790e4933bbf5e760c520583af5cd7a6e01234"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-140609_2.jpg",
+      "size": 519102,
+      "sha256": "ac5a6628eb8549d6b390d5455cfb7078160bb4fef671b303da3b2b5e42a36e1c"
+    }
+  ],
+  "editedAt": "2026-10-13 13:40:51"
+}

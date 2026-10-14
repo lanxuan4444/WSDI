@@ -1,0 +1,54 @@
+{
+  "sn": "3ZH7414",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "X342N202",
+  "cpuCode": "05051",
+  "ramInfo": "SAMSUNG 8GB DDR5 5600MHz *2\n80CE022441418505CA\n80CE0224414185080E",
+  "ssdInfo": "SOLIDIGM     NVMe | PN:06NRX4\nP41PL NVME SOLIDIGM 512GB\nCN-06NRX4-PESD6-392-078L-A01",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:41:48",
+  "originalNames": [
+    "cap_cpu_20261012_104125_146.jpg",
+    "cap_cpu_20261012_104134_334.jpg",
+    "cap_host_20261012_103959_042.jpg",
+    "cap_ram_20261012_104031_670.jpg",
+    "cap_ssd_20261012_104057_102.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-104148_1.jpg",
+      "size": 388582,
+      "sha256": "aaa29122fd59c2929e81b9bcf32a8b814ac95f869b82522594936beaa2611d14"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-104148_2.jpg",
+      "size": 462038,
+      "sha256": "dbcfe9ad90513971a0ee00c4bb12c1c24acb5ead810a5c731fb63986e5408ff3"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-104148_1.jpg",
+      "size": 744802,
+      "sha256": "50d26ec4f3a1685cf0a48b9bbe40358aec91a7df94a168b327a5f9661dd38926"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-104148_1.jpg",
+      "size": 592634,
+      "sha256": "5ffa6921e6a5fa6d3ebbed6a967599ef763b1fa2111bfbd9f58062fb0e19a3c4"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-104148_1.jpg",
+      "size": 643000,
+      "sha256": "dfbca0dc5c949fbe8a9e8d5373cb9d7ccbb29a02e3d795cb877963c71d89bf46"
+    }
+  ],
+  "editedAt": "2026-10-13 17:10:56"
+}

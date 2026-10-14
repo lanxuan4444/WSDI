@@ -1,0 +1,61 @@
+{
+  "sn": "6B7DBW3",
+  "machineModel": "Vostro 3910",
+  "cpuModel": "I5-12400",
+  "cpuBatch": "V208E115",
+  "cpuCode": "02348",
+  "ramInfo": "SK HYNIX 8GB DDR4 3200MHz \n80AD02223227A00869",
+  "ssdInfo": "TOSHIBA 1.0TB SATA | SN:497JML7MS",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:12:24",
+  "originalNames": [
+    "cap_cpu_20261012_101054_417.jpg",
+    "cap_cpu_20261012_101106_501.jpg",
+    "cap_host_20261012_100820_409.jpg",
+    "cap_host_20261012_101039_061.jpg",
+    "cap_ram_20261012_100833_608.jpg",
+    "cap_ssd_20261012_100914_312.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-101224_1.jpg",
+      "size": 444613,
+      "sha256": "1e7e915803915b17c607142ae22aac9ea5c8c24332ab7c4300ac7b46ae9b6e7f"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-101224_2.jpg",
+      "size": 407997,
+      "sha256": "47ee54a928e9afb7acc9c08e7aca8df031650f8bb57eaa1488cbc4ca158a5ba0"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-101224_1.jpg",
+      "size": 592360,
+      "sha256": "fd91ae6c20e033b7ae76808691149b4e6c48ff291bb44ae7c3b9477a1e8b22a8"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-101224_2.jpg",
+      "size": 801148,
+      "sha256": "ad8635d80690936f6f9929d280428c3eed7db849698ac01e254575a0a931f939"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-101224_1.jpg",
+      "size": 820218,
+      "sha256": "2f1c6e82e762fff108b759665153788a3a029e6f86b588940da75dda60781d67"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-101224_1.jpg",
+      "size": 884717,
+      "sha256": "40a6975230c30b0203147c2243210be7b8453501e11f5e624b82f32233ade5fd"
+    }
+  ],
+  "editedAt": "2026-10-13 17:30:50"
+}

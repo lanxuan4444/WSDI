@@ -26,6 +26,7 @@ server.py — LDTools 日志查看器一体化服务
 
 import os
 import sys
+import io
 import json
 import re
 import time
@@ -45,7 +46,7 @@ from ftplib import FTP
 
 # ---- 系统托盘依赖 ----
 import pystray
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageOps
 
 # ======================== 依赖检查 ========================
 try:
@@ -69,8 +70,7 @@ PORT       = 9876
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ---- 访问控制：只有带有效 token 的请求才能调用 API ----
-# 密码优先从环境变量读取（部署时设置），缺省回退到本地默认值。
-ACCESS_PASSWORD = os.environ.get("LDTH5_ACCESS_PASSWORD", "19008")   # 页面访问密码（修改后重启服务生效）
+ACCESS_PASSWORD = "19008"             # 页面访问密码（修改后重启服务生效）
 ACCESS_TOKEN_TTL = 28800                # token 有效期 8 小时（秒），超时需重新登录
 
 _valid_tokens = {}          # dict[token → expire_timestamp]
@@ -446,6 +446,27 @@ def _safe_join(base, rel):
     return path
 
 
+def _parts_shrink_image(blob, ext):
+    """[2026-10-03 SHRINK] 上传照片落地前重编码：EXIF 转正 + 最长边 PARTS_IMG_MAX_EDGE + JPEG q85。
+
+    返回 (新bytes, 新ext)；只有变小才替换（小图重编码可能反而变大），
+    PIL 异常时原样返回原图（压缩失败不阻断上传）。
+    """
+    try:
+        img = Image.open(io.BytesIO(blob))
+        img = ImageOps.exif_transpose(img)          # 按手机 EXIF 转正（与缩略图逻辑一致）
+        if max(img.size) > PARTS_IMG_MAX_EDGE:
+            img.thumbnail((PARTS_IMG_MAX_EDGE, PARTS_IMG_MAX_EDGE))
+        out = io.BytesIO()
+        img.convert("RGB").save(out, "JPEG", quality=PARTS_IMG_JPEG_QUALITY, optimize=True)
+        data = out.getvalue()
+        if len(data) < len(blob):
+            return data, "jpg"
+    except Exception as e:
+        log_api.warning(f"照片重编码失败，按原图保存: {e}")
+    return blob, ext
+
+
 def _sniff_image(data):
     """文件头魔数嗅探 → (ext, mime)；非法格式返回 None。扩展名/MIME 不作为信任依据。"""
     if len(data) >= 3 and data[0:3] == b"\xff\xd8\xff":
@@ -747,6 +768,1012 @@ def _parse_multipart(body, content_type):
     return fields
 
 
+def _parse_multipart_multi(body, content_type):
+    """multipart/form-data 多值解析：同名部件收集为列表。
+
+    返回 {field_name: [(filename 或 None, bytes), ...]}；Content-Type 无 boundary 返回 None。
+    APK/网页多图上传时同名 cpuFile 出现多次，也兼容 cpuFile_1..N 命名（调用方归并）。
+    """
+    m = re.search(r'boundary="?([^";]+)"?', content_type or "")
+    if not m:
+        return None
+    boundary = ("--" + m.group(1)).encode("latin-1")
+    fields = {}
+    for part in body.split(boundary)[1:-1]:
+        if part.startswith(b"\r\n"):
+            part = part[2:]
+        elif part.startswith(b"\n"):
+            part = part[1:]
+        if part.endswith(b"\r\n"):
+            part = part[:-2]
+        elif part.endswith(b"\n"):
+            part = part[:-1]
+        sep = part.find(b"\r\n\r\n")
+        if sep >= 0:
+            head, content = part[:sep], part[sep + 4:]
+        else:
+            sep = part.find(b"\n\n")
+            if sep < 0:
+                continue
+            head, content = part[:sep], part[sep + 2:]
+        name_m = re.search(r'name="([^"]*)"', head.decode("utf-8", "replace"))
+        if not name_m:
+            continue
+        fname_m = re.search(r'filename="([^"]*)"', head.decode("utf-8", "replace"))
+        fields.setdefault(name_m.group(1), []).append(
+            (fname_m.group(1) if fname_m else None, content))
+    return fields
+
+
+# ======================== 主机配件档案（[2026-09-29 PARTS] APK 拍照识别 → 上传归档） ========================
+# 手机 APK（LDPartsScanner）拍照 CPU/主机 → ML Kit 端上 OCR 识别 → 用户确认 → multipart 上传到本服务。
+# 存储：[2026-10-02 DATE-TREE] Parts_Archive/<年>/<月>/<日>/<主机SN>/…（月/日不补零，如 2026/9/29/J16Z144；
+#       同日同 SN 撞名追加 _2/_3）。旧平铺 PA_YYYYMMDD-HHMMSS_<SN> 启动时由 _parts_migrate_layout 自动迁移。
+# [2026-09-29 KEEP-BOTH] 每次上传都是一条完整新档案，绝不覆盖旧记录——
+# 同一颗 CPU（同编号）出现在不同机器上、或重复拍照时，各条档案完整保留互不干扰；
+# 同秒同 SN 撞名时文件夹名追加 -2/-3 序号保证唯一。CPU/主机各最多 6 张照片。
+# API（全部走既有 Bearer/?token= 鉴权）：
+#   GET    /api/parts-archive                → {"records":[...]}（全量，档案量小一次拉齐）
+#   GET    /api/parts-archive?folder=<dir>   → 单条明细（含图片 URL），无则 {"exists": false}
+#   POST   /api/parts-archive                → multipart 上传（sn 必填 + cpuModel/cpuBatch/cpuCode/note + cpuFile*/hostFile*）
+#   POST   /api/parts-archive/update         → 修改档案参数（JSON：{folder, fields:{sn/cpuModel/...}}，[2026-10-08 EDIT] 网页编辑纠错）
+#   DELETE /api/parts-archive?folder=<dir>   → 永久删除档案文件夹
+#   GET    /api/parts-image?path=<rel>       → 图片按需下载（支持 ?token=，<img> 标签用）
+# 回滚标记：删除本段（至本段结束）+ do_GET/do_POST/do_DELETE 路由 + handle_parts_* 方法 + main() 启动对齐块。
+PARTS_ARCHIVE_DIR        = os.path.join(SCRIPT_DIR, "Parts_Archive")
+PARTS_INDEX_FILE         = os.path.join(PARTS_ARCHIVE_DIR, "index.json")
+PARTS_MAX_IMAGE_BYTES    = 35 * 1024 * 1024     # 单张 35MB 上限
+PARTS_MAX_FILES_PER_TYPE = 6                    # 每类最多 6 张
+# [2026-10-13 DELETE-ADMIN] 网页删除档案需管理员密码（区别于登录密码，二次确认防线）
+PARTS_ADMIN_PASSWORD     = "4328085"
+# [2026-09-30 v1.02] 配件类目：CPU / 主机 / 内存 / 固态 / 其他（网卡仅保留旧档案兼容，APP 已下线）
+PARTS_FILE_TYPES         = ("cpu", "host", "ram", "ssd", "nic", "other")
+PARTS_TEXT_FIELDS        = ("machineModel",                             # 主机型号（标签拍照识别）
+                            "cpuModel", "cpuBatch", "cpuCode",           # CPU 三元组
+                            "ramInfo", "ssdInfo", "nicInfo", "otherInfo", # 各配件识别参数（自由文本）
+                            "vendor",                                    # [2026-10-11 VENDOR] 供应商（联想/戴尔/建钰/其他/无 或手输）
+                            "note")                                       # 备注
+PARTS_TEXT_MAXLEN        = {"machineModel": 64, "cpuModel": 64, "cpuBatch": 64, "cpuCode": 64,
+                            "ramInfo": 500, "ssdInfo": 500, "nicInfo": 500,
+                            "otherInfo": 500, "vendor": 64, "note": 500}
+PARTS_THUMB_DIR          = os.path.join(PARTS_ARCHIVE_DIR, ".thumbs")   # 缩略图缓存（. 前缀目录，索引自愈跳过）
+PARTS_THUMB_SIZE         = 256   # 缩略图最长边（像素）
+
+# [2026-10-03 SHRINK] 上传照片落地重编码：手机原图多为 12MP 高清 JPEG（单张 4-8MB），
+# 档案查看用不需要原分辨率 → EXIF 转正 + 最长边 2560px + JPEG q85，
+# 体积约为原图 1/4~1/3、画质肉眼无差（OCR 在 APP 端上传前已完成，服务端不依赖原图分辨率）。
+PARTS_IMG_MAX_EDGE       = 2560
+PARTS_IMG_JPEG_QUALITY   = 85
+
+_parts_write_lock  = threading.RLock()   # 串行化写操作（落盘/删除/索引）；RLock 防同线程嵌套死锁
+_parts_index_cache = None                # dict[folder → record]，None 表示未加载
+# [2026-10-02 DATE-TREE] 档案相对路径白名单：<年>/<月>/<日>/<SN>（月/日 1-2 位不补零；同日撞名 SN_N）
+_PA_FOLDER_RE = re.compile(r'^\d{4}/\d{1,2}/\d{1,2}/[A-Za-z0-9_-]{1,64}(?:_\d+)?$')
+
+
+def _parts_index_persist():
+    """原子写回 index.json。调用方需已持有 _parts_write_lock。"""
+    tmp = PARTS_INDEX_FILE + ".tmp"
+    try:
+        os.makedirs(PARTS_ARCHIVE_DIR, exist_ok=True)
+        with open(tmp, "w", encoding="utf-8") as f:
+            json.dump(_parts_index_cache, f, ensure_ascii=False, indent=2)
+        os.replace(tmp, PARTS_INDEX_FILE)
+    except OSError as e:
+        log_api.error(f"配件档案 index.json 写入失败: {e}")
+    finally:
+        if os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+
+
+def _parts_migrate_layout():
+    """[2026-10-02 DATE-TREE] 旧平铺结构 PA_YYYYMMDD-HHMMSS_<SN> → 日期树 YYYY/M/D/SN（幂等）。
+
+    把顶层 PA_ 档案夹搬进对应日期目录（同日撞名追加 _2/_3）；
+    全部搬完后旧 index.json 键全部失效 → 删除让 _parts_index_load 自愈重建，
+    旧缩略图缓存同理直接清掉（按新路径按需重新生成）。
+    """
+    try:
+        entries = os.listdir(PARTS_ARCHIVE_DIR)
+    except OSError:
+        return
+    pa_re = re.compile(r'^PA_(\d{4})(\d{2})(\d{2})-\d{6}_(.+)$')
+    moved = 0
+    for name in entries:
+        m = pa_re.match(name)
+        full = os.path.join(PARTS_ARCHIVE_DIR, name)
+        if not m or not os.path.isdir(full):
+            continue
+        year, month, day, sn = m.group(1), str(int(m.group(2))), str(int(m.group(3))), m.group(4)
+        day_dir = os.path.join(PARTS_ARCHIVE_DIR, year, month, day)
+        dest_rel = f"{year}/{month}/{day}/{sn}"
+        target = os.path.join(day_dir, sn)
+        uniq = 1
+        while os.path.exists(target):
+            uniq += 1
+            dest_rel = f"{year}/{month}/{day}/{sn}_{uniq}"
+            target = os.path.join(day_dir, f"{sn}_{uniq}")
+        try:
+            os.makedirs(day_dir, exist_ok=True)
+            os.rename(full, target)
+            moved += 1
+        except OSError as e:
+            log_api.error(f"配件档案迁移失败 {name}: {e}")
+    if not moved:
+        return
+    shutil.rmtree(PARTS_THUMB_DIR, ignore_errors=True)
+    try:
+        os.remove(PARTS_INDEX_FILE)
+    except OSError:
+        pass
+    log_api.warning(f"配件档案目录结构迁移完成：{moved} 条 PA_ 档案 → 日期树（年/月/日/SN）")
+
+
+def _parts_index_rebuild(existing=None):
+    """扫描归档目录重建索引（索引自愈）。[2026-10-02 DATE-TREE] 递归扫描 年/月/日/SN 日期树，
+    兼容容错顶层旧 PA_ 命名（正常已被 _parts_migrate_layout 迁走）。跳过 . 前缀目录。
+
+    meta.json 缺失时仅按文件名归档（字段留空，sha256 留空，懒计算补记）。
+    """
+    idx = {}
+    try:
+        entries = os.listdir(PARTS_ARCHIVE_DIR)
+    except OSError:
+        return idx
+    pa_re = re.compile(r'^PA_(\d{4})(\d{2})(\d{2})-\d{6}_(.+)$')
+
+    def _scan(rel, full):
+        if existing is not None:
+            if rel in existing or not _PA_FOLDER_RE.fullmatch(rel):
+                return
+            if not os.path.isfile(os.path.join(full, "meta.json")):
+                return
+        meta = {}
+        try:
+            with open(os.path.join(full, "meta.json"), "r", encoding="utf-8") as f:
+                meta = json.load(f)
+            if not isinstance(meta, dict):
+                raise ValueError("meta.json 必须是对象")
+        except Exception:
+            if existing is not None:
+                log_api.warning(f"配件档案补索引跳过损坏元数据: {rel}")
+                return
+            meta = {}
+        files = []
+        metadata_files = meta.get("files") if isinstance(meta.get("files"), list) else []
+        file_metadata = {item.get("name"): item for item in metadata_files
+                         if isinstance(item, dict) and isinstance(item.get("name"), str)}
+        try:
+            for fn in sorted(os.listdir(full)):
+                fpath = os.path.join(full, fn)
+                if fn == "meta.json" or fn.startswith(".") or not os.path.isfile(fpath):
+                    continue
+                ftype = next((t for t in ("cpu", "host", "ram", "ssd", "nic")
+                              if fn.startswith(t)), "other")
+                files.append({"type": ftype, "name": fn,
+                              "size": os.path.getsize(fpath),
+                              "sha256": str(file_metadata.get(fn, {}).get("sha256") or "")})
+        except OSError:
+            pass
+        idx[rel] = {
+            "folder": rel,
+            "sn": str(meta.get("sn") or rel.rsplit("/", 1)[-1] or ""),
+            "machineModel": str(meta.get("machineModel") or ""),
+            "cpuModel": str(meta.get("cpuModel") or ""),
+            "cpuBatch": str(meta.get("cpuBatch") or ""),
+            "cpuCode": str(meta.get("cpuCode") or ""),
+            "ramInfo": str(meta.get("ramInfo") or ""),
+            "ssdInfo": str(meta.get("ssdInfo") or ""),
+            "nicInfo": str(meta.get("nicInfo") or ""),
+            "otherInfo": str(meta.get("otherInfo") or ""),
+            "vendor": str(meta.get("vendor") or ""),
+            "note": str(meta.get("note") or ""),
+            "uploadedAt": str(meta.get("uploadedAt") or ""),
+            "files": files,
+        }
+
+    for name in entries:
+        full = os.path.join(PARTS_ARCHIVE_DIR, name)
+        if name.startswith(".") or not os.path.isdir(full):
+            continue
+        if re.match(r'^\d{4}$', name):
+            # 新日期树：<年>/<月>/<日>/<SN>
+            try:
+                months = os.listdir(full)
+            except OSError:
+                continue
+            for mon in months:
+                mfull = os.path.join(full, mon)
+                if mon.startswith(".") or not os.path.isdir(mfull):
+                    continue
+                try:
+                    days = os.listdir(mfull)
+                except OSError:
+                    continue
+                for day in days:
+                    dfull = os.path.join(mfull, day)
+                    if day.startswith(".") or not os.path.isdir(dfull):
+                        continue
+                    try:
+                        sns = os.listdir(dfull)
+                    except OSError:
+                        continue
+                    for sn in sns:
+                        sfull = os.path.join(dfull, sn)
+                        if sn.startswith(".") or not os.path.isdir(sfull):
+                            continue
+                        _scan(f"{name}/{mon}/{day}/{sn}", sfull)
+        elif pa_re.match(name):
+            _scan(name, full)   # 旧平铺命名容错（迁移未完成的残留）
+    if existing is None:
+        log_api.warning("配件档案索引自愈重建完成（index.json 缺失或损坏）")
+    return idx
+
+
+def _parts_index_reconcile():
+    """补齐目录存在但未入索引的档案，已有索引条目保持不变。"""
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        missing = _parts_index_rebuild(existing=idx)
+        if missing:
+            idx.update(missing)
+            _parts_index_persist()
+            log_api.warning(f"配件档案补齐漏索引: {', '.join(sorted(missing))}")
+        return {folder: dict(rec) for folder, rec in idx.items()}
+
+
+def _parts_index_load():
+    """懒加载 index.json 到内存缓存；缺失/损坏时扫描目录自愈重建。
+    [2026-10-02 DATE-TREE] 首次加载前先把旧平铺结构迁移进日期树（幂等，无旧档案时空转）。"""
+    global _parts_index_cache
+    if _parts_index_cache is not None:
+        return _parts_index_cache
+    with _parts_write_lock:
+        if _parts_index_cache is not None:
+            return _parts_index_cache
+        _parts_migrate_layout()
+        idx = None
+        if os.path.exists(PARTS_INDEX_FILE):
+            try:
+                with open(PARTS_INDEX_FILE, "r", encoding="utf-8") as f:
+                    raw = json.load(f)
+                if isinstance(raw, dict):
+                    idx = {}
+                    for folder, v in raw.items():
+                        if not (_PA_FOLDER_RE.match(folder) and isinstance(v, dict)):
+                            continue
+                        files = []
+                        if isinstance(v.get("files"), list):
+                            for it in v["files"]:
+                                if isinstance(it, dict) and isinstance(it.get("name"), str):
+                                    try:
+                                        size = int(it.get("size") or 0)
+                                    except (TypeError, ValueError):
+                                        size = 0
+                                    files.append({"type": it.get("type", ""), "name": it["name"],
+                                                  "size": size, "sha256": str(it.get("sha256") or "")})
+                        idx[folder] = {
+                            "folder": folder,
+                            "sn": str(v.get("sn") or folder.rsplit("/", 1)[-1] or ""),
+                            "machineModel": str(v.get("machineModel") or ""),
+                            "cpuModel": str(v.get("cpuModel") or ""),
+                            "cpuBatch": str(v.get("cpuBatch") or ""),
+                            "cpuCode": str(v.get("cpuCode") or ""),
+                            "ramInfo": str(v.get("ramInfo") or ""),
+                            "ssdInfo": str(v.get("ssdInfo") or ""),
+                            "nicInfo": str(v.get("nicInfo") or ""),
+                            "otherInfo": str(v.get("otherInfo") or ""),
+                            "vendor": str(v.get("vendor") or ""),
+                            "note": str(v.get("note") or ""),
+                            "uploadedAt": str(v.get("uploadedAt") or ""),
+                            "files": files,
+                        }
+            except (json.JSONDecodeError, OSError, ValueError) as e:
+                log_api.warning(f"配件档案 index.json 读取失败，将自愈重建: {e}")
+                idx = None
+        if idx is None:
+            _parts_index_cache = _parts_index_rebuild()
+            _parts_index_persist()
+        else:
+            _parts_index_cache = idx
+    return _parts_index_cache
+
+
+def _parts_record_alive(folder, rec):
+    """磁盘真实性校验：文件夹存在且至少一张图片物理存在；幽灵档案自动清索引并返回 None。"""
+    folder_path = os.path.join(PARTS_ARCHIVE_DIR, folder)
+    if not os.path.isdir(folder_path):
+        log_api.warning(f"配件档案自愈检测：文件夹缺失（{folder}），清理索引")
+        _parts_self_heal_remove(folder)
+        return None
+    files_alive = []
+    for f in rec.get("files", []):
+        fpath = os.path.join(folder_path, f.get("name", ""))
+        if os.path.isfile(fpath):
+            item = dict(f)
+            item["url"] = "/api/parts-image?path=" + quote(f"{folder}/{f['name']}", safe="")
+            files_alive.append(item)
+    # [2026-09-29 PHOTO-OPTIONAL] 纯参数档案（本来就 0 张照片）正常保留；
+    # 只有"原来有照片但磁盘上全部缺失"才视为幽灵档案清理
+    if not files_alive and rec.get("files"):
+        log_api.warning(f"配件档案自愈检测：{folder} 所有图片缺失，清理索引")
+        _parts_self_heal_remove(folder)
+        return None
+    if len(files_alive) < len(rec.get("files", [])):
+        log_api.warning(f"配件档案自愈检测：{folder} 部分图片缺失，更新索引")
+        with _parts_write_lock:
+            idx2 = _parts_index_load()
+            if folder in idx2:
+                idx2[folder]["files"] = [
+                    {"type": f["type"], "name": f["name"], "size": f["size"], "sha256": f["sha256"]}
+                    for f in files_alive
+                ]
+                _parts_index_persist()
+    rec = dict(rec)
+    rec["files"] = files_alive
+    return rec
+
+
+def _parts_self_heal_remove(folder):
+    """从索引移除指定档案并写回 index.json（内部自取锁）。"""
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        if folder in idx:
+            del idx[folder]
+            _parts_index_persist()
+            log_api.warning(f"配件档案索引自愈：已移除幽灵档案 {folder}")
+
+
+def _parts_archive_upsert(fields, files_input):
+    """原子上传落盘：临时文件夹 → 魔数/大小校验 → rename 生效 → 更新索引。
+
+    [2026-09-29 KEEP-BOTH] 不按 SN 覆盖：同一颗 CPU 出现在不同机器（或重复拍照）时，
+    每次上传都完整保留为一条新档案；同秒同 SN 撞名时文件夹名追加 -2/-3 序号保证唯一。
+    fields: {key: str}，sn 必填；files_input: {type: [(原始文件名, bytes), ...]}，type ∈ {'cpu','host'}。
+    返回 (ok, payload)。
+    """
+    sn = fields.get("sn", "")
+    now = datetime.now()
+    ts = now.strftime("%Y%m%d-%H%M%S")
+    # [2026-10-02 DATE-TREE] 落盘路径 Parts_Archive/<年>/<月>/<日>/<SN>（月/日不补零，如 2026/10/2/J16Z144）；
+    # 同日同 SN 撞名追加 _2/_3。tmp 建在目标日期目录下（. 前缀自愈跳过）保证同盘原子 rename。
+    # [2026-10-13 OPTIONAL-SN] SN 可空：文件夹名用 NOSN-<时分秒> 兜底（用户要求所有参数都不必填，
+    # 只要有照片即可上传；meta.sn 存空串，网页显示「未填编号」）
+    sn_dir = sn if sn else f"NOSN-{now.strftime('%H%M%S')}"
+    year_s, month_s, day_s = str(now.year), str(now.month), str(now.day)
+    day_dir = os.path.join(PARTS_ARCHIVE_DIR, year_s, month_s, day_s)
+    tmp_dir = os.path.join(day_dir, f".tmp_{sn_dir}_{ts}")
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        # 文件夹唯一性：同日同 SN（并发/重复上传）追加序号
+        sn_base = sn_dir
+        uniq = 1
+        while (f"{year_s}/{month_s}/{day_s}/{sn_dir}" in idx
+               or os.path.exists(os.path.join(day_dir, sn_dir))):
+            uniq += 1
+            sn_dir = f"{sn_base}_{uniq}"
+        folder_name = f"{year_s}/{month_s}/{day_s}/{sn_dir}"
+        try:
+            os.makedirs(day_dir, exist_ok=True)
+            os.makedirs(tmp_dir)
+            files_meta = []
+            original_names = []
+            counters = {t: 0 for t in PARTS_FILE_TYPES}
+            for ftype in PARTS_FILE_TYPES:
+                for orig_name, blob in files_input.get(ftype, []):
+                    if not blob:
+                        continue
+                    sniff = _sniff_image(blob)
+                    if sniff is None:
+                        shutil.rmtree(tmp_dir, ignore_errors=True)
+                        return False, {"code": "ERR_BAD_IMAGE",
+                                       "message": f"{ftype} 图片格式无效（仅支持 JPEG/PNG/WebP）"}
+                    if len(blob) > PARTS_MAX_IMAGE_BYTES:
+                        shutil.rmtree(tmp_dir, ignore_errors=True)
+                        return False, {"code": "ERR_TOO_LARGE",
+                                       "message": f"{ftype} 图片超过单张 35MB 上限"}
+                    ext, _mime = sniff
+                    # [2026-10-03 SHRINK] 高清原图落地前重编码（2560px/q85，体积约 1/4~1/3，画质肉眼无差）
+                    blob, ext = _parts_shrink_image(blob, ext)
+                    counters[ftype] += 1
+                    fname = f"{ftype}_{ts}_{counters[ftype]}.{ext}"
+                    with open(os.path.join(tmp_dir, fname), "wb") as f:
+                        f.write(blob)
+                    files_meta.append({"type": ftype, "name": fname, "size": len(blob),
+                                       "sha256": hashlib.sha256(blob).hexdigest()})
+                    original_names.append(str(orig_name or ""))
+            # [2026-09-29 PHOTO-OPTIONAL] 照片可选：识别到关键信息可只存参数（0 张照片也建档）
+            meta = {
+                "sn": sn,
+                "machineModel": fields.get("machineModel", ""),
+                "cpuModel": fields.get("cpuModel", ""),
+                "cpuBatch": fields.get("cpuBatch", ""),
+                "cpuCode": fields.get("cpuCode", ""),
+                "ramInfo": fields.get("ramInfo", ""),
+                "ssdInfo": fields.get("ssdInfo", ""),
+                "nicInfo": fields.get("nicInfo", ""),
+                "otherInfo": fields.get("otherInfo", ""),
+                "vendor": fields.get("vendor", ""),
+                "note": fields.get("note", ""),
+                "uploadedAt": now.strftime("%Y-%m-%d %H:%M:%S"),
+                "originalNames": original_names,
+                "files": files_meta,
+            }
+            with open(os.path.join(tmp_dir, "meta.json"), "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+            # [2026-09-29 KEEP-BOTH] 旧档一律保留（同一 CPU/主机重复出现时不覆盖，新档案完整落盘）
+            # 临时文件夹 → 正式文件夹（原子 rename）
+            os.rename(tmp_dir, os.path.join(day_dir, sn_dir))
+            idx[folder_name] = {
+                "folder": folder_name, "sn": sn,
+                "machineModel": meta["machineModel"],
+                "cpuModel": meta["cpuModel"], "cpuBatch": meta["cpuBatch"],
+                "cpuCode": meta["cpuCode"],
+                "ramInfo": meta["ramInfo"], "ssdInfo": meta["ssdInfo"],
+                "nicInfo": meta["nicInfo"], "otherInfo": meta["otherInfo"],
+                "vendor": meta["vendor"],
+                "note": meta["note"],
+                "uploadedAt": meta["uploadedAt"], "files": files_meta,
+            }
+            _parts_index_persist()
+            log_api.info(f"配件档案上传: {sn} → {folder_name}（{len(files_meta)} 张, "
+                         f"{sum(f['size'] for f in files_meta)//1024}KB）")
+            return True, {"ok": True, "folder": folder_name, "uploadedAt": meta["uploadedAt"],
+                          "files": files_meta}
+        except OSError as e:
+            shutil.rmtree(tmp_dir, ignore_errors=True)
+            log_api.error(f"配件档案上传失败: {sn}: {e}")
+            return False, {"code": "ERR_IO", "message": f"写入失败: {e}"}
+
+
+def _parts_archive_delete(folder):
+    """永久删除指定档案文件夹 + 更新索引。"""
+    if not _PA_FOLDER_RE.match(folder or ""):
+        return False, {"code": "ERR_BAD_REQUEST", "message": "folder 参数不合法"}
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        entry = idx.get(folder)
+        if not entry:
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案不存在"}
+        try:
+            target = _safe_join(PARTS_ARCHIVE_DIR, folder)
+            if target and os.path.isdir(target):
+                shutil.rmtree(target)
+            # 顺手清理该档案的缩略图缓存（.thumbs/<folder 中的 / 换 __>__*.jpg）
+            try:
+                thumb_prefix = folder.replace("/", "__") + "__"
+                for fn in os.listdir(PARTS_THUMB_DIR):
+                    if fn.startswith(thumb_prefix):
+                        os.remove(os.path.join(PARTS_THUMB_DIR, fn))
+            except OSError:
+                pass
+        except OSError as e:
+            log_api.error(f"配件档案删除失败: {folder}: {e}")
+            return False, {"code": "ERR_IO", "message": f"删除失败: {e}"}
+        idx.pop(folder, None)
+        _parts_index_persist()
+        log_api.info(f"配件档案删除: {folder}（SN={entry.get('sn')}）已永久删除")
+        return True, {"ok": True, "deleted": True, "folder": folder}
+
+
+def _parts_archive_update(folder, fields):
+    """[2026-10-08 EDIT] 修改档案参数字段（CPU 编号录错等场景）——只改 meta.json + 索引，照片不动。
+
+    可编辑字段白名单：sn/machineModel/cpuModel/cpuBatch/cpuCode/ramInfo/ssdInfo/otherInfo/note
+    （nicInfo 仅旧档案兼容，不在编辑范围）。sn 允许修改：文件夹名不动，索引以 meta.sn 为准
+    （_parts_index_rebuild 自愈重建同样优先读 meta.json 的 sn）。
+    """
+    if not _PA_FOLDER_RE.match(folder or ""):
+        return False, {"code": "ERR_BAD_REQUEST", "message": "folder 参数不合法"}
+    allowed = ("sn", "machineModel", "cpuModel", "cpuBatch", "cpuCode",
+               "ramInfo", "ssdInfo", "otherInfo", "vendor", "note")
+    clean = {}
+    for k in allowed:
+        if k not in (fields or {}):
+            continue
+        v = str(fields.get(k) or "").strip()
+        if len(v) > PARTS_TEXT_MAXLEN.get(k, 200):
+            return False, {"code": "ERR_BAD_REQUEST", "message": f"{k} 超过长度上限"}
+        clean[k] = v
+    if "sn" in clean and not _ob_sn_ok(clean["sn"]):
+        return False, {"code": "ERR_BAD_REQUEST",
+                       "message": "主机编号缺失或含非法字符（仅允许字母数字、-、_）"}
+    if not clean:
+        return False, {"code": "ERR_BAD_REQUEST", "message": "没有可修改的字段"}
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        entry = idx.get(folder)
+        if not entry:
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案不存在"}
+        target = _safe_join(PARTS_ARCHIVE_DIR, folder)
+        if not target or not os.path.isdir(target):
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案文件夹缺失"}
+        meta_path = os.path.join(target, "meta.json")
+        try:
+            try:
+                with open(meta_path, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+            except Exception:
+                meta = {}
+            meta.update(clean)
+            meta["editedAt"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            log_api.error(f"配件档案编辑失败: {folder}: {e}")
+            return False, {"code": "ERR_IO", "message": f"写入失败: {e}"}
+        # 索引同步：entry 是内存缓存的引用，改完持久化
+        entry.update(clean)
+        entry["editedAt"] = meta["editedAt"]
+        _parts_index_persist()
+        log_api.info(f"配件档案编辑: {folder} → {clean}")
+        return True, {"ok": True, "folder": folder}
+
+
+# -------------------- [2026-10-12 AI-COMPLETE] 照片参数补全 --------------------
+# 档案有照片但参数（含 SN）缺失时，服务端用 Windows 自带离线 OCR 引擎（WinRT，不联网）
+# 识别照片文字，再用与 APP OcrParser 一致的规则提取参数，只填充空字段，绝不覆盖已有值。
+
+OCR_PS1 = os.path.join(SCRIPT_DIR, "ocr_winrt.ps1")
+
+_PA_AI_RAM_BRANDS = ("SAMSUNG", "三星", "SK HYNIX", "HYNIX", "海力士", "KINGSTON", "金士顿",
+                      "CRUCIAL", "英睿达", "MICRON", "镁光", "ADATA", "威刚", "G.SKILL", "芝奇",
+                      "CORSAIR", "海盗船", "TEAMGROUP", "十铨", "RAMAXEL", "记忆科技",
+                      "KINGBANK", "金百达", "CUSO", "酷兽", "JUHOR", "玖合", "GLOWAY", "光威",
+                      "KLEVV", "科赋", "APACER", "宇瞻", "TRANSCEND", "创见", "PATRIOT", "博帝",
+                      "LEXAR", "雷克沙", "HUAWEI", "LENOVO", "联想", "HP", "DELL", "UNION MEMORY")
+_PA_AI_RAM_PN_PREFIX = (("M378", "SAMSUNG"), ("M471", "SAMSUNG"), ("M393", "SAMSUNG"),
+                        ("HMA", "SK HYNIX"), ("MTA", "MICRON"))
+_PA_AI_SSD_BRANDS = ("SAMSUNG", "三星", "SK HYNIX", "海力士", "WESTERN DIGITAL", "WD", "西部数据",
+                      "SANDISK", "闪迪", "KINGSTON", "金士顿", "CRUCIAL", "英睿达", "MICRON", "镁光",
+                      "KIOXIA", "铠侠", "INTEL", "SEAGATE", "希捷", "TOSHIBA", "东芝", "ADATA", "威刚",
+                      "HP", "DELL", "LENOVO", "联想", "HUAWEI", "ACER", "GIGABYTE", "PLEXTOR", "浦科特",
+                      "HIKSEMI", "海康威视", "COLORFUL", "七彩虹", "GALAX", "影驰", "MAXSUN", "铭瑄",
+                      "FANXIANG", "梵想", "AIGO", "爱国者", "TIGO", "金泰克", "NETAC", "朗科",
+                      "TECLAST", "台电", "TRANSCEND", "创见", "LEXAR", "雷克沙", "UNION MEMORY",
+                      "PHISON", "群联", "LITEON", "LITE-ON", "建兴", "SSSTC", "YMTC", "长江存储",
+                      "致态", "MAXIO", "联芸", "SOLIDIGM")
+_PA_RE_HOST_SN = re.compile(
+    r'(?<![A-Z])(?:出\s*厂\s*编\s*号|序\s*列\s*号|快\s*速\s*服\s*务\s*代\s*码|服\s*务\s*编\s*号|'
+    r'服\s*务\s*代\s*码|编\s*号|S\s*/?\s*[NT]|SVC\s*TAG|SERVICE\s*TAG|EXPRESS(?:\s*SERVICE\s*)?CODE)'
+    r'\s*[:：]?\s*([A-Z0-9][A-Z0-9-]{4,19})')
+_PA_RE_MODEL_LABEL = re.compile(
+    r'(?:型\s*号(?:\s*名\s*称)?|型\s*號|机\s*型|\bMODEL\b|\bMODE\b|\bMACHINE\s*TYPE\b)\s*[:：]?\s*(\S.*)')
+_PA_RE_MODEL_CUT = re.compile(
+    r'批\s*号|出\s*厂\s*编\s*号|序\s*列\s*号|日\s*期|生\s*产\s*日\s*期|https?://|www\.|'
+    r'\bMODEL\b|\bMODE\b|\bMACHINE\s*TYPE\b|\bS\s*/?\s*N\b\s*[:：]|\bP\s*/?\s*N\b\s*[:：]|'
+    r'额\s*定\s*电\s*压|额\s*定\s*电\s*流|额\s*定\s*频\s*率|频\s*率|C\s*M\s*I\s*I\s*T|生\s*产\s*地',
+    re.IGNORECASE)
+_PA_RE_MODEL_FRAGMENT = re.compile(r'^(?:\d{3}[A-Z]{0,2}|\d{4}(?:[A-Z][A-Z0-9]{0,3})?)$')
+_PA_RE_CPU_I = re.compile(r'(?:CORE)?\s*[Il1]([3579])\s*[-]?\s*(\d{4,5})([A-Z]{0,2})')
+_PA_RE_CPU_ULTRA = re.compile(r'ULTRA\s*([3579])\s+(\d{3}[A-Z]{0,2})(?![A-Z])')
+_PA_RE_CPU_RYZEN = re.compile(r'RYZEN\s*(?:\(TM\)|TM|™)?\s*([3579])\s*[- ]?\s*(\d{4}[A-Z0-9]{0,4})(?![A-Z0-9])')
+_PA_RE_CPU_SERIES = re.compile(r'(ULTRA|RYZEN\s*(?:\(TM\)|TM|™)?)\s*([3579])\s*$')
+_PA_RE_FPO = re.compile(r'(?<![A-Z0-9])([A-Z]\d{3}[A-Z]\d{3})(?![A-Z0-9])')
+_PA_RE_ATPO = re.compile(r'(?<!\d)(\d{5})(?!\d)')
+_PA_RE_RAM_CAP = re.compile(r'(?<!\d)(\d{1,3})\s?GB(?![A-Z])')
+_PA_RE_RAM_TYPE = re.compile(r'(LPDDR\d|DDR\d|PC[45])(?:[-\s]?(\d{4,5}))?')
+_PA_RE_SERIAL = re.compile(r'(?<![A-Z])(S/?N|P/?N)\s*[:：]?\s*([A-Z0-9][A-Z0-9-]{3,19})(?![A-Z0-9])')
+_PA_RE_SSD_CAP = re.compile(r'(?<!\d)(\d{1,4}(?:\.\d)?\s?(GB|TB))(?![A-Z])')
+
+
+def _pa_norm(s):
+    """OCR 行规范化：全角冒号/破折号归一 + 大写（与 APP normalize 一致）。"""
+    return str(s or "").replace('：', ':').replace('—', '-').replace('－', '-').replace('–', '-').upper()
+
+
+def _pa_clean_model(v):
+    v = str(v or "").replace('\u3000', ' ').replace('\u00A0', ' ').strip()
+    cut = _PA_RE_MODEL_CUT.search(v)
+    if cut:
+        v = v[:cut.start()].strip()
+    while v.endswith((':', '：', '-', ',')):
+        v = v[:-1].strip()
+    return v
+
+
+def _pa_extract_host(raw_lines):
+    """主机照片 → SN + 型号（保留原始大小写）。"""
+    sn, model = "", ""
+    for i, raw in enumerate(raw_lines):
+        line = str(raw or "").strip()
+        if not line:
+            continue
+        if not sn:
+            m = _PA_RE_HOST_SN.search(_pa_norm(line))
+            if m:
+                sn = m.group(1)
+        if not model:
+            m = _PA_RE_MODEL_LABEL.search(line)
+            if m:
+                v = _pa_clean_model(m.group(1))
+                if v and not re.search(r'\d', v) and i + 1 < len(raw_lines):
+                    nxt = str(raw_lines[i + 1] or "").strip()
+                    if _PA_RE_MODEL_FRAGMENT.match(nxt):
+                        v = v + " " + _pa_clean_model(nxt)
+                if v:
+                    model = v
+    return sn, model
+
+
+def _pa_extract_cpu(lines):
+    model, batch, code = "", "", ""
+    norm = [_pa_norm(l) for l in lines]
+    for line in norm:
+        line = line.strip()
+        if not line:
+            continue
+        if not model:
+            m = _PA_RE_CPU_I.search(line)
+            if m:
+                suffix = m.group(3) or ""
+                if suffix == "TM":
+                    suffix = ""
+                model = f"I{m.group(1)}-{m.group(2)}{suffix}"
+            m = _PA_RE_CPU_ULTRA.search(line)
+            if m:
+                model = f"ULTRA {m.group(1)} {m.group(2)}"
+            m = _PA_RE_CPU_RYZEN.search(line)
+            if m:
+                model = f"RYZEN {m.group(1)} {m.group(2)}"
+        if not batch:
+            m = _PA_RE_FPO.search(line)
+            if m:
+                batch = m.group(1)
+    if not model:
+        for i, line in enumerate(norm[:-1]):
+            s = _PA_RE_CPU_SERIES.search(line.strip())
+            if not s:
+                continue
+            frag = norm[i + 1].strip()
+            if _PA_RE_MODEL_FRAGMENT.match(frag):
+                model = ("RYZEN " if "RYZEN" in s.group(1) else "ULTRA ") + s.group(2) + " " + frag
+                break
+    if not code:
+        best = {}
+        stream = ""
+        for line in norm:
+            line = _PA_RE_CPU_I.sub(' ', line)
+            line = _PA_RE_CPU_ULTRA.sub(' ', line)
+            line = _PA_RE_CPU_RYZEN.sub(' ', line).strip()
+            if re.fullmatch(r'\d{1,4}', line):
+                if len(stream) == 5:
+                    stream = ""
+                stream += line
+                if len(stream) == 5:
+                    best.setdefault(stream, 3 if stream[0] == '0' else 2)
+                continue
+            stream = ""
+            for m in _PA_RE_ATPO.finditer(line):
+                t = m.group(1)
+                score = 3 if re.fullmatch(r'\d{5}', line) else (2 if t[0] == '0' else 1)
+                best[t] = max(best.get(t, 0), score)
+        for t, sc in sorted(best.items(), key=lambda kv: -kv[1]):
+            code = t
+            break
+    return model, batch, code
+
+
+def _pa_extract_ram(lines):
+    brand = cap = gen_freq = ""
+    serials = []
+    for raw in lines:
+        line = _pa_norm(raw)
+        if not brand:
+            for b in _PA_AI_RAM_BRANDS:
+                if b in line:
+                    brand = "UM" if b == "UNION MEMORY" else b
+                    break
+            else:
+                for prefix, name in _PA_AI_RAM_PN_PREFIX:
+                    if prefix in line:
+                        brand = name
+                        break
+        if not cap:
+            m = _PA_RE_RAM_CAP.search(line)
+            if m:
+                cap = m.group(1) + "GB"
+        if not gen_freq:
+            m = _PA_RE_RAM_TYPE.search(line)
+            if m:
+                gen_freq = (m.group(1) + " " + m.group(2) + "MHz") if m.group(2) else m.group(1)
+        for m in _PA_RE_SERIAL.finditer(line):
+            tag = "PN" if m.group(1).replace("/", "") == "PN" else "SN"
+            value = m.group(2)
+            if value not in [v for _, v in serials]:
+                serials.append((tag, value))
+    if not (brand or cap or gen_freq or serials):
+        return ""
+    # [2026-10-12] 提取字段精简（用户定义）：内存 = 品牌 容量 代数 频率 SN（PN 不入摘要）
+    serials = [(t, v) for t, v in serials if t == "SN"] or serials
+    parts = [p for p in (brand, cap, gen_freq) if p]
+    sn_count = len({v for t, v in serials if t == "SN"})
+    if sn_count >= 2:
+        parts.append(f"x{sn_count}")
+    return " ".join(parts) + "".join(f" | {t}:{v}" for t, v in serials)
+
+
+def _pa_extract_ssd(lines):
+    brand = cap = kind = ""
+    serials = []
+    for raw in lines:
+        line = _pa_norm(raw)
+        if not brand:
+            for b in _PA_AI_SSD_BRANDS:
+                if b in line:
+                    brand = "UM" if b == "UNION MEMORY" else b
+                    break
+        if not cap:
+            m = _PA_RE_SSD_CAP.search(line)
+            if m:
+                cap = m.group(1).replace(" ", "")
+        if not kind:
+            if re.search(r'NV\s*M\s*E|PCIE|PCI-E', line):
+                kind = "NVMe"
+            elif 'SATA' in line:
+                kind = "SATA"
+            elif re.search(r'M\.2|SSD|固态', line):
+                kind = "SSD"
+        for m in _PA_RE_SERIAL.finditer(line):
+            tag = "PN" if m.group(1).replace("/", "") == "PN" else "SN"
+            value = m.group(2)
+            if value not in [v for _, v in serials]:
+                serials.append((tag, value))
+    if not (brand or cap or kind or serials):
+        return ""
+    # [2026-10-12] 提取字段精简（用户定义）：硬盘 = 品牌 容量 协议 NVMe/SATA SN（PN 不入摘要）
+    serials = [(t, v) for t, v in serials if t == "SN"] or serials
+    parts = [p for p in (brand, cap, kind) if p]
+    return " ".join(parts) + "".join(f" | {t}:{v}" for t, v in serials)
+
+
+def _pa_ocr_photo(path, deg=0):
+    """单张照片 → 文本行列表（Windows 离线 OCR）。失败返回空列表。
+
+    [2026-10-12 ROTATE] deg 为旋转角度（90 的倍数）：竖拍/横拍错向的照片
+    旋转后重识别，供网页「旋转重识别」按钮调用。
+    """
+    deg = int(deg or 0)
+    if deg % 360 == 0:
+        cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+               "-File", OCR_PS1, str(path)]
+    else:
+        cmd = ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass",
+               "-File", OCR_PS1, "-Path", str(path),
+               "-Rotate", str((deg % 360) // 90)]
+    try:
+        out = subprocess.run(cmd, capture_output=True, timeout=90)
+        text = out.stdout.decode("utf-8", "replace")
+    except Exception as e:
+        log_api.warning(f"照片 OCR 执行失败 {os.path.basename(path)}: {e}")
+        return []
+    if out.returncode == 2 or "OCR_ENGINE_UNAVAILABLE" in text:
+        log_api.error("Windows OCR 引擎不可用（需在系统设置安装中文语言包的 OCR）")
+        return []
+    if out.returncode != 0:
+        log_api.warning(f"照片 OCR 失败 {os.path.basename(path)}: {text.strip()[:120]}")
+        return []
+    return [ln.strip() for ln in text.splitlines() if ln.strip()]
+
+
+def _parts_analyze_scan(folder, rotations=None):
+    """[2026-10-12 AI-COMPLETE] OCR 档案照片并提取参数建议（不写库）。
+
+    返回 (True, {"suggestions": {...}, "ocr": {type: [lines]}}) 或 (False, err)。
+    suggestions 含全部可提取字段（即使档案已有值），供网页修改弹窗左右对比。
+    [2026-10-12 ROTATE] rotations = {"cpu": 90, "ram": 180, ...}：该类型照片旋转后
+    重 OCR（竖拍照片识别率救回），网页「旋转重识别」按钮传入。
+    """
+    if not isinstance(folder, str) or not _PA_FOLDER_RE.fullmatch(folder):
+        return False, {"code": "ERR_BAD_REQUEST", "message": "folder 参数不合法"}
+    rot = {}
+    if isinstance(rotations, dict):
+        for k, v in rotations.items():
+            if k in ("cpu", "host", "ram", "ssd"):
+                try:
+                    deg = int(v)
+                except (TypeError, ValueError):
+                    continue
+                rot[k] = deg % 360
+    with _parts_write_lock:
+        entry = _parts_index_load().get(folder)
+        if not entry:
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案不存在"}
+        folder_path = _safe_join(PARTS_ARCHIVE_DIR, folder)
+        if not folder_path or not os.path.isdir(folder_path):
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案文件夹缺失"}
+        files = [dict(f) for f in entry.get("files", []) if isinstance(f, dict)]
+    lines_by_type = {}
+    counts = {}
+    for f in files:
+        name = f.get("name", "")
+        if not isinstance(name, str) or os.path.basename(name) != name:
+            continue
+        ftype = f.get("type")
+        if ftype not in ("cpu", "host", "ram", "ssd"):
+            continue
+        if counts.get(ftype, 0) >= PARTS_MAX_FILES_PER_TYPE:
+            continue
+        path = _safe_join(folder_path, name)
+        if not path or not os.path.isfile(path):
+            continue
+        counts[ftype] = counts.get(ftype, 0) + 1
+        lines_by_type.setdefault(ftype, []).extend(_pa_ocr_photo(path, rot.get(ftype, 0)))
+    if not any(lines_by_type.values()):
+        return False, {"code": "ERR_OCR", "message": "没有识别到照片文字，请检查照片清晰度或OCR引擎"}
+    host_sn, host_model = _pa_extract_host(lines_by_type.get("host", []))
+    cpu_model, cpu_batch, cpu_code = _pa_extract_cpu(lines_by_type.get("cpu", []))
+    ram_summary = _pa_extract_ram(lines_by_type.get("ram", []))
+    ssd_summary = _pa_extract_ssd(lines_by_type.get("ssd", []))
+    suggestions = {"sn": host_sn.strip(), "machineModel": host_model.strip(),
+                   "cpuModel": cpu_model.strip(), "cpuBatch": cpu_batch.strip(),
+                   "cpuCode": cpu_code.strip(), "ramInfo": ram_summary.strip(),
+                   "ssdInfo": ssd_summary.strip()}
+    return True, {"suggestions": suggestions,
+                  "ocr": {t: values[:48] for t, values in lines_by_type.items()}}
+
+
+def _parts_analyze(folder, rotations=None):
+    """兼容旧分析入口：仅返回建议，保存必须由用户确认后通过 update 接口提交。"""
+    ok, payload = _parts_analyze_scan(folder, rotations)
+    if not ok:
+        return ok, payload
+    return True, {"ok": True, "folder": folder, "ai": payload["suggestions"],
+                  "filled": {}, "ocr": payload["ocr"], "saved": False}
+
+
+def _pa_serial_pairs(summary):
+    """从摘要串里解析 (tag, value) 对，供 SN 追加逻辑复用。"""
+    pairs = []
+    for m in re.finditer(r'\|\s*(SN|PN):([A-Z0-9][A-Z0-9.-]*)', str(summary or "")):
+        pairs.append((m.group(1), m.group(2)))
+    return pairs
+
+
+# [2026-10-13 REMOVED] _parts_ocr_single（提取文字单图 OCR）已随功能移除——用户反馈识别体验不佳，网页仅保留旋转查看。
+
+
+def _parts_archive_photo_append(folder, ftype, files_input):
+    """[2026-10-13 PHOTO-APPEND] 向已有档案追加照片（网页编辑弹窗「补传照片」用）。
+
+    folder 档案相对路径；ftype ∈ PARTS_FILE_TYPES；files_input = [(原始名, bytes), ...]。
+    该类现有照片 + 新增 ≤ PARTS_MAX_FILES_PER_TYPE；魔数/大小校验 + 2560px 重编码，
+    与上传同标准。返回 (ok, payload)。
+    """
+    if not isinstance(folder, str) or not _PA_FOLDER_RE.fullmatch(folder):
+        return False, {"code": "ERR_BAD_REQUEST", "message": "folder 参数不合法"}
+    if ftype not in PARTS_FILE_TYPES:
+        return False, {"code": "ERR_BAD_REQUEST", "message": "照片类型不合法"}
+    if not files_input:
+        return False, {"code": "ERR_BAD_REQUEST", "message": "没有选择照片"}
+    with _parts_write_lock:
+        idx = _parts_index_load()
+        entry = idx.get(folder)
+        if not entry:
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案不存在"}
+        folder_path = _safe_join(PARTS_ARCHIVE_DIR, folder)
+        if not folder_path or not os.path.isdir(folder_path):
+            return False, {"code": "ERR_NOT_FOUND", "message": "档案文件夹缺失"}
+        meta_path = os.path.join(folder_path, "meta.json")
+        try:
+            with open(meta_path, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+        except Exception:
+            return False, {"code": "ERR_IO", "message": "meta.json 读取失败"}
+        files_meta = [f for f in meta.get("files", []) if isinstance(f, dict)]
+        have = sum(1 for f in files_meta if f.get("type") == ftype)
+        if have + len(files_input) > PARTS_MAX_FILES_PER_TYPE:
+            return False, {"code": "ERR_TOO_MANY",
+                           "message": f"{ftype} 照片已达上限（现有 {have} 张，每类最多 {PARTS_MAX_FILES_PER_TYPE} 张）"}
+        now = datetime.now()
+        ts = now.strftime("%Y%m%d-%H%M%S")
+        added = []
+        counters = {"n": have}
+        for orig_name, blob in files_input:
+            if not blob:
+                continue
+            sniff = _sniff_image(blob)
+            if sniff is None:
+                return False, {"code": "ERR_BAD_IMAGE", "message": "图片格式无效（仅支持 JPEG/PNG/WebP）"}
+            if len(blob) > PARTS_MAX_IMAGE_BYTES:
+                return False, {"code": "ERR_TOO_LARGE", "message": "单张照片超过 35MB 上限"}
+            blob, ext = _parts_shrink_image(blob, sniff[0])
+            counters["n"] += 1
+            fname = f"{ftype}_{ts}_w{counters['n']}.{ext}"   # _w 标记网页补传，不与 APP 命名冲突
+            try:
+                with open(os.path.join(folder_path, fname), "wb") as f:
+                    f.write(blob)
+            except OSError as e:
+                log_api.error(f"补传照片写入失败 {folder}/{fname}: {e}")
+                return False, {"code": "ERR_IO", "message": f"写入失败: {e}"}
+            added.append({"type": ftype, "name": fname, "size": len(blob),
+                          "sha256": hashlib.sha256(blob).hexdigest()})
+            meta.setdefault("originalNames", []).append(str(orig_name or "网页补传"))
+        if not added:
+            return False, {"code": "ERR_BAD_REQUEST", "message": "没有有效照片"}
+        meta["files"] = files_meta + added
+        try:
+            with open(meta_path, "w", encoding="utf-8") as f:
+                json.dump(meta, f, ensure_ascii=False, indent=2)
+        except OSError as e:
+            return False, {"code": "ERR_IO", "message": f"meta 写入失败: {e}"}
+        entry["files"] = meta["files"]          # 内存索引引用同步后持久化
+        _parts_index_persist()
+        log_api.info(f"配件档案补传照片: {folder} +{len(added)} 张 {ftype}")
+        return True, {"ok": True, "folder": folder, "added": added,
+                      "count": sum(1 for f in meta["files"] if f.get("type") == ftype)}
+
+
+def _parts_image_read(rel):
+    """读取档案图片（路径白名单 + 魔数嗅探 + sha256 懒补记）。返回 (data, mime) 或抛 LookupError/OSError。"""
+    full = _safe_join(PARTS_ARCHIVE_DIR, rel)
+    if full is None:
+        raise LookupError("路径不合法")
+    if not os.path.isfile(full):
+        raise FileNotFoundError(rel)
+    with open(full, "rb") as f:
+        data = f.read()
+    sniff = _sniff_image(data[:16])
+    mime = sniff[1] if sniff else "application/octet-stream"
+    try:
+        with _parts_write_lock:
+            idx = _parts_index_load()
+            folder, fname = rel.rsplit("/", 1)   # [DATE-TREE] rel=<年/月/日/SN>/<文件名>
+            rec = idx.get(folder)
+            if rec:
+                for fi in rec.get("files", []):
+                    if fi.get("name") == fname and not fi.get("sha256"):
+                        fi["sha256"] = hashlib.sha256(data).hexdigest()
+                        _parts_index_persist()
+                        break
+    except Exception:
+        pass
+    return data, mime
+
+
+def _parts_thumb_read(rel):
+    """读取/生成缩略图（最长边 PARTS_THUMB_SIZE 的 JPEG，缓存到 .thumbs/）。
+
+    [2026-09-29 THUMB] 列表页展示极小缩略图省流量，点击查看器才加载原图。
+    生成失败（图片损坏/PIL 异常）时回退返回原图。
+    返回 (data, mime)；路径非法抛 LookupError，文件缺失抛 FileNotFoundError。
+    """
+    full = _safe_join(PARTS_ARCHIVE_DIR, rel)
+    if full is None:
+        raise LookupError("路径不合法")
+    if not os.path.isfile(full):
+        raise FileNotFoundError(rel)
+    thumb_name = rel.replace("/", "__")
+    if not re.match(r'^[A-Za-z0-9._-]+$', thumb_name):
+        raise LookupError("路径不合法")
+    try:
+        os.makedirs(PARTS_THUMB_DIR, exist_ok=True)
+    except OSError:
+        pass
+    thumb_path = os.path.join(PARTS_THUMB_DIR, thumb_name)
+    if not os.path.isfile(thumb_path):
+        try:
+            with Image.open(full) as img:
+                img = ImageOps.exif_transpose(img)   # 按手机 EXIF 转正
+                img.thumbnail((PARTS_THUMB_SIZE, PARTS_THUMB_SIZE))
+                img.convert("RGB").save(thumb_path, "JPEG", quality=80)
+        except Exception as e:
+            log_api.warning(f"缩略图生成失败，回退原图: {rel}: {e}")
+            try:
+                os.remove(thumb_path)
+            except OSError:
+                pass
+            with open(full, "rb") as f:
+                data = f.read()
+            sniff = _sniff_image(data[:16])
+            return data, (sniff[1] if sniff else "application/octet-stream")
+    with open(thumb_path, "rb") as f:
+        return f.read(), "image/jpeg"
+
+
 
 def decrypt_log(data: bytes) -> dict:
     """处理单个加密文件（格式: IV[16] + HMAC[32] + ciphertext）"""
@@ -907,83 +1934,6 @@ def get_decrypted_file(fname: str) -> dict:
     with _cache_lock:
         _decrypted_cache[fname] = raw
     return raw
-
-
-def get_decrypted_files_batch(fnames):
-    """批量获取多个文件的处理结果（复用单条 FTP 连接，大幅减少建连开销）。
-
-    已缓存命中的文件直接返回；未命中的文件在一次 FTP 连接内逐个 RETR。
-    返回 { fname: 明文JSON } 的字典；单个文件失败时该文件不包含在结果中
-    （或抛异常，取决于是否所有文件都失败）。
-
-    Args:
-        fnames: 文件名列表
-
-    Returns:
-        dict[str, dict] — 文件名 → 明文 JSON
-    """
-    if not fnames:
-        return {}
-
-    # 先用锁批量捞出缓存命中项，同时记录未命中的待下载文件
-    to_fetch = []
-    result = {}
-    with _cache_lock:
-        for fname in fnames:
-            if fname in _decrypted_cache:
-                with _stats_lock:
-                    _stats["cache_hits"] += 1
-                result[fname] = _decrypted_cache[fname]
-            else:
-                to_fetch.append(fname)
-
-    if not to_fetch:
-        return result
-
-    # 未命中：单条 FTP 连接内批量下载 + 解密
-    ftp = ftp_connect()
-    try:
-        for fname in to_fetch:
-            with _cache_lock:
-                rel = _file_path_map.get(fname)
-            if rel is None:
-                try:
-                    get_file_list()
-                except Exception:
-                    pass
-                with _cache_lock:
-                    rel = _file_path_map.get(fname, fname)
-
-            t0 = time.time()
-            buf = bytearray()
-            try:
-                ftp.retrbinary(f"RETR {rel}", buf.extend)
-            except Exception as e:
-                log_decrypt.warning(f"批量下载失败: {rel} — {e}")
-                continue
-
-            raw_bytes = bytes(buf)
-            try:
-                raw = decrypt_log(raw_bytes)
-            except Exception as e:
-                log_decrypt.warning(f"批量解密失败: {rel} — {e}")
-                continue
-            elapsed_ms = (time.time() - t0) * 1000
-            with _stats_lock:
-                _stats["decrypt_count"] += 1
-                _stats["decrypt_total_ms"] += elapsed_ms
-                _stats["decrypt_bytes"] += len(raw_bytes)
-                if elapsed_ms > _stats["decrypt_max_ms"]:
-                    _stats["decrypt_max_ms"] = elapsed_ms
-            log_decrypt.debug(f"{rel} → 批量处理 {len(raw_bytes)//1024}KB, 耗时 {elapsed_ms:.0f}ms")
-
-            with _cache_lock:
-                _decrypted_cache[fname] = raw
-            result[fname] = raw
-    finally:
-        ftp_safe_close(ftp)
-
-    return result
 
 
 def clear_file_list_cache():
@@ -1285,9 +2235,6 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
 
         if path == "/api/auth":
             self.handle_auth()
-        elif path == "/api/files":            # [2026-08-25] 批量解密加载（复用单条 FTP 连接，提升加载速度）
-            if not self._require_auth(qs): return
-            self.handle_files_batch()
         elif path == "/api/notes":            # [2026-08-22] 备注保存/删除（方案A）
             if not self._require_auth(qs): return
             self.handle_notes_post()
@@ -1297,6 +2244,15 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
         elif path == "/api/outbound-archive/rebuild":  # [2026-08-24 OUTBOUND] 强制重建索引
             if not self._require_auth(qs): return
             self.handle_outbound_archive_rebuild()
+        elif path == "/api/parts-archive":             # [2026-09-29 PARTS] 配件档案 multipart 上传
+            if not self._require_auth(qs): return
+            self.handle_parts_archive_post()
+        elif path == "/api/parts-archive/update":      # [2026-10-08 EDIT] 配件档案参数修改（JSON）
+            if not self._require_auth(qs): return
+            self.handle_parts_archive_update()
+        elif path == "/api/parts-archive/photo":       # [2026-10-13 PHOTO-APPEND] 档案补传照片
+            if not self._require_auth(qs): return
+            self.handle_parts_archive_photo()
         else:
             self.send_error_json(405, "ERR_METHOD", "不支持的请求方法")
 
@@ -1308,6 +2264,9 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
         if path == "/api/outbound-archive":
             if not self._require_auth(qs): return
             self.handle_outbound_archive_delete(qs)
+        elif path == "/api/parts-archive":             # [2026-09-29 PARTS] 配件档案永久删除
+            if not self._require_auth(qs): return
+            self.handle_parts_archive_delete(qs)
         else:
             self.send_error_json(405, "ERR_METHOD", "不支持的请求方法")
 
@@ -1391,6 +2350,15 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
         elif path == "/api/outbound-image":        # [2026-08-22 CPU-ARCHIVE → 2026-08-24 OUTBOUND] 图片按需下载（支持 ?token=）
             if not self._require_auth(qs): return
             self.handle_outbound_image(qs)
+        elif path == "/api/parts-archive":         # [2026-09-29 PARTS] 配件档案查询（全量/单条明细）
+            if not self._require_auth(qs): return
+            self.handle_parts_archive_get(qs)
+        elif path == "/api/parts-image":           # [2026-09-29 PARTS] 配件档案图片按需下载（支持 ?token=）
+            if not self._require_auth(qs): return
+            self.handle_parts_image(qs)
+        elif path == "/api/parts-thumb":           # [2026-09-29 THUMB] 配件档案缩略图（列表页用，点击才拉原图）
+            if not self._require_auth(qs): return
+            self.handle_parts_thumb(qs)
         else:
             # 静态文件（index.html / CSS / JS / Img 等）
             super().do_GET()
@@ -1435,38 +2403,6 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
                 self.send_error_json(503, code, msg)
             else:
                 self.send_error_json(500, "ERR_DECRYPT", f"处理失败: {e}")
-
-    def handle_files_batch(self):
-        """POST /api/files — 批量解密加载多个文件。
-
-        请求体: {"names": ["a.json", "b.json", ...]}
-        响应:   {"ok": true, "files": { "a.json": {...}, "b.json": {...} }}
-
-        复用在单条 FTP 连接内循环下载，避免每个文件都新建连接，
-        显著减少加载时间（日志文件多时效果明显）。
-        """
-        try:
-            body = self._read_body()
-            data = json.loads(body)
-        except Exception:
-            self.send_error_json(400, "ERR_BAD_REQUEST", "请求格式错误")
-            return
-
-        names = data.get("names")
-        if not isinstance(names, list) or not names:
-            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 names 参数")
-            return
-        # 防止单次请求过大，限制数量
-        if len(names) > 200:
-            self.send_error_json(400, "ERR_BAD_REQUEST", "单次批量请求最多 200 个文件")
-            return
-
-        try:
-            results = get_decrypted_files_batch([str(n) for n in names])
-            self.send_json({"ok": True, "files": results})
-        except Exception as e:
-            code, msg = ftp_error_code(e)
-            self.send_error_json(503, code, msg)
 
     def handle_refresh(self):
         """刷新文件列表缓存，不触及数据缓存。页面刷新/init 时调用。"""
@@ -1659,6 +2595,274 @@ class LogViewerHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def handle_parts_thumb(self, qs):
+        """GET /api/parts-thumb?path=<rel> — 缩略图按需生成/下载（支持 ?token=）"""
+        rel = (qs.get("path") or [""])[0]
+        if not rel:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 path 参数")
+            return
+        try:
+            data, mime = _parts_thumb_read(rel)
+        except LookupError:
+            self.send_error_json(403, "ERR_FORBIDDEN", "路径不合法")
+            return
+        except FileNotFoundError:
+            self.send_error_json(404, "ERR_NOT_FOUND", "图片不存在")
+            return
+        except OSError as e:
+            self.send_error_json(500, "ERR_IO", f"读取失败: {e}")
+            return
+        self._img_cache = True
+        self.send_response(200)
+        self.send_header("Content-Type", mime)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
+    # -------------------- 主机配件档案（[2026-09-29 PARTS] APK 拍照识别上传） --------------------
+    def handle_parts_archive_get(self, qs):
+        """GET /api/parts-archive — 不带 folder：全量记录列表；带 folder：单条明细（含图片 URL）。"""
+        folder = (qs.get("folder") or [None])[0]
+        if folder is None:
+            idx = _parts_index_reconcile()
+            records = sorted(idx.values(), key=lambda r: r.get("uploadedAt", ""), reverse=True)
+            # 每条记录做磁盘真实性校验（幽灵档案自愈）
+            alive = []
+            for rec in records:
+                checked = _parts_record_alive(rec["folder"], rec)
+                if checked:
+                    alive.append(checked)
+            self.send_json({"records": alive})
+            return
+        if not _PA_FOLDER_RE.match(folder):
+            self.send_error_json(400, "ERR_BAD_REQUEST", "folder 参数不合法")
+            return
+        idx = _parts_index_reconcile()
+        rec = idx.get(folder)
+        detail = _parts_record_alive(folder, rec) if rec else None
+        self.send_json(detail if detail else {"exists": False})
+
+    def handle_parts_archive_post(self):
+        """POST /api/parts-archive — multipart 上传
+
+        fields: sn（必填）+ machineModel（主机型号）+ cpuModel/cpuBatch/cpuCode
+                + ramInfo/ssdInfo/nicInfo/otherInfo + note（可选文本）
+        files : cpuFile*/hostFile*/ramFile*/ssdFile*/nicFile*/otherFile*（每类 ≤6 张，照片整体可选）
+        校验：Content-Length 预检（36 张 35MB + 余量）→ SN 白名单 → 文本字段长度 →
+        每类型 ≤6 张 → 魔数嗅探 + 单张 35MB（落盘前完成）。
+        """
+        try:
+            clen = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            clen = 0
+        if clen > PARTS_MAX_IMAGE_BYTES * 36 + 64 * 1024:
+            self.close_connection = True
+            self.send_error_json(413, "ERR_TOO_LARGE", "请求体超过上限")
+            return
+        body = self._read_body()
+        raw = _parse_multipart_multi(body, self.headers.get("Content-Type", ""))
+        if raw is None:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "multipart 解析失败")
+            return
+
+        def _decode(v):
+            return v[0][1].decode("utf-8", "replace").strip() if v and v[0][1] else ""
+
+        fields = {}
+        sn = _decode(raw.get("sn"))
+        # [2026-10-13 OPTIONAL-SN] SN 不再必填（用户要求：只要有照片即可上传）；
+        # 有值时仍走白名单校验，为空由 _parts_archive_upsert 生成 NOSN-<时间> 兜底文件夹名
+        if sn and not _ob_sn_ok(sn):
+            self.send_error_json(400, "ERR_BAD_REQUEST",
+                                 "主机编号（sn）含非法字符（仅允许字母数字、-、_）")
+            return
+        fields["sn"] = sn
+        for key in PARTS_TEXT_FIELDS:
+            val = _decode(raw.get(key))
+            if len(val) > PARTS_TEXT_MAXLEN[key]:
+                self.send_error_json(400, "ERR_BAD_REQUEST", f"{key} 超过长度上限")
+                return
+            fields[key] = val
+        # 归并文件字段：cpuFile / hostFile / ramFile / ssdFile / nicFile / otherFile（含 _N 后缀变体）
+        files_input = {t: [] for t in PARTS_FILE_TYPES}
+        for name, items in raw.items():
+            base = name.rstrip("0123456789_")
+            if not base.endswith("File"):
+                continue
+            ftype = base[:-4]
+            if ftype not in PARTS_FILE_TYPES:
+                continue
+            for item in items:
+                if item and item[1]:
+                    files_input[ftype].append(item)
+        for ftype in PARTS_FILE_TYPES:
+            files_input[ftype] = files_input[ftype][:PARTS_MAX_FILES_PER_TYPE]
+        # [2026-09-29 PHOTO-OPTIONAL] 照片可选：仅保存识别参数也允许（有照片则一并归档）
+        ok, payload = _parts_archive_upsert(fields, files_input)
+        if ok:
+            self.send_json(payload)
+        else:
+            status = 413 if payload.get("code") == "ERR_TOO_LARGE" else 400
+            self.send_error_json(status, payload.get("code", "ERR_UPLOAD"),
+                                 payload.get("message", "上传失败"))
+
+    def handle_parts_archive_delete(self, qs):
+        """DELETE /api/parts-archive?folder=&admin= — 永久删除档案文件夹
+
+        [2026-10-13 DELETE-ADMIN] 需管理员密码（与登录 token 双重防线）：
+        登录用户可浏览/上传/编辑，删除必须再输入管理员密码（默认 4328085）。
+        """
+        folder = (qs.get("folder") or [""])[0]
+        admin = (qs.get("admin") or [""])[0]
+        if admin != PARTS_ADMIN_PASSWORD:
+            self.send_error_json(403, "ERR_ADMIN", "管理员密码错误，无法删除")
+            return
+        ok, payload = _parts_archive_delete(folder)
+        if ok:
+            self.send_json(payload)
+        else:
+            status = 404 if payload.get("code") == "ERR_NOT_FOUND" else 400
+            self.send_error_json(status, payload.get("code", "ERR_DELETE"),
+                                 payload.get("message", "删除失败"))
+
+    def handle_parts_archive_analyze(self):
+        """POST /api/parts-archive/analyze — [2026-10-12 AI-COMPLETE] 照片参数补全
+
+        JSON body：{ "folder": "2026/9/29/J16Z144" }
+        Windows 离线 OCR 识别档案照片并返回建议；不保存、不追加字段。
+        用户必须在修改弹窗确认后，通过 update 接口保存。
+        """
+        try:
+            data = json.loads(self._read_body())
+        except Exception:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "请求格式错误")
+            return
+        folder = data.get("folder") if isinstance(data, dict) else None
+        if not isinstance(folder, str) or not folder:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 folder")
+            return
+        # [2026-10-12 ROTATE] 可选 rotations：{"cpu":90,...} 该类型照片旋转后重 OCR
+        rotations = data.get("rotations") if isinstance(data, dict) else None
+        ok, payload = _parts_analyze(folder, rotations)
+        if ok:
+            self.send_json(payload)
+        else:
+            status = 404 if payload.get("code") == "ERR_NOT_FOUND" else 400
+            self.send_error_json(status, payload.get("code", "ERR_ANALYZE"),
+                                 payload.get("message", "分析失败"))
+
+    def handle_parts_archive_ai_suggest(self):
+        """POST /api/parts-archive/ai-suggest — AI 识别建议（不写库，网页修改弹窗左右对比用）
+
+        JSON body：{ "folder": "..." } → { ok, folder, ai: {sn, machineModel, ...}, ocr }
+        """
+        try:
+            data = json.loads(self._read_body())
+        except Exception:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "请求格式错误")
+            return
+        folder = data.get("folder") if isinstance(data, dict) else None
+        if not isinstance(folder, str) or not folder:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 folder")
+            return
+        # [2026-10-12 ROTATE] 可选 rotations：{"cpu":90,...} 该类型照片旋转后重 OCR
+        rotations = data.get("rotations") if isinstance(data, dict) else None
+        ok, payload = _parts_analyze_scan(folder, rotations)
+        if ok:
+            self.send_json({"ok": True, "folder": folder,
+                            "ai": payload["suggestions"], "ocr": payload["ocr"]})
+        else:
+            status = 404 if payload.get("code") == "ERR_NOT_FOUND" else 400
+            self.send_error_json(status, payload.get("code", "ERR_ANALYZE"),
+                                 payload.get("message", "识别失败"))
+
+    def handle_parts_archive_photo(self):
+        """POST /api/parts-archive/photo — [2026-10-13 PHOTO-APPEND] 向已有档案补传照片
+
+        multipart：folder + type（cpu/host/ram/ssd/nic/other）+ <type>File*（每类 ≤6 张总量）。
+        网页编辑弹窗「＋ 补传照片」用；魔数/大小校验 + 2560px 重编码，与上传同标准。
+        """
+        try:
+            clen = int(self.headers.get("Content-Length", 0))
+        except ValueError:
+            clen = 0
+        if clen > PARTS_MAX_IMAGE_BYTES * (PARTS_MAX_FILES_PER_TYPE + 1) + 64 * 1024:
+            self.close_connection = True
+            self.send_error_json(413, "ERR_TOO_LARGE", "请求体超过上限")
+            return
+        body = self._read_body()
+        raw = _parse_multipart_multi(body, self.headers.get("Content-Type", ""))
+        if raw is None:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "multipart 解析失败")
+            return
+
+        def _decode(v):
+            return v[0][1].decode("utf-8", "replace").strip() if v and v[0][1] else ""
+
+        folder = _decode(raw.get("folder"))
+        ftype = _decode(raw.get("type"))
+        items = []
+        for name, lst in raw.items():
+            base = name.rstrip("0123456789_")
+            if base == ftype + "File":
+                items.extend(lst)
+        ok, payload = _parts_archive_photo_append(folder, ftype, items)
+        if ok:
+            self.send_json(payload)
+        else:
+            status = 404 if payload.get("code") == "ERR_NOT_FOUND" else 400
+            self.send_error_json(status, payload.get("code", "ERR_PHOTO"),
+                                 payload.get("message", "补传失败"))
+
+    def handle_parts_archive_update(self):
+        """POST /api/parts-archive/update — 修改档案参数（[2026-10-08 EDIT] 网页端编辑纠错）
+
+        JSON body：{ "folder": "2026/9/29/J16Z144",
+                     "fields": { "cpuCode": "01627", ... } }
+        可编辑白名单见 _parts_archive_update；照片/上传时间不动。
+        """
+        try:
+            data = json.loads(self._read_body())
+        except Exception:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "请求格式错误")
+            return
+        folder = data.get("folder") if isinstance(data, dict) else None
+        fields = data.get("fields") if isinstance(data, dict) else None
+        if not isinstance(folder, str) or not isinstance(fields, dict):
+            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 folder 或 fields")
+            return
+        ok, payload = _parts_archive_update(folder, fields)
+        if ok:
+            self.send_json(payload)
+        else:
+            status = 404 if payload.get("code") == "ERR_NOT_FOUND" else 400
+            self.send_error_json(status, payload.get("code", "ERR_UPDATE"),
+                                 payload.get("message", "修改失败"))
+
+    def handle_parts_image(self, qs):
+        """GET /api/parts-image?path=<rel> — 按需下载单张原图（路径白名单校验，支持 ?token=）"""
+        rel = (qs.get("path") or [""])[0]
+        if not rel:
+            self.send_error_json(400, "ERR_BAD_REQUEST", "缺少 path 参数")
+            return
+        try:
+            data, mime = _parts_image_read(rel)
+        except LookupError:
+            self.send_error_json(403, "ERR_FORBIDDEN", "路径不合法")
+            return
+        except FileNotFoundError:
+            self.send_error_json(404, "ERR_NOT_FOUND", "图片不存在")
+            return
+        except OSError as e:
+            self.send_error_json(500, "ERR_IO", f"读取失败: {e}")
+            return
+        self._img_cache = True   # end_headers 据此发可缓存头
+        self.send_response(200)
+        self.send_header("Content-Type", mime)
+        self.send_header("Content-Length", str(len(data)))
+        self.end_headers()
+        self.wfile.write(data)
+
 
 # ======================== 多线程服务器 ========================
 class ThreadingServer(ThreadingHTTPServer):
@@ -1793,6 +2997,13 @@ def main():
         log_main.info(f"  出库档案索引已对齐磁盘：{len(_outbound_index_cache)} 条")
     except Exception as e:
         log_main.warning(f"  出库索引启动对齐失败（不影响服务启动）: {e}")
+
+    # 配件档案索引启动补齐；由加载函数维护模块缓存，避免局部变量写回空索引。
+    try:
+        parts_index = _parts_index_reconcile()
+        log_main.info(f"  配件档案索引已对齐磁盘：{len(parts_index)} 条")
+    except Exception as e:
+        log_main.warning(f"  配件档案索引启动对齐失败（不影响服务启动）: {e}")
 
     # ---- 启动 HTTP 服务器（后台线程）----
     global _server

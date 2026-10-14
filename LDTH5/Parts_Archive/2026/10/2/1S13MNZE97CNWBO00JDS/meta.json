@@ -1,0 +1,31 @@
+{
+  "sn": "1S13MNZE97CNWBO00JDS",
+  "machineModel": "瑞天80(NPC)D4",
+  "cpuModel": "I5-12400",
+  "cpuBatch": "X629N855",
+  "cpuCode": "05171",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-02 14:52:32",
+  "originalNames": [
+    "cap_cpu_20261002_145131_109.jpg",
+    "cap_host_20261002_145158_594.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261002-145232_1.jpg",
+      "size": 4497712,
+      "sha256": "8d75955367e2d1d63462b9755b45819699002ddc6f6e072f1a940637fd1355b8"
+    },
+    {
+      "type": "host",
+      "name": "host_20261002-145232_1.jpg",
+      "size": 8445401,
+      "sha256": "8dc9e024803fe0270fa1682f0dca971ff55a1a76acd143db0aa0fd35307d9ed1"
+    }
+  ]
+}

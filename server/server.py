@@ -162,6 +162,36 @@ GPU_VENDOR_HINTS = {
 }
 
 # ============================================================
+# GENERIC (MICROSOFT FALLBACK) DRIVER DEVICE DETECTION
+# ============================================================
+# 这些设备虽然没有黄色感叹号（ConfigManagerErrorCode == 0），但跑的是
+# 微软内置通用驱动，实际等同于"未安装专用驱动"，必须按缺失处理：
+#   - 显卡未装驱动前 → "Microsoft 基本显示适配器" / "Microsoft Basic Display Adapter"
+#   - 蓝牙未装驱动前 → "Generic Bluetooth Radio" / "通用蓝牙无线电"
+#   - 声卡未装驱动前 → "High Definition Audio Device" / "高清晰度音频设备"
+# 注意 'HIGH DEFINITION AUDIO DEVICE' 必须整串匹配（含 DEVICE），
+# 否则会误伤 "Realtek High Definition Audio" 这类正常专用驱动名。
+GENERIC_DRIVER_PATTERNS = [
+    # 显卡：微软基本显示适配器
+    'MICROSOFT BASIC DISPLAY ADAPTER',
+    '基本显示适配器',
+    # 蓝牙：通用蓝牙射频
+    'GENERIC BLUETOOTH',
+    '通用蓝牙',
+    # 声卡：微软 UAA 通用音频
+    'HIGH DEFINITION AUDIO DEVICE',
+    '高清晰度音频设备',
+]
+
+
+def is_generic_driver_device(description) -> bool:
+    """判断设备是否运行微软内置通用驱动（等同未安装专用驱动）。"""
+    if not description:
+        return False
+    d = str(description).upper()
+    return any(p in d for p in GENERIC_DRIVER_PATTERNS)
+
+# ============================================================
 # HELPER: get .bin index path for a given .7z driver package
 # ============================================================
 def get_index_bin(pkg_name):
@@ -945,6 +975,7 @@ class WSDIHandler(BaseHTTPRequestHandler):
         matched_pkgs = {}       # required (problem devices)
         matched_hwids = {}
         optional_pkgs = {}      # optional (updatable devices)
+        optional_hwids = {}     # hwid -> [pkg] for optional (normal, installed) devices
         gpu_notices = []
 
         def add_gpu_notice(dev):
@@ -957,46 +988,72 @@ class WSDIHandler(BaseHTTPRequestHandler):
             if notice not in gpu_notices:
                 gpu_notices.append(notice)
 
-        # Build hwid -> is_problem map from devices
-        hwid_problem_map = {}
+        # Build hwid -> info map from devices.
+        # - problem: 黄叹号设备（ConfigManagerErrorCode != 0，缺驱动）
+        # - generic: 运行微软通用驱动的设备（微软基本显示适配器 /
+        #   Generic Bluetooth Radio / High Definition Audio Device 等），
+        #   虽无黄叹号但等同未安装专用驱动 → 必需
+        # - 其余（已安装正常驱动）→ 匹配到的包进入 optional（可选更新）
+        hwid_info = {}
         for dev in devices:
             h = dev.get('hwid', dev.get('instance_id', ''))
-            hwid_problem_map[h] = dev.get('is_problem', True)
+            if not h:
+                continue
+            info = hwid_info.setdefault(h, {'problem': False, 'generic': False, 'desc': ''})
+            if dev.get('is_problem', True):
+                info['problem'] = True
+            desc = dev.get('description', '') or dev.get('name', '') or ''
+            if desc:
+                info['desc'] = desc
+            # 服务端兜底识别通用驱动设备（客户端不上传 is_generic 也能生效）
+            if is_generic_driver_device(desc):
+                info['generic'] = True
+
+        def is_required_hwid(h):
+            info = hwid_info.get(h)
+            if info is None:
+                # 无设备信息（如网页手动粘贴 HWID）→ 按缺失处理，保持旧行为
+                return True
+            return info['problem'] or info['generic']
 
         # NOTE: Previous versions had a SKIP_HWID_PREFIXES filter here that
         # excluded MF\*, ROOT\*, SW\* etc. This was a workaround for the client
-        # uploading ALL PnP devices (300+). Now that the client correctly
-        # uploads only yellow-bang devices (ConfigManagerErrorCode != 0), every
-        # HWID it sends is genuinely missing a driver and MUST be matched.
-        # So we no longer skip any prefixes.
+        # uploading ALL PnP devices (300+). Now the client uploads all real
+        # devices with an is_problem flag, so classification is done per-HWID
+        # below: problem/generic → REQUIRED, normal → optional updates.
         driver_hwids = list(hwids)
         skipped_hwids = []
 
         # ---- PRIMARY: Use SDI bin parser + JSON cache for HWID matching ----
         # SDI bin index contains the HWID list each driver pack supports.
-        # If a HWID matches a .bin entry, the user doesn't have that driver
-        # installed (the client only sends yellow-bang devices), so it's REQUIRED.
+        # - problem/generic 设备的 HWID 匹配到包 → REQUIRED（缺失驱动）
+        # - 正常已装设备的 HWID 匹配到包 → optional（可更新，用户自行选择）
         for hwid in driver_hwids:
             pkgs = search_hwid(hwid)
             if pkgs:
-                # SDI bin match -> always REQUIRED
+                required = is_required_hwid(hwid)
+                target_pkgs = matched_pkgs if required else optional_pkgs
+                target_hwids = matched_hwids if required else optional_hwids
                 for pkg_name in pkgs:
                     if not get_driver_path(pkg_name):
                         continue
-                    if pkg_name not in matched_pkgs:
+                    if pkg_name not in target_pkgs:
                         driver_path = get_driver_path(pkg_name)
                         size = os.path.getsize(driver_path) if driver_path else 0
                         idx_bin = get_index_bin(pkg_name)
-                        matched_pkgs[pkg_name] = {
+                        target_pkgs[pkg_name] = {
                             "size": size,
                             "index": os.path.basename(idx_bin) if idx_bin else None,
                             "category": "sdi_match",
                         }
-                    matched_hwids.setdefault(hwid, []).append(pkg_name)
+                    target_hwids.setdefault(hwid, []).append(pkg_name)
 
         # ---- FALLBACK: Smart per-HWID heuristic for unmatched devices ----
-        # Only fallback for real hardware HWIDs (MF\* etc already excluded)
-        unmatched_hwids = [h for h in driver_hwids if h not in matched_hwids]
+        # 仅对"必需"设备（problem 黄叹号 / generic 通用驱动）做启发式兜底：
+        # 正常已装设备 SDI bin 未匹配到包 → 说明无需更新，不做兜底猜测
+        # （否则会给每个正常设备瞎猜类目推出一堆无关大包）
+        unmatched_hwids = [h for h in driver_hwids
+                           if h not in matched_hwids and is_required_hwid(h)]
 
         if unmatched_hwids:
             # Vendor-aware package selector: use HWID/description to pick the best sub-package
@@ -1150,6 +1207,19 @@ class WSDIHandler(BaseHTTPRequestHandler):
             for pkg in pkgs:
                 pkg_hwid_map.setdefault(pkg, []).append(hwid)
 
+        # optional（可更新）包的 HWID / 设备名反向映射
+        optional_pkg_hwid_map = {}
+        optional_pkg_dev_map = {}
+        for hwid, pkgs in optional_hwids.items():
+            info = hwid_info.get(hwid) or {}
+            dev_desc = info.get('desc', '')
+            for pkg in pkgs:
+                optional_pkg_hwid_map.setdefault(pkg, []).append(hwid)
+                if dev_desc:
+                    dev_list = optional_pkg_dev_map.setdefault(pkg, [])
+                    if dev_desc not in dev_list:
+                        dev_list.append(dev_desc)
+
         driver_list = []
         for pkg_name, info in matched_pkgs.items():
             entry = {
@@ -1183,7 +1253,8 @@ class WSDIHandler(BaseHTTPRequestHandler):
                 "size_mb": round(info["size"] / (1024 * 1024), 2),
                 "index": info["index"],
                 "category": info.get("category", ""),
-                "for_hwids": pkg_hwid_map.get(pkg_name, []),
+                "for_hwids": optional_pkg_hwid_map.get(pkg_name, []),
+                "for_devices": optional_pkg_dev_map.get(pkg_name, []),
             }
             if USE_LOCAL:
                 entry["url"] = get_file_url(pkg_name, "Drivers/", info["size"])
@@ -1211,6 +1282,9 @@ class WSDIHandler(BaseHTTPRequestHandler):
                 "hwids_matched": len([h for h in driver_hwids if h in matched_hwids]),
                 "required_packages": len(driver_list),
                 "optional_packages": len(optional_list),
+                "generic_devices": len([i for i in hwid_info.values() if i['generic']]),
+                "problem_devices": len([i for i in hwid_info.values() if i['problem']]),
+                "optional_device_hwids": len(optional_hwids),
             },
         })
 

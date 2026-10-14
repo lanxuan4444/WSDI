@@ -1,0 +1,47 @@
+{
+  "sn": "8N62Z44",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "V542H028",
+  "cpuCode": "80105",
+  "ramInfo": "HYNIX 8GB DDR5 5600MHz x2 | PN:HMCG66AGBUAO81N | SN:80ADO1244077381F96 | PN:HMCG66AE | SN:80AD01230297182092",
+  "ssdInfo": "WD 512GB NVMe x2 | SN:SO00S | SN:244571800859",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:49:12",
+  "originalNames": [
+    "cap_cpu_20261012_104823_507.jpg",
+    "cap_host_20261012_104659_607.jpg",
+    "cap_ram_20261012_104744_401.jpg",
+    "cap_ssd_20261012_104810_547.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-104912_1.jpg",
+      "size": 434790,
+      "sha256": "4ed55081d5ba1205f344d30be4ab678aa8a3f33ec4dedb436df8848a6443aa84"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-104912_1.jpg",
+      "size": 621222,
+      "sha256": "b61803b9d19a9e1b92074e5a878577ff2874538ff7c534ab439ae6d2a0c31755"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-104912_1.jpg",
+      "size": 738522,
+      "sha256": "4f359e9a8a32293c5b1f43dec505f6204d5f0b635dec2c778869639d3ffc895d"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-104912_1.jpg",
+      "size": 582477,
+      "sha256": "14c695c6f0b173db7aa07e6c5e45e7c8b87c581d8ff301908b8971472757ede6"
+    }
+  ],
+  "editedAt": "2026-10-12 11:19:53"
+}

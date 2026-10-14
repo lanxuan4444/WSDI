@@ -1,0 +1,31 @@
+{
+  "sn": "13C7094",
+  "machineModel": "0ptPlex Micro 7020",
+  "cpuModel": "",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "",
+  "ssdInfo": "SN:244410803609\nPC SN5000S NVMEM WD 512G8 $SD",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-11 10:29:37",
+  "originalNames": [
+    "cap_host_20261011_102914_908.jpg",
+    "cap_ssd_20261011_102832_734.jpg"
+  ],
+  "files": [
+    {
+      "type": "host",
+      "name": "host_20261011-102937_1.jpg",
+      "size": 442203,
+      "sha256": "a8df64c4d4d441c6a6e0a8ec2ae7189d2c50a154e19592d47e734d1e544d4733"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-102937_1.jpg",
+      "size": 656576,
+      "sha256": "d5734a7da3043e6a3ed079c11671a8beb9a0bad056599b728013c9cddd6ab1f5"
+    }
+  ]
+}

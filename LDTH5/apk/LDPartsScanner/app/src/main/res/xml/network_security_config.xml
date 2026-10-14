@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- LDTools 部署在内网，走明文 HTTP 上传，需要放行 cleartext -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

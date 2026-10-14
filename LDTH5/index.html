@@ -85,25 +85,6 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
   flex-wrap:wrap;
 }
 .header .stats b{color:var(--text);font-weight:600;}
-.btn-home{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:7px 14px;
-  font-size:.88rem;
-  font-weight:600;
-  color:#fff;
-  background:var(--primary, #3b82f6);
-  border-radius:var(--radius-sm, 8px);
-  text-decoration:none;
-  box-shadow:0 2px 6px rgba(59,130,246,.25);
-  transition:background .2s,transform .15s;
-}
-.btn-home:hover{
-  background:var(--primary-strong, #2563eb);
-  transform:translateY(-1px);
-}
-.btn-home:active{transform:translateY(0);}
 
 /* ==================== 工具栏 ==================== */
 .toolbar{
@@ -1027,6 +1008,26 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
 .exec-history .exec-body{
   padding:0 0 4px 0;
 }
+/* 控制台原文折叠区（subTasks 存在时收纳 consoleLogs，避免与结构化明细重复展示） */
+.detail-console-collapse{
+  border-top:1px solid var(--border);
+}
+.detail-console-collapse summary{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  font-size:.72rem;
+  color:var(--text-light);
+  cursor:pointer;
+  user-select:none;
+  list-style:none;
+  background:var(--bg);
+}
+.detail-console-collapse summary::-webkit-details-marker{display:none;}
+.detail-console-collapse summary .exec-toggle{color:var(--text-light);font-size:.68rem;transition:transform .15s;}
+.detail-console-collapse[open] summary .exec-toggle{transform:rotate(90deg);}
+.detail-console-collapse .detail-feature-logs{border-top:none;}
 .exec-badge{
   background:var(--bg);
   border:1px solid var(--border);
@@ -1099,6 +1100,13 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
   margin:0 0 3px 14px;
   color:var(--text-light);
   word-break:break-word;
+}
+/* [2026-09-10 v2.2] 子任务明细标签化（音频测试：播放方式 / 曲目 / 设备 拆成小标签，比一行长文本更醒目） */
+.detail-subtask-chips{display:flex;flex-wrap:wrap;gap:4px;margin:2px 0 4px 14px;}
+.detail-subtask-chips .st-chip{
+  background:var(--primary-light);border:1px solid #bfdbfe;color:var(--primary-dark);
+  border-radius:6px;padding:1px 6px;font-size:.68rem;
+  font-family:"Cascadia Code",Consolas,monospace;word-break:break-word;
 }
 
 /* ==================== 搜索高亮 ==================== */
@@ -1431,6 +1439,13 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
 }
 .auth-card button:hover{background:var(--primary-dark);}
 .auth-card button:disabled{opacity:.6;cursor:not-allowed;}
+/* [2026-09-30 v1.06] 记住密码勾选行 */
+.auth-remember{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin-top:14px;color:var(--text-muted);font-size:.85rem;
+  cursor:pointer;user-select:none;
+}
+.auth-remember input{width:15px;height:15px;cursor:pointer;accent-color:var(--primary);}
 .auth-error{
   margin-top:14px;padding:10px 16px;
   background:var(--failed-bg);color:var(--failed);
@@ -1541,6 +1556,11 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
       <input type="password" id="authPassword"
              placeholder="访问密码" autofocus
              maxlength="64" autocomplete="off">
+      <!-- [2026-09-30 v1.06] 记住密码：勾选后存本机，下次自动登录
+           （原 token 存 sessionStorage，APP WebView 每次打开都是新会话 → 每次都要填密码） -->
+      <label class="auth-remember" for="authRemember">
+        <input type="checkbox" id="authRemember"> 记住密码（下次自动登录）
+      </label>
       <button type="submit" id="authSubmitBtn">验证</button>
     </form>
     <div class="auth-error" id="authError" style="display:none"></div>
@@ -1551,7 +1571,7 @@ pre{font-family:"Cascadia Code","Fira Code",Consolas,"Courier New",monospace;}
   <!-- 头部 -->
   <header class="header">
     <h1><img src="Img/LDTLS.png" alt="" class="logo-img">LDTools <span class="accent">Log </span>Searcher <span class="version-badge" id="versionBadge" hidden></span><span class="data-source" id="dataSourceBadge" data-src="real">📡 FTP</span></h1>
-    <a href="/" class="btn-home" id="homeBtn" title="返回 WSDI 主页">🏠 返回主页</a>
+    <a href="parts.html" style="color:#1a56db;text-decoration:none;font-size:.85rem;padding:5px 10px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;" title="主机配件档案查询（APK 拍照识别上传）">📦 主机配件查询 →</a>
     <div class="stats" id="stats"></div>
   </header>
 
@@ -1647,6 +1667,7 @@ const FEATURE_DEFS = [
   { id:3, name:'系统综合调试',    short:'调试' },
   { id:4, name:'驱动管理',       short:'驱动' },
   { id:5, name:'音频测试',       short:'音频' },
+  { id:6, name:'清除使用痕迹',   short:'痕迹' },
 ];
 
 // result 值 → 显示标签 & 图标
@@ -1665,22 +1686,46 @@ const PENDING_NOTES_KEY = 'log_viewer_pending_notes';
 const DATE_PAGE_SIZE = 10;
 
 /* ==================== 访问认证 ==================== */
+/* [2026-09-30 v1.06] token 改存 localStorage：原 sessionStorage 在 APP WebView 里每次关闭即清空，
+   导致「每次打开都要填密码」。localStorage 持久化 + 记住的密码自动重登（token 过期/服务重启后无感续登） */
 const AUTH_TOKEN_KEY = 'ldtools_auth_token';
+const AUTH_REMEMBER_KEY = 'ldtools_saved_password';   // 记住的密码（明文本机存储，取消勾选即删）
 
 function getAuthToken(){
-  return sessionStorage.getItem(AUTH_TOKEN_KEY);
+  return localStorage.getItem(AUTH_TOKEN_KEY);
 }
 
 function setAuthToken(token){
-  sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+  localStorage.setItem(AUTH_TOKEN_KEY, token);
 }
 
 function clearAuthToken(){
-  sessionStorage.removeItem(AUTH_TOKEN_KEY);
+  localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
-/** 带认证的 fetch 封装，自动附加 Authorization header */
-async function apiFetch(url, options = {}){
+function getRememberedPassword(){
+  try{ return localStorage.getItem(AUTH_REMEMBER_KEY) || ''; }catch(e){ return ''; }
+}
+
+/** [v1.06] 用记住的密码静默重登（服务端 token 过期或服务重启后），成功返回 true */
+async function tryAutoLogin(){
+  const pw = getRememberedPassword();
+  if(!pw) return false;
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw }),
+    });
+    const data = await resp.json();
+    if(data.ok && data.token){ setAuthToken(data.token); return true; }
+  }catch(e){}
+  return false;
+}
+
+/** 带认证的 fetch 封装，自动附加 Authorization header
+ *  [v1.06] 401 时先用记住的密码自动重登一次（_retried 防死循环），成功则原请求无感重试，仍失败才弹登录框 */
+async function apiFetch(url, options = {}, _retried = false){
   const token = getAuthToken();
   if(!token) throw new Error('未登录');
   const headers = Object.assign({}, options.headers || {}, {
@@ -1693,21 +1738,27 @@ async function apiFetch(url, options = {}){
   const opts = Object.assign({}, options, { headers, cache: 'no-store' });
   const resp = await fetch(url, opts);
   if(resp.status === 401){
-    // token 过期或无效 → 清除并显示登录界面
+    // token 过期或无效 → 自动重登一次，仍失败才显示登录界面
     clearAuthToken();
+    if(!_retried && await tryAutoLogin()){
+      return apiFetch(url, options, true);
+    }
     showAuthOverlay();
     throw new Error('登录已过期，请重新输入密码');
   }
   return resp;
 }
 
-/** 显示登录遮罩 */
+/** 显示登录遮罩 [v1.06] 记住的密码预填，只需点「验证」 */
 function showAuthOverlay(){
   const overlay = document.getElementById('authOverlay');
   const pwInput = document.getElementById('authPassword');
   const errEl   = document.getElementById('authError');
+  const cb      = document.getElementById('authRemember');
+  const saved   = getRememberedPassword();
   if(overlay) overlay.classList.remove('hidden');
-  if(pwInput){ pwInput.value = ''; pwInput.focus(); }
+  if(pwInput){ pwInput.value = saved; pwInput.focus(); }
+  if(cb) cb.checked = !!saved;
   if(errEl){ errEl.style.display = 'none'; errEl.textContent = ''; }
   // 隐藏主界面
   document.querySelector('.loading-overlay')?.classList.add('hidden');
@@ -1736,6 +1787,10 @@ async function doLogin(password){
     const data = await resp.json();
     if(data.ok && data.token){
       setAuthToken(data.token);
+      // [v1.06] 记住密码：勾选 → 存本机（下次自动登录）；取消勾选 → 立即删除
+      const cb = document.getElementById('authRemember');
+      if(cb && cb.checked) localStorage.setItem(AUTH_REMEMBER_KEY, password);
+      else localStorage.removeItem(AUTH_REMEMBER_KEY);
       hideAuthOverlay();
       init();  // 认证成功后启动应用
     } else {
@@ -1762,20 +1817,6 @@ document.addEventListener('DOMContentLoaded', function(){
     });
   }
 
-  // 返回主页按钮：经 WSDI 代理 (/LDTH5) 访问时，主页是站点根路径 /；
-  // 若直接访问 LDTH5 根路径（非代理，当前页就是首页），则隐藏该按钮避免无效跳转
-  const homeBtn = document.getElementById('homeBtn');
-  if(homeBtn){
-    const path = location.pathname.toLowerCase();
-    const isDirectRoot = (path === '/' || path === '/index.html');
-    if(isDirectRoot){
-      homeBtn.hidden = true;
-    } else {
-      // 经 /LDTH5 代理访问：主页指向站点根路径
-      homeBtn.href = '/';
-    }
-  }
-
   // 检查是否已有 token → 验证有效性
   const token = getAuthToken();
   if(token){
@@ -1783,11 +1824,15 @@ document.addEventListener('DOMContentLoaded', function(){
       .then(function(r){ return r.json(); })
       .then(function(){ hideAuthOverlay(); init(); })
       .catch(function(){
-        // 401/网络错误已在 apiFetch/showAuthOverlay 中处理
+        // 401 已在 apiFetch 内自动重登重试；仍失败时登录遮罩已显示
         // 此处仅确保不执行 init
       });
   } else {
-    showAuthOverlay();
+    // [v1.06] 无 token 但记住过密码 → 静默自动登录（不弹遮罩不输密码）
+    tryAutoLogin().then(function(ok){
+      if(ok){ hideAuthOverlay(); init(); }
+      else showAuthOverlay();
+    });
   }
 });
 
@@ -1808,6 +1853,18 @@ function fmtDate(d){
 // 时间格式化：Date → "YYYY-MM-DD HH:mm:ss"
 function fmtTime(d){
   return fmtDate(d)+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+}
+// 时间格式化（带星期）：Date → 'YYYY-MM-DD "星期X" HH:mm:ss'（星期日~星期六，周日显示"星期日"）
+function fmtTimeWeek(d){
+  const weekChars = ['日','一','二','三','四','五','六']; // getDay(): 0=周日
+  const t = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0');
+  return fmtDate(d)+' "星期'+weekChars[d.getDay()]+'" '+t;
+}
+
+// 过滤蓝牙 PAN 伪网卡：Windows 下 "Bluetooth Device (Personal Area Network)" 属蓝牙设备，不属于网卡，屏蔽显示
+function filterNetAdapters(arr){
+  if(!Array.isArray(arr)) return arr;
+  return arr.filter(n => !/bluetooth.*personal area network/i.test((n && n.name) || ''));
 }
 
 // 日期字符串 → Date（当天 00:00）
@@ -1942,8 +1999,8 @@ function buildLogFromRaw(rawData, fname){
     });
   }
   if(Array.isArray(hw.networkAdapters)){
-    hw.networkAdapters.forEach((n,i) => {
-      contentParts.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||''));
+    filterNetAdapters(hw.networkAdapters).forEach((n,i) => {
+      contentParts.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||'') + (n.linkSpeed ? ' 速率:' + n.linkSpeed : ''));
     });
   }
   if(Array.isArray(hw.bluetooths) && hw.bluetooths.length){
@@ -1951,9 +2008,17 @@ function buildLogFromRaw(rawData, fname){
       contentParts.push('蓝牙'+(i+1)+': ' + (b.name||'') + ' 驱动:' + (b.driverVersion||'') + (b.status ? ' ' + b.status : ''));
     });
   }
+  // 电池（[2026-09-10 v2.2] 新增；无电池机型整块不产出，向后兼容旧日志）
+  if(Array.isArray(hw.batteries) && hw.batteries.length){
+    hw.batteries.forEach((b,i) => {
+      const segs = batterySegments(b);
+      if(segs.length) contentParts.push('电池'+(i+1)+': ' + segs.join(' '));
+    });
+  }
   if(hw.windowsVersion)   contentParts.push('Windows版本: ' + hw.windowsVersion);
   if(hw.windowsLicenseStatus) contentParts.push('许可证状态: ' + hw.windowsLicenseStatus);
   if(hw.oobeStatus)       contentParts.push('OOBE状态: ' + hw.oobeStatus);
+  // 镜像历史机型：[2026-09-17] 按用户决定不进搜索索引（仅详情气泡展示），勿在此添加
   if(hw.lenovoInfo){
     const li = hw.lenovoInfo;
     if(li.productModel) contentParts.push('官方型号: ' + li.productModel);
@@ -2074,92 +2139,53 @@ async function decryptFilesInDateRange(dateStart, dateEnd){
   state.isLoading = true;
   if(needDecrypt.length > 3) showLoading('正在加载 ' + needDecrypt.length + ' 个日志文件...');
 
-  // ==================== 批量加载（方案B，2026-08-25） ====================
-  // [ROLLBACK] 如需回退旧的逐文件并发加载，删除下方批量块，恢复：
-  //   const CONCURRENCY = 6;
-  //   逐个 apiFetch('/api/file?name=' + encodeURIComponent(fname)) 并发加载
-  // 批量接口 /api/files 在后端复用单条 FTP 连接下载多个文件，
-  // 大幅减少每文件建连/退出的开销，日志多时加载明显更快。
-  const BATCH_SIZE = 12;              // 每批文件数
-  const BATCH_CONCURRENCY = 3;        // 同时进行的批次数量
+  // ==================== 并发加载（方案A） ====================
+  // [ROLLBACK 2026-08-20] 如需回退串行版本，删除下方并发块，恢复：
+  //   let success = 0;
+  //   for(let i = 0; i < needDecrypt.length; i++){
+  //     const fname = needDecrypt[i];
+  //     if(needDecrypt.length > 3) updateLoadingProgress(i, needDecrypt.length, fname);
+  //     try{
+  //       const fileResp = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
+  //       if(!fileResp.ok) continue;
+  //       const rawData = await fileResp.json();
+  //       const log = buildLogFromRaw(rawData, fname);
+  //       state.logs.push(log);
+  //       state.decryptedSet.add(fname);
+  //       success++;
+  //     }catch(err){
+  //       console.warn('加载失败:', fname, err.message);
+  //       state.decryptedSet.add(fname); // 失败也标记，避免反复重试
+  //     }
+  //   }
+  const CONCURRENCY = 6;              // 并发请求数（LAN 内 FTP 服务端可承受）
   const total = needDecrypt.length;
   let success = 0, done = 0;
+  const queue = needDecrypt.slice();  // 待加载队列，worker 各取所需
 
-  // 把待加载列表切分为多个批次
-  const batches = [];
-  for(let i = 0; i < needDecrypt.length; i += BATCH_SIZE){
-    batches.push(needDecrypt.slice(i, i + BATCH_SIZE));
-  }
-  const queue = batches.slice();
-
-  async function batchWorker(){
+  async function loadWorker(){
     while(queue.length > 0){
-      const batch = queue.shift();
+      const fname = queue.shift();
       try{
-        const resp = await apiFetch('/api/files', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ names: batch })
-        });
-        if(resp.ok){
-          const data = await resp.json();
-          const files = data.files || {};
-          for(const fname of batch){
-            const rawData = files[fname];
-            if(rawData){
-              const log = buildLogFromRaw(rawData, fname);
-              state.logs.push(log);
-              state.decryptedSet.add(fname);
-              success++;
-            }
-            done++;
-            if(total > 3) updateLoadingProgress(done, total, fname);
-          }
-        } else {
-          // 整批失败：逐文件重试一次单文件接口（兼容旧后端无批量接口的情况）
-          for(const fname of batch){
-            try{
-              const fr = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
-              if(fr.ok){
-                const rawData = await fr.json();
-                const log = buildLogFromRaw(rawData, fname);
-                state.logs.push(log);
-                state.decryptedSet.add(fname);
-                success++;
-              }
-            }catch(err){
-              console.warn('加载失败:', fname, err.message);
-              state.decryptedSet.add(fname);
-            }
-            done++;
-            if(total > 3) updateLoadingProgress(done, total, fname);
-          }
+        const fileResp = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
+        if(fileResp.ok){
+          const rawData = await fileResp.json();
+          const log = buildLogFromRaw(rawData, fname);
+          state.logs.push(log);
+          state.decryptedSet.add(fname);
+          success++;
         }
+        // !ok 不标记 decryptedSet，下次可重试（与原串行版语义一致）
       }catch(err){
-        // 批量请求整体异常：逐个尝试单文件接口，避免一次失败丢整批
-        console.warn('批量加载失败，逐文件重试:', err.message);
-        for(const fname of batch){
-          try{
-            const fr = await apiFetch('/api/file?name=' + encodeURIComponent(fname));
-            if(fr.ok){
-              const rawData = await fr.json();
-              const log = buildLogFromRaw(rawData, fname);
-              state.logs.push(log);
-              state.decryptedSet.add(fname);
-              success++;
-            }
-          }catch(e){
-            console.warn('加载失败:', fname, e.message);
-            state.decryptedSet.add(fname);
-          }
-          done++;
-          if(total > 3) updateLoadingProgress(done, total, fname);
-        }
+        console.warn('加载失败:', fname, err.message);
+        state.decryptedSet.add(fname); // 失败也标记，避免反复重试
       }
+      done++;
+      if(total > 3) updateLoadingProgress(done, total, fname);
     }
   }
-  await Promise.all(Array.from({length: Math.min(BATCH_CONCURRENCY, batches.length)}, batchWorker));
-  // ==================== 批量加载结束 ====================
+  await Promise.all(Array.from({length: Math.min(CONCURRENCY, total)}, loadWorker));
+  // ==================== 并发加载结束 ====================
 
   // 重新排序（新加入的日志需要合并到正确位置）
   state.logs.sort((a, b) => b.uploadTime - a.uploadTime);
@@ -2251,8 +2277,17 @@ async function loadFromFiles(files){
 //   v1.4 变更提醒+驱动按钮 / v1.5 子目录检索 / v1.6 日期重构+无限滚动 / v1.7 密码认证
 //   v1.8 subTasks+驱动档案 / v1.9 历史执行折叠 / v2.0 智能匹配+并发加载+统一搜索重构
 //   v2.1 CPU拍照记录（PSN/FPO 图片档案：上传/查看/删除，方案见 Docs/CPU-Photo-Archive-Plan.md）
+//   v2.2 电池信息展示（batteries 全字段：状态/电量/健康度/容量/估算时间）
+//        + 音频测试明细标签化（曲目/设备/播放方式，对应 LDTools v2.7.1 / v2.7.2）
+//   v2.3 清除使用痕迹展示（从系统调试拆为独立步骤：功能 3 下出现 2 条 execution，
+//        consoleLogs `清除痕迹: ...` 行格式化展示，对应 LDTools v2.7.3）
+//   v2.4 清除使用痕迹独立为功能 6（FEATURE_DEFS 新增 id=6「清除使用痕迹」；
+//        不再嵌入「系统综合调试」，展示位置紧邻「音频测试」之后，对应 LDTools v2.7.3+featureId 重构）
+//   v2.5 镜像历史机型展示（hardware.imageHistory：日期 · 机型，系统信息区逐条气泡展示，
+//        纳入全文搜索；对应 LDTools v2.7.6）
+//        [2026-09-17 文案微调] 气泡标签「历史机型x」→「该镜像曾由历史机型x」（不升版）
 // 注意：server.py 的 /api/version 返回的是文件缓存版本号（_file_version），与本应用版本无关
-const APP_VERSION = 'v2.1';
+const APP_VERSION = 'v2.5';
 document.getElementById('versionBadge').textContent = APP_VERSION;
 document.getElementById('versionBadge').hidden = false;
 
@@ -2518,8 +2553,8 @@ function findMatchSnippet(log, keyword, fuzzy){
     });
   }
   if(Array.isArray(hw.networkAdapters)){
-    hw.networkAdapters.forEach((n,i) => {
-      lines.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||''));
+    filterNetAdapters(hw.networkAdapters).forEach((n,i) => {
+      lines.push('网卡'+(i+1)+': ' + (n.name||'') + ' MAC:' + (n.macAddress||'') + (n.linkSpeed ? ' 速率:' + n.linkSpeed : ''));
     });
   }
   if(Array.isArray(hw.bluetooths) && hw.bluetooths.length){
@@ -2527,9 +2562,17 @@ function findMatchSnippet(log, keyword, fuzzy){
       lines.push('蓝牙'+(i+1)+': ' + (b.name||'') + ' 驱动:' + (b.driverVersion||'') + (b.status ? ' ' + b.status : ''));
     });
   }
+  // 电池（[2026-09-10 v2.2] 新增；与 contentParts 口径一致）
+  if(Array.isArray(hw.batteries) && hw.batteries.length){
+    hw.batteries.forEach((b,i) => {
+      const segs = batterySegments(b);
+      if(segs.length) lines.push('电池'+(i+1)+': ' + segs.join(' '));
+    });
+  }
   if(hw.windowsVersion)   lines.push('Windows版本: ' + hw.windowsVersion);
   if(hw.windowsLicenseStatus) lines.push('许可证状态: ' + hw.windowsLicenseStatus);
   if(hw.oobeStatus)       lines.push('OOBE状态: ' + hw.oobeStatus);
+  // 镜像历史机型：[2026-09-17] 按用户决定不进搜索命中片段（仅详情气泡展示），勿在此添加
   if(hw.lenovoInfo){
     const li = hw.lenovoInfo;
     if(li.productModel) lines.push('官方型号: ' + li.productModel);
@@ -2591,7 +2634,7 @@ function renderCard(log){
 
   // 卡片顶部
   const hw = log.rawData.hardware || {};
-  const dateTimeStr = fmtTime(log.uploadTime);
+  const dateTimeStr = fmtTimeWeek(log.uploadTime);
   const topParts = [
     `<span class="card-datetime"><span class="card-datetime-label">出库日期</span><span class="card-datetime-value">${highlight(dateTimeStr, kw, fuzzy)}</span></span>`,
     `<span class="card-machine">${highlight(log.fileModel || log.model || '', kw, fuzzy)}</span>`,
@@ -2701,6 +2744,8 @@ function formatSystemDebugLine(line){
     { key:'MAS', label:'激活工具运行状态' },
     { key:'磁盘初始化', label:'磁盘初始化' },
     { key:'Rename', label:'盘符重命名' },
+    // [2026-09-15 v2.3] 清除使用痕迹（LDTools v2.7.3 新增，排在系统调试最后一步）
+    { key:'清除痕迹', label:'清除使用痕迹' },
   ];
 
   // 未命中系统综合调试关键字段时保持原样
@@ -2742,8 +2787,35 @@ function fmtSubTaskDur(ms){
   return ms >= 1000 ? (ms/1000).toFixed(1).replace(/\.0$/,'') + 's' : Math.round(ms) + 'ms';
 }
 
+// [2026-09-10 v2.2] 分钟数 → "X小时Y分"（电池剩余 / 充满时间展示；≤0 视为无值）
+function fmtMinutes(m){
+  if(!m || m <= 0) return '';
+  const hh = Math.floor(m/60), mm = m%60;
+  if(hh > 0) return mm > 0 ? hh + '小时' + mm + '分' : hh + '小时';
+  return mm + '分';
+}
+
+// [2026-09-10 v2.2] 电池信息 → 展示片段
+// 搜索全文索引 / 搜索命中片段 / 详情气泡三处共用，保证口径一致；
+// 约定：数值 -1 为"未知/不适用"（容量类为 0），一律不展示而非按 0 显示
+function batterySegments(b){
+  if(!b) return [];
+  const segs = [];
+  if(b.status) segs.push(b.status);
+  if(b.chargePercent >= 0) segs.push('电量 ' + b.chargePercent + '%');
+  if(b.healthPercent >= 0) segs.push('健康度 ' + b.healthPercent + '%');
+  const manu = [b.manufacturer, b.chemistry].filter(s => s && String(s).trim()).join('·');
+  if(manu) segs.push(manu);
+  if(b.designCapacity > 0 || b.fullChargeCapacity > 0)
+    segs.push((b.designCapacity || 0) + '/' + (b.fullChargeCapacity || 0) + ' mWh');
+  if(b.estimatedRunTimeMinutes > 0)    segs.push('剩余 ' + fmtMinutes(b.estimatedRunTimeMinutes));
+  if(b.estimatedFullChargeMinutes > 0) segs.push('充满还需 ' + fmtMinutes(b.estimatedFullChargeMinutes));
+  return segs;
+}
+
 // 渲染子任务明细（V2.4+ 结构：key/status/before/after/detail/durationMs）
-function renderSubTasks(subTasks, kw, fuzzy){
+// featureId：所属功能 ID，用于按功能定制明细渲染（当前仅 5=音频测试 走标签化）
+function renderSubTasks(subTasks, kw, fuzzy, featureId){
   if(!subTasks || subTasks.length === 0) return '';
   const h = highlight; // 简写
 
@@ -2782,7 +2854,19 @@ function renderSubTasks(subTasks, kw, fuzzy){
 
     // 补充说明行
     if(t.detail && t.detail.trim()){
-      html += `<div class="detail-subtask-detail">${h(t.detail.trim(), kw, fuzzy)}</div>`;
+      const dt = t.detail.trim();
+      // [2026-09-10 v2.2] 音频测试（featureId=5）的 detail 为 "键: 值 · 键: 值" 结构，
+      // 拆成小标签展示更醒目；其余情况（含整句失败原因）保持原样一行
+      const segs = (featureId === 5 && dt.indexOf(' · ') >= 0)
+        ? dt.split(' · ').map(s => s.trim()).filter(Boolean)
+        : null;
+      if(segs && segs.length > 1){
+        html += `<div class="detail-subtask-chips">` +
+          segs.map(s => `<span class="st-chip">${h(s, kw, fuzzy)}</span>`).join('') +
+          `</div>`;
+      } else {
+        html += `<div class="detail-subtask-detail">${h(dt, kw, fuzzy)}</div>`;
+      }
     }
   });
 
@@ -2809,24 +2893,29 @@ function execMatchesKw(e, kw, fuzzy){
 }
 
 // 渲染单次执行记录的正文（子任务明细 + 控制台日志 + 变更配置），供最新执行与历史执行复用
-function renderExecBody(e, featureId, kw, fuzzy){
+function renderExecBody(e, featureId, kw, fuzzy, autoOpenConsole){
   const h = highlight; // 简写
   let html = '';
 
   // 子任务明细（V2.4+ 结构化记录，旧日志无此字段自动跳过）
   if(e.subTasks && e.subTasks.length > 0){
-    html += renderSubTasks(e.subTasks, kw, fuzzy);
+    html += renderSubTasks(e.subTasks, kw, fuzzy, featureId);
   }
 
   // 控制台日志（系统综合调试做可读性格式化）
+  // 当 subTasks 存在时，原文收纳为可展开的"控制台执行日志"，避免与结构化明细重复展示
   if(e.consoleLogs && e.consoleLogs.length > 0){
     const isSysDebug = featureId === 3;
-    html += '<div class="detail-feature-logs">';
-    e.consoleLogs.forEach(line=>{
+    const hasSubTasks = e.subTasks && e.subTasks.length > 0;
+    const logContent = e.consoleLogs.map(line=>{
       const out = isSysDebug ? formatSystemDebugLine(line) : line;
-      html += h(out, kw, fuzzy) + '\n';
-    });
-    html += '</div>';
+      return h(out, kw, fuzzy);
+    }).join('\n');
+    if(hasSubTasks){
+      html += `<details class="detail-console-collapse"${autoOpenConsole ? ' open' : ''}><summary><span class="exec-toggle">▶</span><span>控制台执行日志</span></summary><div class="detail-feature-logs">${logContent}</div></details>`;
+    } else {
+      html += '<div class="detail-feature-logs">' + logContent + '</div>';
+    }
   }
 
   // 变更前后配置（受开关控制，默认关闭）
@@ -2908,10 +2997,10 @@ function renderCardDetail(log){
       html += bubble('显卡'+(i+1), `${g.name||''} | 显存:${g.adapterRAM_GB||0}GB | 驱动:${g.driverVersion||''}`);
     });
   }
-  // 网卡
+  // 网卡（过滤蓝牙 PAN 伪网卡）
   if(Array.isArray(hw.networkAdapters)){
-    hw.networkAdapters.forEach((n,i)=>{
-      html += bubble('网卡'+(i+1), `${n.name||''} | MAC:${n.macAddress||''}`, true);
+    filterNetAdapters(hw.networkAdapters).forEach((n,i)=>{
+      html += bubble('网卡'+(i+1), `${n.name||''} | MAC:${n.macAddress||''}${n.linkSpeed ? ' | 速率:' + n.linkSpeed : ''}`, true);
     });
   }
   // 蓝牙
@@ -2927,6 +3016,13 @@ function renderCardDetail(log){
       html += bubble('蓝牙'+(i+1), parts.join(' | '), true);
     });
   }
+  // 电池（[2026-09-10 v2.2] 新增；与 LDTools 硬件概览同分区同口径，无电池机型整块不渲染）
+  if(Array.isArray(hw.batteries) && hw.batteries.length){
+    hw.batteries.forEach((b,i)=>{
+      const segs = batterySegments(b);
+      if(segs.length) html += bubble('电池'+(i+1), segs.join(' | '), true);
+    });
+  }
   html += '</div></div>';
 
   // ===== 系统信息 =====
@@ -2936,6 +3032,13 @@ function renderCardDetail(log){
   html += bubble('许可证状态', hw.windowsLicenseStatus || '');
   html += bubble('OOBE状态', hw.oobeStatus || '');
   if(hw.scanTimestamp) html += bubble('扫描时间', hw.scanTimestamp, true);
+  // 镜像历史机型（[2026-09-16 v2.5] 新增；[2026-09-17] 句式改为「该镜像曾由 {日期} 历史机型 {机型} 构成」，
+  // 纯文本无序号、不进搜索索引；无该字段的历史日志自动跳过）
+  if(Array.isArray(hw.imageHistory) && hw.imageHistory.length){
+    hw.imageHistory.forEach((it)=>{
+      if(it.model) html += bubble('该镜像曾由', `${it.date||'?'} 历史机型 ${it.model} 构成`);
+    });
+  }
   html += '</div></div>';
 
   // ===== 联想在线信息 =====
@@ -2988,7 +3091,7 @@ function renderCardDetail(log){
     html += `<div class="detail-feature-header"><span>${h(name, kw, fuzzy)}</span>${badge} <span class="feat-result-ico" style="color:${colorVar}">${rMeta.ico} ${rMeta.label}</span><span style="color:var(--text-light);font-size:.68rem;margin-left:auto">${last.timestamp || ''}</span></div>`;
 
     // 最新执行（默认展开）
-    html += renderExecBody(last, f.featureId, kw, fuzzy);
+    html += renderExecBody(last, f.featureId, kw, fuzzy, execMatchesKw(last, kw, fuzzy));
 
     // 历史执行（合并日志后产生多条，倒序折叠；搜索命中自动展开）
     for(let i = execs.length - 2; i >= 0; i--){
@@ -3000,7 +3103,7 @@ function renderCardDetail(log){
       const openAttr = execMatchesKw(e, kw, fuzzy) ? ' open' : '';
       html += `<details class="exec-history"${openAttr}>`;
       html += `<summary><span class="exec-toggle">▶</span><span>历史执行 · 第${i+1}次</span> <span class="exec-result-ico" style="color:${eColor}">${eMeta.ico} ${eMeta.label}</span><span style="margin-left:auto;font-size:.66rem;">${e.timestamp || ''}</span></summary>`;
-      html += `<div class="exec-body">${renderExecBody(e, f.featureId, kw, fuzzy)}</div>`;
+      html += `<div class="exec-body">${renderExecBody(e, f.featureId, kw, fuzzy, execMatchesKw(e, kw, fuzzy))}</div>`;
       html += `</details>`;
     }
 

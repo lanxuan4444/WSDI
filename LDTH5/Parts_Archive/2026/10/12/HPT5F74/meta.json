@@ -1,0 +1,48 @@
+{
+    "sn":  "HPT5F74",
+    "machineModel":  "Vostro 3030S",
+    "cpuModel":  "I3-14100",
+    "cpuBatch":  "X340H654",
+    "cpuCode":  "01085",
+    "ramInfo":  "HYNIX 16GB DDR5 | PN:HMCG78AGBUAO84N | SN:80ADO12441985F3155",
+    "ssdInfo":  "PFPNU512GZ  NVMe | TW-06NRX4-PIWD6-41T-052S-AO1",
+    "nicInfo":  "",
+    "otherInfo":  "",
+    "vendor":  "建钰",
+    "note":  "",
+    "uploadedAt":  "2026-10-12 10:36:44",
+    "originalNames":  [
+                          "cap_cpu_20261012_103546_515.jpg",
+                          "cap_host_20261012_103331_668.jpg",
+                          "cap_ram_20261012_103306_583.jpg",
+                          "cap_ssd_20261012_103320_172.jpg",
+                          "_t.jpg"
+                      ],
+    "files":  [
+                  {
+                      "type":  "cpu",
+                      "name":  "cpu_20261012-103644_1.jpg",
+                      "size":  437966,
+                      "sha256":  "b751e8dc030a4d757c80feb01c224c822c65c02ec5ca20c21dd0c78e476baaec"
+                  },
+                  {
+                      "type":  "host",
+                      "name":  "host_20261012-103644_1.jpg",
+                      "size":  714436,
+                      "sha256":  "4ffaf34d519103545f6bde7118b5f45b5e78bf9eac75ae008d270bacda288390"
+                  },
+                  {
+                      "type":  "ram",
+                      "name":  "ram_20261012-103644_1.jpg",
+                      "size":  674148,
+                      "sha256":  "b1f53d713c1f1c70f92ac4d1d24571b596ac20580dfe5f3ae0ad3994c4b15ab1"
+                  },
+                  {
+                      "type":  "ssd",
+                      "name":  "ssd_20261012-103644_1.jpg",
+                      "size":  622913,
+                      "sha256":  "f79e449a013e9bb602abc27629f33e38b50ca6859152793265e1ae19e11a573d"
+                  }
+              ],
+    "editedAt":  "2026-10-13 14:06:31"
+}

@@ -1,0 +1,40 @@
+{
+  "sn": "MP2GCQJK",
+  "machineModel": "小新27-IRH",
+  "cpuModel": "",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "SAMSUNG 8GB PC5 80CE02242740AE5B2B\nDOR5 SODIMM 80CED2242740A E5B28",
+  "ssdInfo": "UNION MEMORY 1024G  GEN4 X4 NVME\nRPEYJ1T24MLR1HWQ",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "主机批号: MPNXS4C21003",
+  "uploadedAt": "2026-10-07 15:57:40",
+  "originalNames": [
+    "cap_host_20261007_155648_475.jpg",
+    "cap_ram_20261007_155610_130.jpg",
+    "cap_ssd_20261007_155511_358.jpg"
+  ],
+  "files": [
+    {
+      "type": "host",
+      "name": "host_20261007-155740_1.jpg",
+      "size": 749505,
+      "sha256": "2cc02fd53497603e5cc38b5de4c8afaafc49632210d520b29011eb160c5663e2"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261007-155740_1.jpg",
+      "size": 459815,
+      "sha256": "3d02543f8c471508b882f588b2d4c7ba05ca3d5ba9e9b351c4ce53a26409b8cc"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261007-155740_1.jpg",
+      "size": 461097,
+      "sha256": "f4719131be231f12e95801dd5eae73017bf822a0822232fd46d1111ee539e4d3"
+    }
+  ],
+  "vendor": "",
+  "editedAt": "2026-10-13 17:42:58"
+}

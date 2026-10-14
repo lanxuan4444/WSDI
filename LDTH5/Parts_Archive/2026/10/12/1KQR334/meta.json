@@ -1,0 +1,61 @@
+{
+  "sn": "1KQR334",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "X352N473",
+  "cpuCode": "03820",
+  "ramInfo": "HYNIX 16GB DDR5 5600MHz | PN:HMCG78AGBUAO84N | SN:80AD01234437BC7A1E",
+  "ssdInfo": "KIOXIA 512GB NVMe | SN:90GPH6O0Q2D",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:35:25",
+  "originalNames": [
+    "cap_cpu_20261012_103355_569.jpg",
+    "cap_host_20261012_103149_332.jpg",
+    "cap_ram_20261012_103234_962.jpg",
+    "cap_ssd_20261012_103252_143.jpg",
+    "ram_20261012-103525_1.jpg",
+    "ssd_20261012-103525_1.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-103525_1.jpg",
+      "size": 487326,
+      "sha256": "f8bc4f3db40f6f69032add13b5e1e1fe87579f6a750d3371cd578b8e4fb07ce5"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-103525_1.jpg",
+      "size": 665923,
+      "sha256": "a31ba816fb99eb2ca6686fa091f5e7d41fdabbab79ea231be4b4295f4b0e177c"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-103525_1.jpg",
+      "size": 680787,
+      "sha256": "6f17d6ede7a5cd8ff2970a3438350feb6c513fd47023cec7060ea054663a4f0c"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-103525_1.jpg",
+      "size": 649438,
+      "sha256": "502e0e824445802688178a2c8f276501f639caa28c77e40e5b2adb898aa99b08"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261013-172406_w2.jpg",
+      "size": 680787,
+      "sha256": "6f17d6ede7a5cd8ff2970a3438350feb6c513fd47023cec7060ea054663a4f0c"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261013-172424_w2.jpg",
+      "size": 649438,
+      "sha256": "502e0e824445802688178a2c8f276501f639caa28c77e40e5b2adb898aa99b08"
+    }
+  ],
+  "editedAt": "2026-10-13 17:25:35"
+}

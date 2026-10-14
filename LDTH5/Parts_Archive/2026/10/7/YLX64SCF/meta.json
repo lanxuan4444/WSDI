@@ -1,0 +1,32 @@
+{
+  "sn": "YLX64SCF",
+  "machineModel": "ThinkCentre K70-06",
+  "cpuModel": "ULTRA 5 225",
+  "cpuBatch": "V617G802",
+  "cpuCode": "02138",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "主机批号: YLNOS6522W0C",
+  "uploadedAt": "2026-10-07 09:30:21",
+  "originalNames": [
+    "pick_1791336492611.jpg",
+    "pick_1791336576209.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261007-093021_1.jpg",
+      "size": 531315,
+      "sha256": "1583ccacaa25fd13c7410d44f5a9fdf8b983112aadabbcf673a735d0edbb9362"
+    },
+    {
+      "type": "host",
+      "name": "host_20261007-093021_1.jpg",
+      "size": 399053,
+      "sha256": "1ce601e94c9a3c040d87a7440e42d3e9ff9dd1a9f6184a1f91ae6834ebccef98"
+    }
+  ],
+  "editedAt": "2026-10-08 16:06:18"
+}

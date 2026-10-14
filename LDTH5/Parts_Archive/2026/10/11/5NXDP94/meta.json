@@ -1,0 +1,54 @@
+{
+  "sn": "5NXDP94",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "X515H356",
+  "cpuCode": "04504",
+  "ramInfo": "SAMSUNG DDR5 16G\n80CE0224513125E337",
+  "ssdInfo": "WD 512GB NVMe x3 | SN:5000S | SN:200- | SN:25142B803761",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-11 13:55:07",
+  "originalNames": [
+    "cap_cpu_20261011_135223_854.jpg",
+    "cap_cpu_20261011_135240_828.jpg",
+    "cap_host_20261011_135206_014.jpg",
+    "cap_ram_20261011_135416_356.jpg",
+    "cap_ssd_20261011_135519_275.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-135507_1.jpg",
+      "size": 418501,
+      "sha256": "b5517140bb7783464dae155a9a7f571f045404a6438899be72645c0308f88aac"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-135507_2.jpg",
+      "size": 424901,
+      "sha256": "8ec75d79b632b5165479a270630ca5f0594e1dbc7ffa2758a7cc917d298458ba"
+    },
+    {
+      "type": "host",
+      "name": "host_20261011-135507_1.jpg",
+      "size": 587012,
+      "sha256": "24dec677340679d0133b040a10b9b12473133561585464d78d3f53a9f35e0f54"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261011-135507_1.jpg",
+      "size": 421275,
+      "sha256": "8f8ce23f338760a87395299d087a6aff6bf26b0db3dbfa20982b4bfe03e7870b"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-135507_1.jpg",
+      "size": 587282,
+      "sha256": "b5ca819fce9bec8dd081b56b6d9a54cac3ce85aa7377404e768c45fedfbdb790"
+    }
+  ],
+  "vendor": "建钰",
+  "editedAt": "2026-10-12 11:50:08"
+}

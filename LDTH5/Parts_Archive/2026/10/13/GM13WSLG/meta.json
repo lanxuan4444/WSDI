@@ -1,0 +1,32 @@
+{
+  "sn": "GM13WSLG",
+  "machineModel": "扬天T4900k-171RR",
+  "cpuModel": "I5-13400",
+  "cpuBatch": "X527K906",
+  "cpuCode": "01317",
+  "ramInfo": "",
+  "ssdInfo": "512GB NVMe | SN:YMA65 | PN:YMSS2 | PN:SSS1D71543",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "主机批号: GM606591000C",
+  "uploadedAt": "2026-10-13 15:30:40",
+  "originalNames": [
+    "cap_cpu_20261013_152836_484.jpg",
+    "cap_host_20261013_152707_224.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261013-153040_1.jpg",
+      "size": 514894,
+      "sha256": "e241971b30a1eb491a38a9eae41120208963634b2fee15609276a3127867082b"
+    },
+    {
+      "type": "host",
+      "name": "host_20261013-153040_1.jpg",
+      "size": 681522,
+      "sha256": "6ba40b39d78820d67d18febf20a85c4bff1611a0704737d64fb9c1907827d953"
+    }
+  ]
+}

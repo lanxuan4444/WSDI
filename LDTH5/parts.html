@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>LDTools · 主机配件查询</title>
+<link rel="icon" href="Img/LDTLS.ico">
+<style>
+/* ==================== CSS 变量（与主页面 index.html 保持一致的设计语言） ==================== */
+:root{
+  --bg:#f1f5f9;
+  --card-bg:#ffffff;
+  --text:#0f172a;
+  --text-muted:#64748b;
+  --text-light:#94a3b8;
+  --primary:#1a56db;
+  --primary-light:#dbeafe;
+  --primary-dark:#1e40af;
+  --border:#e2e8f0;
+  --border-strong:#cbd5e1;
+  --success:#16a34a;
+  --success-bg:#dcfce7;
+  --highlight:#fde047;        /* [2026-10-02] 搜索命中高亮（此前变量缺失导致 mark 透明不可见） */
+  --highlight-text:#713f12;
+  --failed:#dc2626;
+  --failed-bg:#fee2e2;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.04);
+  --shadow-hover:0 6px 16px rgba(0,0,0,.12);
+  --shadow-lg:0 10px 40px rgba(0,0,0,.2);
+  --radius:10px;
+  --radius-sm:6px;
+  --max-width:1100px;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{font-size:16px;-webkit-text-size-adjust:100%;}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:60px;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+input,textarea{font-family:inherit;}
+.hidden{display:none !important;}
+mark{background:var(--highlight);color:var(--highlight-text);padding:0 2px;border-radius:2px;}
+
+.container{max-width:var(--max-width);margin:0 auto;padding:0 16px;}
+
+/* ==================== 头部 ==================== */
+.header{
+  padding:24px 0 16px;
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.header h1{
+  font-size:1.5rem;
+  font-weight:700;
+  letter-spacing:-.02em;
+}
+.header h1 .accent{color:var(--primary);}
+.logo-img{width:28px;height:28px;vertical-align:-4px;margin-right:6px;border-radius:4px;}
+.header .stats{
+  font-size:.85rem;
+  color:var(--text-muted);
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.header .stats b{color:var(--text);font-weight:600;}
+.link-back{
+  color:var(--primary);
+  text-decoration:none;
+  font-size:.85rem;
+  padding:5px 10px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  background:var(--card-bg);
+  transition:all .15s;
+}
+.link-back:hover{border-color:var(--primary);background:var(--primary-light);}
+
+/* ==================== 工具栏 ==================== */
+.toolbar{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:12px 16px;
+  margin-bottom:20px;
+  display:flex;
+  gap:12px;
+  align-items:center;
+  flex-wrap:wrap;
+  position:sticky;
+  top:8px;
+  z-index:50;
+  border:1px solid var(--border);
+}
+#searchInput{
+  flex:1;
+  min-width:180px;
+  padding:9px 14px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  font-size:.92rem;
+  outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  background:var(--bg);
+}
+#searchInput:focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);}
+.btn-mini{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 14px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:500;
+  border:1px solid var(--border-strong);
+  background:var(--card-bg);color:var(--text);
+  transition:all .15s;
+}
+.btn-mini:hover{border-color:var(--primary);color:var(--primary);}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:600;
+  background:var(--primary);color:#fff;
+  transition:background .15s;
+}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-danger{
+  padding:8px 14px;border-radius:var(--radius-sm);
+  font-size:.85rem;font-weight:500;
+  border:1px solid var(--border-strong);
+  background:var(--card-bg);color:var(--failed);
+  transition:all .15s;
+}
+.btn-danger:hover{border-color:var(--failed);background:var(--failed-bg);}
+
+/* ==================== 记录卡片 ==================== */
+.day-label{
+  font-size:.8rem;color:var(--text-muted);
+  margin:18px 2px 8px;font-weight:600;
+}
+.rec-card{
+  background:var(--card-bg);
+  border:1px solid var(--border);
+  border-left:4px solid var(--success);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:14px 16px;
+  margin-bottom:14px;
+  transition:box-shadow .2s;
+}
+.rec-card:hover{box-shadow:var(--shadow-hover);}
+.rec-head{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-bottom:6px;
+}
+.rec-head .rec-date{font-size:.78rem;color:var(--text-muted);}
+.rec-model{
+  font-weight:700;font-size:1.02rem;
+  background:var(--success-bg);color:var(--success);
+  padding:1px 10px;border-radius:4px;
+  font-family:"Cascadia Code",Consolas,monospace;
+}
+.rec-model.empty{background:var(--bg);color:var(--text-light);font-weight:400;}
+.rec-sn{
+  font-weight:700;font-size:1.02rem;
+  background:var(--success-bg);color:var(--success);
+  padding:1px 10px;border-radius:4px;
+  font-family:"Cascadia Code",Consolas,monospace;
+}
+.date-row{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+}
+.date-row .date-label{font-size:.8rem;color:var(--text-muted);font-weight:600;}
+.date-row .date-sep{color:var(--text-muted);}
+.date-row input[type=date]{
+  padding:6px 10px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  font-size:.85rem;
+  background:var(--bg);
+  color:var(--text);
+  outline:none;
+  transition:border-color .2s;
+}
+.date-row input[type=date]:focus{border-color:var(--primary);}
+.rec-cpu-badge{
+  font-size:.78rem;padding:2px 8px;border-radius:10px;
+  background:var(--success-bg);color:var(--success);font-weight:600;
+}
+.rec-fields{
+  display:flex;gap:8px 22px;flex-wrap:wrap;
+  font-size:.85rem;color:var(--text-muted);
+  margin:2px 0 8px;
+}
+.rec-fields .fv{color:var(--text);font-weight:600;font-family:"Cascadia Code",Consolas,monospace;white-space:pre-line;}
+/* [2026-10-08 EDIT] 卡片「修改」按钮（靠右）+ 编辑弹窗内档案路径标签 */
+.rec-edit{
+  margin-left:auto;cursor:pointer;border:none;
+  font-size:.74rem;padding:2px 10px;border-radius:10px;
+  background:var(--bg);color:var(--text-muted);
+}
+.rec-edit:hover{background:var(--primary-light);color:var(--primary);}
+/* [2026-10-13 DELETE-ADMIN] 删除按钮红色系 hover */
+.rec-edit.rec-del:hover{background:#fde8e8;color:#d64545;}
+.edit-folder{
+  font-size:.76rem;color:var(--text-muted);
+  background:var(--bg);border-radius:6px;padding:5px 10px;margin-bottom:10px;
+  word-break:break-all;
+}
+/* [2026-10-12 AI对比] 修改弹窗：左当前值 / 右AI建议 + 照片预览条 */
+#editModal .modal-card{width:min(97vw,1240px);}
+.edit-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.75rem;color:var(--text-light);margin-bottom:10px;}
+.edit-grid{display:flex;flex-direction:column;gap:14px;}
+.edit-row-label{font-size:.8rem;color:var(--text-muted);font-weight:600;margin-bottom:4px;}
+.edit-row-grid{
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  gap:10px;align-items:start;
+}
+.edit-row-grid.single{grid-template-columns:minmax(0,1fr);}
+.edit-row-grid input[type=text],.edit-row-grid textarea{
+  width:100%;padding:9px 12px;border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);font-size:.9rem;outline:none;background:var(--card-bg);
+  transition:border-color .2s,box-shadow .2s;
+}
+.edit-row-grid input:focus,.edit-row-grid textarea:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);
+}
+.edit-row-grid textarea{min-height:64px;resize:vertical;}
+input.adopted,textarea.adopted{border-color:var(--success)!important;box-shadow:0 0 0 3px var(--success-bg)!important;}
+.adopt-btn{
+  padding:8px 12px;border-radius:var(--radius-sm);border:1px solid var(--border-strong);
+  background:var(--card-bg);font-size:.8rem;color:var(--text);white-space:nowrap;
+}
+.adopt-btn:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+.ai-cell{
+  background:var(--bg);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);
+  padding:8px 10px;font-size:.85rem;min-height:38px;white-space:pre-wrap;
+  overflow-wrap:anywhere;line-height:1.6;color:var(--text);
+}
+.ai-cell.diff{border-style:solid;border-color:var(--primary);background:var(--primary-light);}
+.ai-cell.same{color:var(--text-light);}
+.edit-photobar{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;}
+.photobar-group{display:flex;flex-direction:column;gap:4px;}
+.photobar-label{font-size:.72rem;color:var(--text-light);}
+.photobar-thumbs{display:flex;gap:6px;}
+.photobar-thumbs img{
+  width:72px;height:72px;object-fit:cover;border-radius:4px;
+  border:1px solid var(--border);cursor:zoom-in;display:block;
+}
+/* [2026-10-13 PHOTO-APPEND] 补传照片按钮（与缩略图同尺寸虚线框） */
+.photobar-add{
+  width:72px;height:72px;border-radius:4px;border:1px dashed var(--border-strong);
+  background:var(--bg);color:var(--text-light);font-size:.72rem;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.photobar-add:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+/* [2026-10-12 COPY] OCR 原文行：点击复制 */
+.ocr-lines{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:10px 12px;margin-bottom:12px;display:flex;flex-direction:column;gap:6px;
+  max-height:220px;overflow-y:auto;
+}
+.ocr-lines.hidden{display:none;}
+.ocr-group-label{font-size:.72rem;color:var(--text-light);}
+.ocr-line{
+  align-self:flex-start;cursor:pointer;border:1px solid var(--border);
+  background:var(--card-bg);border-radius:6px;padding:3px 10px;
+  font-size:.82rem;font-family:"Cascadia Code",Consolas,monospace;
+  white-space:pre-wrap;overflow-wrap:anywhere;
+}
+.ocr-line:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-light);}
+.ocr-line:active{transform:scale(.97);}
+.ocr-line.copied{border-color:var(--success);color:var(--success);}
+/* [2026-10-12 ROTATE] 照片组旋转重识别按钮 */
+.photobar-rot{
+  margin-top:2px;align-self:flex-start;cursor:pointer;border:none;
+  font-size:.7rem;padding:2px 8px;border-radius:8px;
+  background:var(--bg);color:var(--text-muted);
+}
+.photobar-rot:hover{background:var(--primary-light);color:var(--primary);}
+@media (max-width:760px){
+  .edit-row-grid{grid-template-columns:1fr;}
+  .adopt-btn{justify-self:start;}
+}
+/* [2026-10-11 VENDOR] 供应商徽章 + 统计表格 */
+.rec-vendor{
+  font-size:.78rem;padding:2px 8px;border-radius:10px;
+  background:var(--primary-light);color:var(--primary);font-weight:600;
+}
+body.stat-open{overflow:hidden;}
+#statModal{padding:16px;overflow:hidden;}
+#statModal .modal-card{
+  width:100%;max-width:none;height:94vh;height:94dvh;max-height:none;
+  display:flex;flex-direction:column;min-width:0;overflow:hidden;
+}
+#statModal .modal-head{flex-shrink:0;gap:12px;}
+.stat-head-actions{display:flex;align-items:center;gap:8px;}
+#statModal .stat-opts{flex-shrink:0;}
+#statResult{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column;gap:8px;overflow:auto;}
+#statResult > .stat-tip{flex-shrink:0;}
+#statResult > .stat-table-wrap{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;}
+.stat-table .stat-head th{position:sticky;top:0;z-index:1;background:var(--card-bg);}
+#statModal.is-fullscreen{padding:0;}
+#statModal.is-fullscreen .modal-card{height:100vh;height:100dvh;border-radius:0;box-shadow:none;}
+.stat-opts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px;}
+.stat-opts input[type=date],.stat-opts select{
+  border:1px solid var(--text-light);border-radius:6px;
+  padding:4px 8px;font-size:.85rem;background:var(--card-bg);color:var(--text);
+}
+.stat-table-wrap{overflow-x:auto;}
+.stat-table{width:100%;min-width:980px;border-collapse:collapse;font-size:.9rem;margin-top:6px;}
+.stat-table th,.stat-table td{
+  padding:8px 12px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);
+  vertical-align:top;text-align:left;overflow-wrap:anywhere;line-height:1.6;
+}
+.stat-table th:last-child,.stat-table td:last-child{border-right:none;}
+.stat-table .stat-head th{font-weight:700;color:var(--text-muted);font-size:.85rem;white-space:nowrap;}
+.stat-table tbody tr:not(.stat-total):hover{background:var(--bg);}
+.stat-table th:nth-child(3),.stat-table tr[data-folder] td:nth-child(3){text-align:center;white-space:nowrap;}
+.stat-config{white-space:pre-line;}
+.stat-record-sn{display:block;font-size:.75rem;color:var(--text-muted);margin-top:4px;}
+.stat-table .stat-empty{text-align:center;padding:24px;}
+.stat-table .stat-total td{font-weight:700;background:var(--primary-light);}
+.stat-tip{font-size:.78rem;color:var(--text-muted);margin-top:4px;}
+.rec-fields .empty .fv{color:var(--text-light);font-weight:400;}
+.rec-note{
+  font-size:.82rem;color:var(--text-muted);
+  background:var(--bg);border-radius:var(--radius-sm);
+  padding:6px 10px;margin-bottom:8px;
+  white-space:pre-wrap;word-break:break-all;
+}
+.rec-thumbs{display:flex;gap:8px;flex-wrap:wrap;}
+.thumb{
+  width:64px;height:64px;border-radius:var(--radius-sm);
+  object-fit:cover;cursor:zoom-in;background:var(--bg);
+  border:1px solid var(--border);
+  transition:transform .15s,box-shadow .15s;
+}
+.thumb:hover{transform:scale(1.05);box-shadow:var(--shadow-hover);}
+.thumb-label{
+  width:64px;font-size:.66rem;text-align:center;
+  color:var(--text-light);margin-top:2px;
+}
+.thumb-wrap{display:flex;flex-direction:column;}
+.rec-foot{
+  display:flex;justify-content:flex-end;gap:8px;margin-top:10px;
+}
+.empty-tip{
+  text-align:center;color:var(--text-light);
+  padding:48px 0;font-size:.9rem;
+}
+
+/* ==================== 弹层（上传） ==================== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(15,23,42,.55);
+  display:flex;align-items:center;justify-content:center;
+  z-index:200;padding:16px;
+  overflow:auto;
+}
+.modal-card{
+  background:var(--card-bg);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-lg);
+  width:min(560px,100%);
+  padding:20px 22px;
+  max-height:92vh;
+  overflow:auto;
+}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:12px;
+}
+.modal-head h3{font-size:1.05rem;}
+.modal-close{
+  font-size:1rem;color:var(--text-muted);
+  width:30px;height:30px;border-radius:6px;
+}
+.modal-close:hover{background:var(--bg);color:var(--text);}
+.form-grid{display:flex;flex-direction:column;gap:12px;}
+.form-grid label{
+  font-size:.8rem;color:var(--text-muted);font-weight:600;
+  display:block;margin-bottom:4px;
+}
+.form-grid label .req{color:var(--failed);}
+.form-grid input[type=text],.form-grid textarea{
+  width:100%;padding:9px 12px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);
+  font-size:.9rem;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+  background:var(--card-bg);
+}
+.form-grid input[type=text]:focus,.form-grid textarea:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-light);
+}
+.form-grid textarea{resize:vertical;min-height:56px;}
+.file-box{
+  border:1.5px dashed var(--border-strong);
+  border-radius:var(--radius-sm);
+  padding:10px 12px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  background:var(--bg);
+}
+.file-box .btn-pick{
+  padding:7px 12px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);background:var(--card-bg);
+  font-size:.82rem;color:var(--text);
+}
+.file-box .btn-pick:hover{border-color:var(--primary);color:var(--primary);}
+.file-box .file-hint{font-size:.75rem;color:var(--text-light);}
+.pick-thumbs{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.pick-thumb{position:relative;}
+.pick-thumb img{
+  width:64px;height:64px;border-radius:4px;object-fit:cover;
+  border:1px solid var(--border);display:block;
+}
+.pick-thumb .rm{
+  position:absolute;top:-6px;right:-6px;
+  width:18px;height:18px;border-radius:50%;
+  background:var(--failed);color:#fff;font-size:.65rem;line-height:18px;text-align:center;
+}
+.modal-btns{
+  display:flex;justify-content:flex-end;gap:10px;margin-top:16px;
+}
+.btn-cancel{
+  padding:9px 18px;border-radius:var(--radius-sm);
+  border:1px solid var(--border-strong);background:var(--card-bg);
+  font-size:.88rem;color:var(--text-muted);
+}
+.btn-cancel:hover{background:var(--bg);}
+.btn-confirm{
+  padding:9px 20px;border-radius:var(--radius-sm);
+  background:var(--primary);color:#fff;font-weight:600;font-size:.88rem;
+}
+.btn-confirm:disabled{opacity:.55;cursor:not-allowed;}
+.btn-confirm:hover{background:var(--primary-dark);}
+.progress-wrap{
+  height:6px;border-radius:3px;background:var(--bg);
+  overflow:hidden;margin-top:12px;
+}
+.progress-bar{
+  height:100%;width:0;background:var(--primary);
+  transition:width .2s;
+}
+.upload-err{
+  color:var(--failed);font-size:.82rem;margin-top:8px;
+  white-space:pre-wrap;word-break:break-all;
+}
+.overwrite-warn{
+  background:var(--primary-light);color:var(--primary-dark);
+  font-size:.8rem;border-radius:var(--radius-sm);
+  padding:6px 10px;margin-top:8px;
+}
+.rec-dup-badge{
+  background:var(--failed-bg);color:var(--failed);
+  font-size:.78rem;padding:2px 8px;border-radius:10px;font-weight:600;
+}
+
+/* ==================== 大图查看 ==================== */
+.img-viewer{
+  position:fixed;inset:0;background:rgba(0,0,0,.88);
+  z-index:300;display:flex;align-items:center;justify-content:center;
+  cursor:zoom-out;
+}
+.img-viewer img{max-width:96vw;max-height:94vh;border-radius:4px;
+  cursor:zoom-in;touch-action:none;display:block;}
+/* [2026-10-13 VIEWER-OCR] 媒体容器：旋转/缩放/拖动 transform 移到它身上，文字层随图同步 */
+.img-viewer .viewer-media{
+  position:relative;display:inline-block;transform-origin:center center;
+  max-width:96vw;max-height:94vh;
+}
+.img-viewer .viewer-media img{max-width:96vw;max-height:94vh;}
+/* [2026-10-13 REMOVED] 提取文字叠加层已按用户要求移除（识别体验不佳），仅保留旋转查看 */
+.img-viewer .viewer-close{
+  position:absolute;top:14px;right:18px;
+  color:#fff;font-size:1.4rem;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.12);
+}
+.img-viewer .viewer-close:hover{background:rgba(255,255,255,.25);}
+/* [2026-10-12 ROTATE] 旋转按钮组（右上角关闭钮下方） */
+.img-viewer .viewer-rot{position:absolute;top:14px;left:18px;display:flex;gap:8px;}
+.img-viewer .viewer-rot-btn{
+  width:40px;height:40px;border-radius:50%;border:none;
+  color:#fff;font-size:1.2rem;background:rgba(255,255,255,.12);
+}
+.img-viewer .viewer-rot-btn:hover{background:rgba(255,255,255,.25);}
+/* [2026-10-13 REMOVED] 提取文字工具条已移除 */
+
+/* [2026-10-02] 默认视图提示条（日期范围近一个月，列表默认最近 3 天） */
+.view-tip{
+  font-size:.8rem;color:var(--text-muted);
+  background:var(--primary-light);border-radius:6px;
+  padding:6px 12px;margin-bottom:12px;
+}
+
+/* ==================== 登录遮罩 ==================== */
+.auth-overlay{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:400;
+}
+.auth-card{
+  background:var(--card-bg);border-radius:14px;
+  box-shadow:var(--shadow-lg);
+  padding:34px 34px 28px;width:min(340px,92vw);
+  text-align:center;
+}
+.auth-header img{width:52px;height:52px;border-radius:10px;}
+.auth-header h2{font-size:1.2rem;margin-top:10px;}
+.auth-header p{font-size:.82rem;color:var(--text-muted);margin-top:2px;}
+.auth-card form{margin-top:18px;}
+.auth-card input[type=password]{
+  width:100%;padding:10px 14px;
+  border:1.5px solid var(--border-strong);
+  border-radius:var(--radius-sm);font-size:.95rem;
+  outline:none;text-align:center;
+  transition:border-color .2s;
+}
+.auth-card input[type=password]:focus{border-color:var(--primary);}
+.auth-card button[type=submit]{
+  width:100%;margin-top:12px;padding:10px 0;
+  border-radius:var(--radius-sm);
+  background:var(--primary);color:#fff;font-weight:600;font-size:.92rem;
+}
+.auth-card button[type=submit]:hover{background:var(--primary-dark);}
+.auth-card button[type=submit]:disabled{opacity:.6;cursor:not-allowed;}
+/* [2026-09-30 v1.06] 记住密码勾选行 */
+.auth-remember{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin-top:12px;color:var(--text-muted);font-size:.82rem;
+  cursor:pointer;user-select:none;
+}
+.auth-remember input{width:15px;height:15px;cursor:pointer;accent-color:var(--primary);}
+.auth-error{
+  color:var(--failed);font-size:.8rem;margin-top:10px;
+}
+
+/* ==================== Toast ==================== */
+.toast{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:rgba(15,23,42,.92);color:#fff;
+  padding:10px 20px;border-radius:24px;font-size:.85rem;
+  opacity:0;transition:all .25s;z-index:500;pointer-events:none;
+  max-width:80vw;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media (max-width:640px){
+  .header{padding:16px 0 10px;}
+  .header h1{font-size:1.2rem;}
+  .toolbar{top:4px;}
+  .thumb{width:56px;height:56px;}
+  .rec-fields{gap:4px 14px;}
+  #statModal{padding:0;}
+  #statModal .modal-card{
+    height:100vh;height:100dvh;border-radius:0;
+    padding:16px 12px;padding-top:max(16px,env(safe-area-inset-top));
+    padding-bottom:max(16px,env(safe-area-inset-bottom));
+  }
+  #statModal .modal-head h3{font-size:1rem;}
+  #statFullscreenBtn{display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 头部 -->
+  <header class="header">
+    <h1><img src="Img/LDTLS.png" alt="" class="logo-img">LDTools <span class="accent">主机配件</span>查询</h1>
+    <div class="stats">
+      <a class="link-back" href="index.html">← 返回日志查询</a>
+      <span>共 <b id="statTotal">0</b> 台主机 · <b id="statPhotos">0</b> 张照片</span>
+      <button class="btn-mini" id="statBtn" title="按供应商/型号统计（时间可自定义）">📊 统计</button>
+      <button class="btn-mini" id="refreshBtn" title="重新拉取配件档案列表">⟳ 刷新</button>
+    </div>
+  </header>
+
+  <!-- 工具栏 -->
+  <div class="toolbar">
+    <div class="search-row">
+      <input type="search" id="searchInput" placeholder="搜索：SN / 型号 / 品牌 / 容量 / 批号 / 编号 / 内存 / 固态 / 供应商 / 备注…" autocomplete="off">
+      <button class="btn-mini" id="searchBtn" title="按关键词查询档案（命中文本黄底高亮）">🔍 查询</button>
+      <button class="btn-primary" id="addBtn">＋ 新建档案</button>
+    </div>
+    <div class="date-row">
+      <span class="date-label">📅 日期</span>
+      <input type="date" id="dateStart" title="起始日期（含当天）">
+      <span class="date-sep">~</span>
+      <input type="date" id="dateEnd" title="结束日期（含当天）">
+      <button class="btn-mini" id="clearDateBtn" title="清除日期筛选">✕ 清除</button>
+    </div>
+  </div>
+
+  <!-- 记录列表 -->
+  <div id="recList"></div>
+</div>
+
+<!-- 新建/上传弹层 -->
+<div class="modal-overlay hidden" id="uploadModal" onclick="if(event.target===this)closeUploadModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3 id="uploadTitle">📦 新建主机配件档案</h3>
+      <button class="modal-close" onclick="closeUploadModal()" title="关闭">✕</button>
+    </div>
+    <div class="form-grid">
+      <div>
+        <label>主机编号（SN / 出厂编号）<span style="color:var(--text-light)">（可选）</span></label>
+        <input type="text" id="fSn" maxlength="64" placeholder="如 YLX5BZZB（可留空，照片必选）" autocomplete="off">
+      </div>
+      <div>
+        <label>主机型号</label>
+        <input type="text" id="fMachineModel" maxlength="64" placeholder="如 天逸510S-08IRR" autocomplete="off">
+      </div>
+      <div>
+        <label>CPU 型号</label>
+        <input type="text" id="fCpuModel" maxlength="64" placeholder="如 I7-14700" autocomplete="off">
+      </div>
+      <div>
+        <label>CPU 批号</label>
+        <input type="text" id="fCpuBatch" maxlength="64" placeholder="如 L510G664" autocomplete="off">
+      </div>
+      <div>
+        <label>CPU 编号</label>
+        <input type="text" id="fCpuCode" maxlength="64" placeholder="如 01652" autocomplete="off">
+      </div>
+      <div>
+        <label>备注</label>
+        <textarea id="fNote" maxlength="500" placeholder="可选"></textarea>
+      </div>
+    </div>
+    <!-- [2026-09-29 PART-TYPES] 各类目照片区块（由 JS 动态生成：CPU/主机/内存/固态/网卡/其他） -->
+    <div class="form-grid" id="partSections" style="margin-top:12px;"></div>
+    <div class="overwrite-warn hidden" id="overwriteWarn"></div>
+    <div class="overwrite-warn hidden" id="cpuDupWarn"></div>
+    <div class="progress-wrap hidden" id="upProgressWrap"><div class="progress-bar" id="upProgressBar"></div></div>
+    <div class="upload-err hidden" id="upErr"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeUploadModal()">取消</button>
+      <button class="btn-confirm" id="upSubmitBtn" onclick="submitUpload()">确认上传</button>
+    </div>
+  </div>
+</div>
+
+<!-- [2026-10-08 EDIT] 档案参数编辑弹层：CPU 编号录错等纠错场景（照片不动，只改参数）
+     [2026-10-12] 移除 AI 识别（识别率不成熟）——看图识字改为大图查看器的 📋 按钮（微信式） -->
+<div class="modal-overlay hidden" id="editModal" onclick="if(event.target===this)closeEditModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>✏️ 修改档案参数</h3>
+      <div class="stat-head-actions">
+        <button type="button" class="modal-close" onclick="closeEditModal()" title="关闭">✕</button>
+      </div>
+    </div>
+    <div class="edit-folder" id="editFolderLabel"></div>
+    <div class="edit-legend">
+      <span>🖼 点照片看大图，可旋转、缩放，点「📋 识别文字」后点行复制参数</span>
+    </div>
+    <div class="edit-photobar" id="editPhotobar"></div>
+    <div class="edit-grid">
+      <div class="edit-row">
+        <div class="edit-row-label">主机编号（SN / 出厂编号）<span class="req">*</span></div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eSn" maxlength="64" autocomplete="off">
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">主机型号</div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eMachineModel" maxlength="64" autocomplete="off">
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">供应商</div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eVendor" maxlength="64" list="vendorList" autocomplete="off" placeholder="联想 / 戴尔 / 建钰 / 其他 / 无">
+          <datalist id="vendorList">
+            <option value="联想"></option>
+            <option value="戴尔"></option>
+            <option value="建钰"></option>
+            <option value="其他"></option>
+            <option value="无"></option>
+          </datalist>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">CPU 型号</div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eCpuModel" maxlength="64" autocomplete="off">
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">CPU 批号</div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eCpuBatch" maxlength="64" autocomplete="off">
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">CPU 编号</div>
+        <div class="edit-row-grid single">
+          <input type="text" id="eCpuCode" maxlength="64" autocomplete="off">
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">内存信息</div>
+        <div class="edit-row-grid single">
+          <textarea id="eRamInfo" maxlength="500"></textarea>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">固态信息</div>
+        <div class="edit-row-grid single">
+          <textarea id="eSsdInfo" maxlength="500"></textarea>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">其他信息</div>
+        <div class="edit-row-grid single">
+          <textarea id="eOtherInfo" maxlength="500"></textarea>
+        </div>
+      </div>
+      <div class="edit-row">
+        <div class="edit-row-label">备注</div>
+        <div class="edit-row-grid single">
+          <textarea id="eNote" maxlength="500"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="upload-err hidden" id="editErr"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeEditModal()">取消</button>
+      <button class="btn-confirm" id="editSubmitBtn" onclick="submitEdit()">保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- [2026-10-11] 供应商统计弹层：时间自定义（默认今天），按供应商分组统计台数/型号/每型号台数 -->
+<div class="modal-overlay hidden" id="statModal" onclick="if(event.target===this)closeStatModal()">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>📊 供应商统计</h3>
+      <div class="stat-head-actions">
+        <button type="button" class="btn-mini" id="statFullscreenBtn" onclick="toggleStatFullscreen()" aria-pressed="false" title="铺满窗口查看统计表">全屏</button>
+        <button type="button" class="modal-close" onclick="closeStatModal()" title="关闭" aria-label="关闭统计窗口">✕</button>
+      </div>
+    </div>
+    <div class="stat-opts">
+      <span class="date-label">📅 日期</span>
+      <input type="date" id="statStart" title="起始日期（含当天）">
+      <span class="date-sep">~</span>
+      <input type="date" id="statEnd" title="结束日期（含当天）">
+      <select id="statVendor" title="按供应商筛选（只统计所选供应商）"></select>
+      <button class="btn-mini" onclick="runStats()">📊 统计</button>
+    </div>
+    <div id="statResult"><div class="stat-tip">加载中…</div></div>
+  </div>
+</div>
+
+<!-- 大图查看层 -->
+<div class="img-viewer hidden" id="imgViewer" onclick="closeViewer()">
+  <button class="viewer-close" onclick="event.stopPropagation();closeViewer()" title="关闭">✕</button>
+  <!-- [2026-10-12 ROTATE] 旋转按钮：竖拍照片转 90° 查看 -->
+  <div class="viewer-rot" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">
+    <button class="viewer-rot-btn" onclick="viewerRotate(-90)" title="左转 90°">↺</button>
+    <button class="viewer-rot-btn" onclick="viewerRotate(90)" title="右转 90°">↻</button>
+  </div>
+  <!-- 媒体容器：旋转/缩放/拖动作用于它 -->
+  <div class="viewer-media" id="viewerMedia">
+    <img id="viewerImg" src="" alt="照片大图">
+  </div>
+</div>
+
+<!-- 登录认证遮罩 -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-card">
+    <div class="auth-header">
+      <img src="Img/LDTLS.png" alt="">
+      <h2>LDTools</h2>
+      <p>主机配件查询 · 请输入访问密码</p>
+    </div>
+    <form id="authForm" autocomplete="off" onsubmit="return false">
+      <input type="password" id="authPassword" placeholder="访问密码" maxlength="64" autocomplete="off">
+      <!-- [2026-09-30 v1.06] 记住密码：勾选后存本机，下次自动登录 -->
+      <label class="auth-remember" for="authRemember">
+        <input type="checkbox" id="authRemember"> 记住密码（下次自动登录）
+      </label>
+      <button type="submit" id="authSubmitBtn">验证</button>
+    </form>
+    <div class="auth-error" id="authError" style="display:none"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* ==================== 鉴权 ==================== */
+const TOKEN_KEY = 'ldtools_parts_token';
+const TOKEN_EXP_KEY = 'ldtools_parts_token_exp';
+const REMEMBER_KEY = 'ldtools_saved_password';   // [2026-09-30 v1.06] 记住的密码（明文本机存储，取消勾选即删）
+let records = [];          // /api/parts-archive 全量记录
+/* [2026-09-30 v1.02] 5 类配件照片 + 识别参数（去掉网卡，上传区块不再生成；旧档案仍可展示） */
+const PART_TYPES = [
+  {key:'cpu',   label:'CPU 照片',   field:null,        hint:'CPU 丝印（型号 / 批号 / 编号）'},
+  {key:'host',  label:'主机照片',   field:null,        hint:'主机标签（出厂编号 / 批号 / 型号）'},
+  {key:'ram',   label:'内存',       field:'ramInfo',   hint:'内存标签 / 颗粒丝印'},
+  {key:'ssd',   label:'固态硬盘',   field:'ssdInfo',   hint:'固态标签'},
+  {key:'other', label:'其他配件',   field:'otherInfo', hint:'其他配件标签'},
+];
+const TYPE_LABEL = {cpu:'CPU 照', host:'主机照', ram:'内存', ssd:'固态', nic:'网卡', other:'其他'};
+const pending = {};        // key → 待上传 File[]
+PART_TYPES.forEach(t => pending[t.key] = []);
+
+function getToken(){
+  const t = localStorage.getItem(TOKEN_KEY);
+  const exp = Number(localStorage.getItem(TOKEN_EXP_KEY) || 0);
+  if (t && exp > Date.now()) return t;
+  return null;
+}
+function saveToken(t){
+  localStorage.setItem(TOKEN_KEY, t);
+  localStorage.setItem(TOKEN_EXP_KEY, String(Date.now() + 8 * 3600 * 1000));
+}
+function clearToken(){
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(TOKEN_EXP_KEY);
+}
+function getRememberedPw(){
+  try{ return localStorage.getItem(REMEMBER_KEY) || ''; }catch(e){ return ''; }
+}
+/** [2026-09-30 v1.06] 用记住的密码静默重登（服务端 token 过期或服务重启后），成功返回 true */
+async function tryAutoLogin(){
+  const pw = getRememberedPw();
+  if (!pw) return false;
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.ok && data.token){ saveToken(data.token); return true; }
+  }catch(e){}
+  return false;
+}
+function fullUrl(rec, f){
+  return '/api/parts-image?path=' + encodeURIComponent(rec.folder + '/' + f.name) + '&token=' + encodeURIComponent(getToken() || '');
+}
+/* [2026-09-29 THUMB] 列表页用极小缩略图（服务端 Pillow 生成缓存），点开大图查看器才加载原图 */
+function thumbUrl(rec, f){
+  return '/api/parts-thumb?path=' + encodeURIComponent(rec.folder + '/' + f.name) + '&token=' + encodeURIComponent(getToken() || '');
+}
+/* 搜索关键词高亮：先 HTML 转义再对转义后文本做不区分大小写替换（防 XSS） */
+function highlight(text, keywords){
+  let s = escapeHtml(text);
+  for (const kw of (keywords || [])){
+    if (!kw) continue;
+    const safe = escapeHtml(kw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    s = s.replace(new RegExp('(' + safe + ')', 'gi'), '<mark>$1</mark>');
+  }
+  return s;
+}
+/** [v1.06] 401 时先用记住的密码自动重登一次（_retried 防死循环），成功则原请求无感重试，仍失败才弹登录框 */
+async function apiFetch(url, opts = {}, _retried = false){
+  const token = getToken();
+  const headers = opts.headers || {};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const resp = await fetch(url, { ...opts, headers });
+  if (resp.status === 401){
+    clearToken();
+    if (!_retried && await tryAutoLogin()) return apiFetch(url, opts, true);
+    showAuth();
+    throw new Error('登录已过期，请重新验证');
+  }
+  const data = await resp.json().catch(() => ({}));
+  if (!resp.ok) throw new Error(data.message || ('请求失败 ' + resp.status));
+  return data;
+}
+
+/* ==================== 登录 ==================== */
+function showAuth(){   /* [v1.06] 记住的密码预填，只需点「验证」 */
+  const saved = getRememberedPw();
+  document.getElementById('authOverlay').classList.remove('hidden');
+  document.getElementById('authError').style.display = 'none';
+  const pwEl = document.getElementById('authPassword');
+  const cb = document.getElementById('authRemember');
+  if (pwEl) pwEl.value = saved;
+  if (cb) cb.checked = !!saved;
+  setTimeout(() => document.getElementById('authPassword').focus(), 50);
+}
+function hideAuth(){
+  document.getElementById('authOverlay').classList.add('hidden');
+}
+document.getElementById('authForm').addEventListener('submit', async () => {
+  const pw = document.getElementById('authPassword').value.trim();
+  const btn = document.getElementById('authSubmitBtn');
+  const errEl = document.getElementById('authError');
+  if (!pw) return;
+  btn.disabled = true;
+  errEl.style.display = 'none';
+  try{
+    const resp = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pw })
+    });
+    const data = await resp.json();
+    if (resp.ok && data.ok && data.token){
+      saveToken(data.token);
+      // [v1.06] 记住密码：勾选 → 存本机（下次自动登录）；取消勾选 → 立即删除
+      const cb = document.getElementById('authRemember');
+      if (cb && cb.checked) localStorage.setItem(REMEMBER_KEY, pw);
+      else localStorage.removeItem(REMEMBER_KEY);
+      document.getElementById('authPassword').value = '';
+      hideAuth();
+      await loadRecords();
+    } else {
+      errEl.textContent = data.message || '密码错误';
+      errEl.style.display = 'block';
+    }
+  } catch(e){
+    errEl.textContent = '网络错误：' + e.message;
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ==================== 数据加载与渲染 ==================== */
+async function loadRecords(){
+  try{
+    const data = await apiFetch('/api/parts-archive');
+    records = (data && data.records) || [];
+    render();
+  } catch(e){
+    if (getToken()) toast('加载失败：' + e.message);
+  }
+}
+function render(){
+  const listEl = document.getElementById('recList');
+  const kw = document.getElementById('searchInput').value.trim().toLowerCase();
+  const kws = kw ? kw.split(/\s+/).filter(Boolean) : [];
+  const dStart = document.getElementById('dateStart').value;   // YYYY-MM-DD
+  const dEnd = document.getElementById('dateEnd').value;
+  const filtered = records.filter(r => {
+    // 关键词过滤（空格分词 AND）[2026-10-13] 全字段：所有录入数据都能搜到
+    // （SN/主机型号/CPU 三元组/内存/固态/其他/网卡兼容/供应商/备注）
+    if (kws.length){
+      const hay = [r.sn, r.machineModel, r.cpuModel, r.cpuBatch, r.cpuCode,
+                   r.ramInfo, r.ssdInfo, r.otherInfo, r.nicInfo, r.vendor, r.note]
+                  .join(' ').toLowerCase();
+      if (!kws.every(w => hay.includes(w))) return false;
+    }
+    // 日期范围过滤（含首尾当天）
+    const day = (r.uploadedAt || '').slice(0, 10);
+    if (dStart && (!day || day < dStart)) return false;
+    if (dEnd && (!day || day > dEnd)) return false;
+    return true;
+  });
+  filtered.sort((a, b) => (b.uploadedAt || '').localeCompare(a.uploadedAt || ''));
+
+  /* [2026-10-02] 默认视图：日期框已填近一个月，但列表默认只展开最近 3 天的分组
+     （档案多了不再一次全渲染）。搜索/修改日期即按所选范围全量显示；「✕ 清除」恢复默认视图。 */
+  let visible = filtered, tipHtml = '';
+  if (_defaultView && filtered.length){
+    const days = [...new Set(filtered.map(r => (r.uploadedAt || '').slice(0, 10)))].sort().reverse();
+    if (days.length > 3){
+      const keep = days.slice(0, 3), ks = new Set(keep);
+      visible = filtered.filter(r => ks.has((r.uploadedAt || '').slice(0, 10)));
+      tipHtml = '<div class="view-tip">📅 默认显示最近 3 天（' + keep[2] + ' ~ ' + keep[0]
+        + '，近一月共 ' + days.length + ' 天有档案）。点「🔍 查询」或修改日期可查看全部。</div>';
+    }
+  }
+
+  let photoCount = 0;
+  records.forEach(r => (r.files || []).forEach(f => { if (TYPE_LABEL[f.type]) photoCount++; }));
+  document.getElementById('statTotal').textContent = records.length;
+  document.getElementById('statPhotos').textContent = photoCount;
+
+  if (!filtered.length){
+    listEl.innerHTML = '<div class="empty-tip">' +
+      (records.length ? '没有匹配「' + escapeHtml(kw) + '」的档案' : '暂无档案。用手机 APP 拍照上传，或点右上角「新建档案」。') +
+      '</div>';
+    return;
+  }
+  let html = tipHtml;
+  let lastDay = '';
+  const cpuDups = buildCpuDupMap();
+  visible.forEach(r => {
+    const day = (r.uploadedAt || '').slice(0, 10);
+    if (day && day !== lastDay){
+      lastDay = day;
+      html += '<div class="day-label">📅 ' + escapeHtml(day) + '</div>';
+    }
+    const field = (label, val) =>
+      '<span class="' + (val ? '' : 'empty') + '">' + label + '：<span class="fv">' + (val ? highlight(val, kws) : '—') + '</span></span>';
+    // 同一 CPU（型号+批号+编号 三者一致）出现在多条档案 → 醒目提示出现在哪些主机
+    const dk = cpuKeyOfRecord(r);
+    let dupBadge = '';
+    if (dk && cpuDups[dk]){
+      const hostList = cpuDups[dk].map(x => escapeHtml(x.sn)).join('、');
+      dupBadge = '<span class="rec-dup-badge" title="该 CPU（' + escapeHtml(r.cpuModel + '/' + r.cpuBatch + '/' + r.cpuCode)
+        + '）出现在 ' + cpuDups[dk].length + ' 条档案中&#10;主机：' + hostList
+        + '">&#9888; CPU 重复 ×' + cpuDups[dk].length + '</span>';
+    }
+    // 各类目照片统计徽章 + 有识别参数的配件徽章
+    const picsByType = {};
+    (r.files || []).forEach(f => { (picsByType[f.type] = picsByType[f.type] || []).push(f); });
+    const badgeHtml = PART_TYPES.map(t => {
+      const pics = picsByType[t.key] || [];
+      let extra = pics.length ? ' ' + pics.length + ' 张' : '';
+      const info = r[t.field];
+      if (t.key !== 'cpu' && t.key !== 'host' && info) extra += '·有参数';
+      if (!pics.length && !extra) return '';
+      return '<span class="rec-cpu-badge">' + t.label + extra + '</span>';
+    }).join('');
+    // 有参数的配件类目明细行
+    const partInfoHtml = PART_TYPES.filter(t => t.field && r[t.field])
+      .map(t => '<div class="rec-fields"><span>' + t.label + '：<span class="fv">' + highlight(r[t.field], kws) + '</span></span></div>')
+      .join('');
+    // [2026-09-29 HEAD] 头部展示顺序：日期 → CPU 型号（主标识，绿色）→ 主机编号（序列号）→ 重复徽章 → 类目徽章
+    html += '<div class="rec-card" data-folder="' + escapeHtml(r.folder) + '">'
+      + '<div class="rec-head">'
+      +   '<span class="rec-date">' + escapeHtml(r.uploadedAt || '') + '</span>'
+      +   '<span class="rec-model' + (r.cpuModel ? '' : ' empty') + '" title="CPU 型号">'
+      +     (r.cpuModel ? highlight(r.cpuModel, kws) : '型号未填') + '</span>'
+      +   '<span class="rec-sn" title="主机编号（序列号）">' + (r.sn ? highlight(r.sn, kws) : '<i style="opacity:.55">未填编号</i>') + '</span>'
+      +   (r.vendor ? '<span class="rec-vendor" title="供应商">' + highlight(r.vendor, kws) + '</span>' : '')
+      +   dupBadge
+      +   badgeHtml
+      /* [2026-10-08 EDIT] 档案参数编辑入口（CPU 编号录错等纠错场景） */
+      +   '<button class="rec-edit" onclick="openEditModal(\'' + escapeJs(r.folder) + '\')">✏️ 修改</button>'
+      /* [2026-10-13 DELETE-ADMIN] 删除档案（需管理员密码，默认 4328085） */
+      +   '<button class="rec-edit rec-del" onclick="deleteRecord(\'' + escapeJs(r.folder) + '\')" '
+      +     'title="永久删除该档案（需管理员密码）">🗑 删除</button>'
+      + '</div>'
+      + '<div class="rec-fields">'
+      +   field('主机型号', r.machineModel)
+      +   field('CPU 批号', r.cpuBatch)
+      +   field('CPU 编号', r.cpuCode)
+      + '</div>'
+      + partInfoHtml
+      + (r.note ? '<div class="rec-note">' + highlight(r.note, kws) + '</div>' : '')
+      + '<div class="rec-thumbs">'
+      +   PART_TYPES.map(t => thumbHtml(r, picsByType[t.key] || [])).join('')
+      + '</div>'
+      + '</div>';
+  });
+  listEl.innerHTML = html;
+}
+function thumbHtml(rec, pics){
+  if (!pics.length) return '<div class="thumb-wrap"><div class="thumb" style="cursor:default;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:.72rem;">无照片</div><div class="thumb-label">—</div></div>';
+  return pics.map(f =>
+    '<div class="thumb-wrap">'
+    + '<img class="thumb" loading="lazy" src="' + thumbUrl(rec, f) + '" '
+    +     'onclick="openViewer(\'' + fullUrl(rec, f) + '\')" onerror="this.style.opacity=.3">'
+    + '<div class="thumb-label">' + (TYPE_LABEL[f.type] || '照片') + '</div>'
+    + '</div>'
+  ).join('');
+}
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function escapeJs(s){
+  return String(s == null ? '' : s).replace(/[\\'"]/g, '\\$&');
+}
+/* ==================== 同一 CPU 认定与重复检测 ====================
+   认定条件（用户定义）：CPU型号 + CPU批号 + CPU编号 三者一致才是同一颗 CPU；
+   任一字段为空则无法认定，不参与重复比较。比较时忽略大小写与首尾空格。 */
+function cpuKeyOf(model, batch, code){
+  const m = String(model || '').trim();
+  const b = String(batch || '').trim();
+  const c = String(code || '').trim();
+  if (!m || !b || !c) return null;
+  return (m + '|' + b + '|' + c).toUpperCase();
+}
+function cpuKeyOfRecord(r){
+  return cpuKeyOf(r.cpuModel, r.cpuBatch, r.cpuCode);
+}
+/** 按 CPU 三元组统计重复：{key: [记录...]}，仅含出现 ≥2 次的组 */
+function buildCpuDupMap(){
+  const groups = {};
+  records.forEach(r => {
+    const k = cpuKeyOfRecord(r);
+    if (!k) return;
+    (groups[k] = groups[k] || []).push(r);
+  });
+  const dups = {};
+  Object.keys(groups).forEach(k => {
+    if (groups[k].length > 1) dups[k] = groups[k];
+  });
+  return dups;
+}
+
+/* ==================== [2026-10-08 EDIT] 档案参数编辑 ====================
+   卡片「✏️ 修改」→ 弹窗编辑字段 → 保存 POST /api/parts-archive/update → 刷新列表。
+   [2026-10-12] AI 识别已移除（识别率不成熟）——看图识字改为：
+   点照片开大图 → ↺↻ 旋转 / 滚轮缩放 → 📋 识别文字 → 点行复制参数 → 粘贴到下面输入框。 */
+const EDIT_PHOTO_GROUPS = [['host', '主机标签'], ['cpu', 'CPU 顶盖'], ['ram', '内存标签'], ['ssd', '固态标签']];
+let editingFolder = null;
+let editingRecord = null;
+let editSaving = false;
+function openEditModal(folder){
+  if (editSaving) return;
+  const r = records.find(x => x.folder === folder);
+  if (!r) return;
+  editingFolder = folder;
+  editingRecord = r;
+  document.getElementById('editFolderLabel').textContent =
+    '📁 ' + folder + '（上传于 ' + (r.uploadedAt || '时间未知') + '）';
+  document.getElementById('eSn').value           = r.sn || '';
+  document.getElementById('eMachineModel').value = r.machineModel || '';
+  document.getElementById('eVendor').value        = r.vendor || '';
+  document.getElementById('eCpuModel').value     = r.cpuModel || '';
+  document.getElementById('eCpuBatch').value      = r.cpuBatch || '';
+  document.getElementById('eCpuCode').value       = r.cpuCode || '';
+  document.getElementById('eRamInfo').value      = r.ramInfo || '';
+  document.getElementById('eSsdInfo').value      = r.ssdInfo || '';
+  document.getElementById('eOtherInfo').value     = r.otherInfo || '';
+  document.getElementById('eNote').value          = r.note || '';
+  const err = document.getElementById('editErr');
+  err.textContent = ''; err.classList.add('hidden');
+  renderEditPhotobar();
+  document.getElementById('editModal').classList.remove('hidden');
+  document.body.classList.add('edit-open');
+}
+function renderEditPhotobar(){
+  const bar = document.getElementById('editPhotobar');
+  const files = (editingRecord && editingRecord.files) || [];
+  bar.innerHTML = EDIT_PHOTO_GROUPS.map(([type, label]) => {
+    const pics = files.filter(f => f.type === type);
+    const full = pics.length >= 6;
+    /* [2026-10-13 PHOTO-APPEND] 每组「＋ 补传照片」入口（每类最多 6 张），选图即上传追加 */
+    return '<div class="photobar-group"><span class="photobar-label">' + escapeHtml(label)
+      + '（' + pics.length + '/6）</span>'
+      + '<div class="photobar-thumbs">'
+      + pics.map(f => {
+          const url = fullUrl(editingRecord, f);
+          return '<img src="' + url + '" alt="' + escapeHtml(label) + '" '
+            + 'onclick="openViewer(\'' + escapeJs(url) + '\')" '
+            + 'onerror="retryImgToken(this,\'' + escapeJs(editingRecord.folder + '/' + f.name) + '\')">';
+        }).join('')
+      + (full ? '' : '<button class="photobar-add" onclick="document.getElementById(\'pickAdd_' + type + '\').click()" '
+        + 'title="拍照或选择图片，立即补传到该档案">＋ 补传</button>')
+      + '</div>'
+      + '<input type="file" id="pickAdd_' + type + '" hidden multiple accept="image/jpeg,image/png,image/webp" '
+      + 'capture="environment" onchange="uploadEditPhotos(\'' + type + '\', this)">'
+      + '</div>';
+  }).join('') || '<span class="stat-tip">该档案没有照片</span>';
+}
+/* [2026-10-13 PHOTO-APPEND] 补传照片上传：multipart → /api/parts-archive/photo → 刷新 */
+async function uploadEditPhotos(type, input){
+  const files = Array.from(input.files || []);
+  input.value = '';
+  if (!files.length || !editingFolder) return;
+  const remain = 6 - ((editingRecord.files || []).filter(f => f.type === type).length);
+  const pick = files.slice(0, Math.max(0, remain));
+  if (!pick.length){ toast('该类照片已满 6 张'); return; }
+  if (pick.length < files.length) toast('超出上限，已截取前 ' + pick.length + ' 张');
+  const fd = new FormData();
+  fd.append('folder', editingFolder);
+  fd.append('type', type);
+  pick.forEach(f => fd.append(type + 'File', f, f.name || type + '.jpg'));
+  toast('补传中…');
+  try{
+    const resp = await apiFetch('/api/parts-archive/photo', { method: 'POST', body: fd });
+    toast('✅ 已补传 ' + (resp.added ? resp.added.length : pick.length) + ' 张照片');
+    await loadRecords();                       // records 刷新后同步编辑弹窗引用与照片栏
+    const fresh = records.find(x => x.folder === editingFolder);
+    if (fresh){ editingRecord = fresh; renderEditPhotobar(); }
+  }catch(e){
+    toast(e.message || '补传失败');
+  }
+}
+
+/* [2026-10-12 IMG-RETRY] 照片 401（token 轮换）自动换新 token 重试一次；仍失败则半透明占位 */
+function retryImgToken(img, path){
+  if (img.dataset.retried) { img.style.opacity = .3; return; }
+  img.dataset.retried = '1';
+  img.src = '/api/parts-image?path=' + encodeURIComponent(path) + '&token=' + encodeURIComponent(getToken() || '');
+}
+function closeEditModal(){
+  if (editSaving) return;
+  document.getElementById('editModal').classList.add('hidden');
+  document.body.classList.remove('edit-open');
+  editingFolder = null;
+  editingRecord = null;
+}
+function showEditErr(msg){
+  const el = document.getElementById('editErr');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+async function submitEdit(){
+  if (!editingFolder) return;
+  const sn = document.getElementById('eSn').value.trim();
+  if (!sn){ showEditErr('主机编号不能为空'); return; }
+  const fields = {
+    sn,
+    machineModel: document.getElementById('eMachineModel').value.trim(),
+    vendor:       document.getElementById('eVendor').value.trim(),
+    cpuModel:     document.getElementById('eCpuModel').value.trim(),
+    cpuBatch:     document.getElementById('eCpuBatch').value.trim(),
+    cpuCode:      document.getElementById('eCpuCode').value.trim(),
+    ramInfo:      document.getElementById('eRamInfo').value.trim(),
+    ssdInfo:      document.getElementById('eSsdInfo').value.trim(),
+    otherInfo:    document.getElementById('eOtherInfo').value.trim(),
+    note:         document.getElementById('eNote').value.trim()
+  };
+  const btn = document.getElementById('editSubmitBtn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  try{
+    await apiFetch('/api/parts-archive/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: editingFolder, fields })
+    });
+    toast('✅ 已保存修改');
+    closeEditModal();
+    await loadRecords();
+  }catch(e){
+    showEditErr(e.message || '保存失败');
+  }finally{
+    btn.disabled = false; btn.textContent = '保存修改';
+  }
+}
+
+/* ==================== [2026-10-11] 供应商统计 ====================
+   时间范围自定义（默认今天）。每条档案独立显示供应商、型号、数量、CPU、内存、硬盘与显卡。 */
+function openStatModal(){
+  if (!document.getElementById('statStart').value){
+    document.getElementById('statStart').value = _fmtDay(new Date());
+    document.getElementById('statEnd').value = _fmtDay(new Date());
+  }
+  refreshStatVendors();   // 供应商选项按当前档案动态生成（含手输的供应商名）
+  runStats();
+  document.getElementById('statModal').classList.remove('hidden');
+  document.body.classList.add('stat-open');
+}
+/** 供应商筛选选项：全部 + 当前档案中出现过的供应商（动态，手输名也能筛） */
+function refreshStatVendors(){
+  const sel = document.getElementById('statVendor');
+  const cur = sel.value;
+  const vendors = [...new Set(records.map(r => String(r.vendor || '').trim()).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">全部供应商</option>'
+    + vendors.map(v => '<option value="' + escapeHtml(v) + '">' + escapeHtml(v) + '</option>').join('');
+  if (cur && vendors.includes(cur)) sel.value = cur;   // 保持上次选择
+}
+function closeStatModal(){
+  document.getElementById('statModal').classList.add('hidden');
+  document.body.classList.remove('stat-open');
+}
+function toggleStatFullscreen(){
+  const expanded = document.getElementById('statModal').classList.toggle('is-fullscreen');
+  const btn = document.getElementById('statFullscreenBtn');
+  btn.textContent = expanded ? '恢复窗口' : '全屏';
+  btn.setAttribute('aria-pressed', String(expanded));
+  btn.title = expanded ? '恢复大窗口' : '铺满窗口查看统计表';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !document.getElementById('statModal').classList.contains('hidden')){
+    closeStatModal();
+  }
+});
+function stripPartSerials(t){
+  return String(t || '').replace(
+    /(?:^|[\s|,，;；])(?:S\s*\/?\s*N\b|P\s*\/?\s*N\b|SERIAL(?:\s+NUMBER)?\b|PART\s+NUMBER\b|序列号|编号)\s*[:：]?\s*[A-Z0-9][A-Z0-9._\/-]*/gi, ' ').trim();
+}
+function ramGeneration(t){
+  const dm = String(t || '').match(/\b(LP)?DDR\s*([345])\b/i);
+  if (dm) return (dm[1] ? 'LPDDR' : 'DDR') + dm[2];
+  const pc = String(t || '').match(/\bPC\s*([345])(?=\b|\d{3,5})/i);
+  return pc ? 'DDR' + pc[1] : '';
+}
+function ramBrief(t){
+  const lines = String(t || '').split('\n').map(stripPartSerials).filter(Boolean);
+  const generations = [...new Set(lines.map(ramGeneration).filter(Boolean))];
+  const sharedGeneration = generations.length === 1 ? generations[0] : '';
+  const agg = new Map();
+  lines.forEach(s => {
+    const cm = s.match(/(?:^|[^A-Z0-9])(\d{1,3})\s*G(?:B)?/i);
+    if (!cm) return;
+    const ddr = ramGeneration(s) || sharedGeneration;
+    const cap = Number(cm[1]) + 'G';
+    const quantityText = s.replace(/\b\d+\s*R\s*[x×]\s*\d+\b/gi, ' ');
+    const attached = quantityText.match(/\d{1,3}\s*G(?:B)?\s*[x×*]\s*(\d{1,2})(?!\d)/i);
+    const standalone = quantityText.match(/(?:^|[\s,，;；])(?:[x×*]\s*(\d{1,2})|(\d{1,2})\s*(?:根|条))(?=$|[\s,，;；])/i);
+    const n = attached ? Number(attached[1]) : standalone ? Number(standalone[1] || standalone[2]) : 1;
+    const key = ddr + '|' + cap;
+    agg.set(key, (agg.get(key) || 0) + (n > 0 ? n : 1));
+  });
+  if (!agg.size) return sharedGeneration ? sharedGeneration + '（容量未填写）' : '';
+  return [...agg].map(([key, count]) => {
+    const [ddr, cap] = key.split('|');
+    return (ddr || '代数未填写') + ' ' + cap + '×' + count;
+  }).join(' + ');
+}
+function diskBrand(t){
+  const brands = [
+    [/\bWESTERN\s+DIGITAL\b|\bWD\b|西部数据|西数/i, 'WD'],
+    [/\bKIOXIA\b|铠侠/i, 'KIOXIA'], [/\bSAMSUNG\b|三星/i, 'SAMSUNG'],
+    [/\bSK\s*HYNIX\b|\bHYNIX\b|海力士/i, 'SK HYNIX'],
+    [/\bKINGSTON\b|金士顿/i, 'KINGSTON'], [/\bMICRON\b|镁光|美光/i, 'MICRON'],
+    [/\bCRUCIAL\b|英睿达/i, 'CRUCIAL'], [/\bSANDISK\b|闪迪/i, 'SANDISK'],
+    [/\bSEAGATE\b|希捷/i, 'SEAGATE'], [/\bTOSHIBA\b|东芝/i, 'TOSHIBA'],
+    [/\bUNION\s*MEMORY\b|\bUM(?:\d{3,4})?\b/i, 'UM'],
+    [/\bHIKSEMI\b|海康/i, 'HIKSEMI'], [/\bADATA\b|威刚/i, 'ADATA'],
+    [/\bNETAC\b|朗科/i, 'NETAC'], [/\bLEXAR\b|雷克沙/i, 'LEXAR'],
+    [/\bFANXIANG\b|梵想/i, 'FANXIANG'], [/\bCOLORFUL\b|七彩虹/i, 'COLORFUL'],
+    [/\bGALAX\b|影驰/i, 'GALAX'], [/\bAIGO\b|爱国者/i, 'AIGO'],
+    [/\bTIGO\b|金泰克/i, 'TIGO'], [/\bTECLAST\b|台电/i, 'TECLAST'],
+    [/\bINTEL\b|英特尔/i, 'INTEL'], [/\bPLEXTOR\b|浦科特/i, 'PLEXTOR'],
+    [/\bTRANSCEND\b|创见/i, 'TRANSCEND'], [/\bMAXSUN\b|铭瑄/i, 'MAXSUN'],
+    [/\bGIGABYTE\b|技嘉/i, 'GIGABYTE'], [/\bACER\b|宏碁/i, 'ACER'],
+    [/\bHP\b|惠普/i, 'HP'], [/\bLENOVO\b|联想/i, 'LENOVO'],
+    [/\bPHISON\b|群联/i, 'PHISON'], [/\bLITE-?ON\b|建兴/i, 'LITEON'],
+    [/\bSSSTC\b/i, 'SSSTC'], [/\bYMTC\b|长江存储|致态/i, 'YMTC'],
+    [/\bMAXIO\b|联芸/i, 'MAXIO'], [/\bSILICON\s*MOTION\b|\bSMI\b|慧荣/i, 'SMI']
+  ];
+  const hit = brands.find(([pattern]) => pattern.test(t));
+  return hit ? hit[1] : '';
+}
+function diskProtocol(t){
+  if (/\bHDD\b|机械|\b(?:5400|7200|10000|15000)\s*(?:RPM|转)/i.test(t)) return 'HDD';
+  if (/NV\s*M\s*E|\bPCIE\b|PCI-E/i.test(t)) return 'NVMe';
+  if (/SATA/i.test(t)) return 'SATA';
+  if (/\bSSD\b|固态|\$SD/i.test(t)) return 'SSD（协议未填写）';
+  return '';
+}
+function diskBrief(t){
+  const lines = String(t || '').split('\n').map(stripPartSerials).filter(Boolean);
+  const brands = [...new Set(lines.map(diskBrand).filter(Boolean))];
+  const protocols = [...new Set(lines.map(diskProtocol).filter(Boolean))];
+  const parts = [];
+  lines.forEach(s => {
+    const brand = diskBrand(s) || (brands.length === 1 ? brands[0] : '');
+    const protocol = diskProtocol(s) || (protocols.length === 1 ? protocols[0] : '');
+    const cm = s.match(/(?:^|[^A-Z0-9])(\d{1,4}(?:\.\d+)?)\s*(GB?|TB?)(?=\b|[08$])/i);
+    const bare = !cm && brand && protocol ? s.match(/(?:^|\s)(128|240|256|480|500|512|960|1000|1024|2000|2048|4000|4096)(?=$|\s)/) : null;
+    if (!cm && !bare) return;
+    const cap = cm ? Number(cm[1]) + (cm[2][0].toUpperCase() === 'T' ? 'TB' : 'GB') : bare[1] + 'GB';
+    parts.push([brand || '品牌未填写', cap, protocol].filter(Boolean).join(' '));
+  });
+  if (parts.length) return parts.join('\n');
+  if (!lines.length) return '';
+  return [brands.join(' / '), '容量未填写', protocols.join(' / ')].filter(Boolean).join(' ');
+}
+/** 显卡提取：扫「其他配件」参数与备注，命中 RTX/GTX/RX/Radeon/Arc/显卡 等特征的行 */
+function gpuBrief(r){
+  const src = String(r.otherInfo || '') + '\n' + String(r.note || '');
+  const hit = src.split(/[\n|]/).map(s => s.trim()).find(l =>
+    /RTX\s?\d{3,4}|GTX\s?\d{3,4}|RX\s?\d{3,4}|Radeon|Arc\s?[AB]\d{3}|显卡|独显|集显|核显|GPU/i.test(l));
+  return hit ? hit.slice(0, 40) : '';
+}
+/** 内存容量键（合并判断用）：代数 + 总容量（8G×2 与 16G×1 都是 16G，视为同容量） */
+function ramTotalKey(t){
+  const lines = String(t || '').split('\n').map(stripPartSerials).filter(Boolean);
+  const generations = [...new Set(lines.map(ramGeneration).filter(Boolean))];
+  const shared = generations.length === 1 ? generations[0] : '';
+  const totals = new Map();
+  lines.forEach(s => {
+    const cm = s.match(/(?:^|[^A-Z0-9])(\d{1,3})\s*G(?:B)?/i);
+    if (!cm) return;
+    const gen = ramGeneration(s) || shared || '代数未填写';
+    const qtyText = s.replace(/\b\d+\s*R\s*[x×]\s*\d+\b/gi, ' ');
+    const attached = qtyText.match(/\d{1,3}\s*G(?:B)?\s*[x×*]\s*(\d{1,2})(?!\d)/i);
+    const standalone = qtyText.match(/(?:^|[\s,，;；])(?:[x×*]\s*(\d{1,2})|(\d{1,2})\s*(?:根|条))(?=$|[\s,，;；])/i);
+    const n = attached ? Number(attached[1]) : standalone ? Number(standalone[1] || standalone[2]) : 1;
+    const gb = Number(cm[1]) * (n > 0 ? n : 1);
+    totals.set(gen, (totals.get(gen) || 0) + gb);
+  });
+  if (!totals.size) return '';
+  return [...totals].map(([gen, gb]) => gen + ' ' + gb + 'G').sort().join(' + ');
+}
+/** 硬盘容量键（合并判断用）：各盘容量排序拼接，忽略品牌与型号杂串 */
+function diskCapacities(t){
+  const lines = String(t || '').split('\n').map(stripPartSerials).filter(Boolean);
+  const brands = [...new Set(lines.map(diskBrand).filter(Boolean))];
+  const protocols = [...new Set(lines.map(diskProtocol).filter(Boolean))];
+  const caps = [];
+  lines.forEach(s => {
+    const brand = diskBrand(s) || (brands.length === 1 ? brands[0] : '');
+    const protocol = diskProtocol(s) || (protocols.length === 1 ? protocols[0] : '');
+    const cm = s.match(/(?:^|[^A-Z0-9])(\d{1,4}(?:\.\d+)?)\s*(GB?|TB?)(?=\b|[08$])/i);
+    const bare = !cm && brand && protocol ? s.match(/(?:^|\s)(128|240|256|480|500|512|960|1000|1024|2000|2048|4000|4096)(?=$|\s)/) : null;
+    if (cm) caps.push(Number(cm[1]) + (cm[2][0].toUpperCase() === 'T' ? 'TB' : 'GB'));
+    else if (bare) caps.push(bare[1] + 'GB');
+  });
+  return caps.sort().join('+');
+}
+function runStats(){
+  const s = document.getElementById('statStart').value;
+  const e = document.getElementById('statEnd').value;
+  const vf = document.getElementById('statVendor').value;
+  if (s && e && s > e){
+    document.getElementById('statResult').innerHTML = '<div class="stat-tip">起始日期不能晚于结束日期</div>';
+    return;
+  }
+  /* 合并条件：供应商 + 主机型号 + CPU型号 + 内存总容量 + 硬盘容量一致（不管内存/硬盘品牌，
+     8G×2 与 16G×1 都是 16G）；品牌、序列号等差异不影响合并，×N 为台数 */
+  const groups = new Map();
+  let total = 0;
+  records.forEach(r => {
+    const d = String(r.uploadedAt || '').slice(0, 10);
+    if (!d || (s && d < s) || (e && d > e)) return;
+    const v = String(r.vendor || '').trim() || '未标记';
+    if (vf && v !== vf) return;
+    const model = String(r.machineModel || '').trim() || '未填型号';
+    const cpu = String(r.cpuModel || '').trim() || '—';
+    const ram = ramBrief(r.ramInfo) || '—';
+    const disk = diskBrief(r.ssdInfo) || '—';
+    const gpu = gpuBrief(r) || '—';
+    const ramKey = ramTotalKey(r.ramInfo) || '内存未填写';
+    const diskKey = diskCapacities(r.ssdInfo) || '容量未填写';
+    const key = [v, model, cpu, ramKey, diskKey].join('\u0001');
+    const g = groups.get(key) || { vendor: v, model, cpu, ram: new Set(), disk: new Set(), gpu: new Set(), n: 0, sns: [] };
+    g.n++;
+    g.ram.add(ram);
+    g.disk.add(disk);
+    if (gpuBrief(r)) g.gpu.add(gpuBrief(r));
+    const sn = String(r.sn || '').trim();
+    if (sn) g.sns.push(sn);
+    groups.set(key, g);
+    total++;
+  });
+  const list = [...groups.values()].sort((a, b) => {
+    if (a.vendor === '未标记') return 1;
+    if (b.vendor === '未标记') return -1;
+    if (a.vendor !== b.vendor) return b.n - a.n;
+    if (b.n !== a.n) return b.n - a.n;
+    return a.model.localeCompare(b.model);
+  });
+  let html = '<div class="stat-table-wrap"><table class="stat-table">'
+    + '<thead><tr class="stat-head"><th scope="col">供应商</th><th scope="col">型号</th><th scope="col">数量</th>'
+    + '<th scope="col">CPU</th><th scope="col">内存</th><th scope="col">硬盘</th><th scope="col">显卡</th></tr></thead><tbody>';
+  list.forEach(g => {
+    const qty = g.n >= 2 ? '×' + g.n : '1';
+    const snSpan = g.n === 1 && g.sns.length
+      ? '<span class="stat-record-sn">SN：' + escapeHtml(g.sns[0]) + '</span>' : '';
+    html += '<tr>'
+      + '<td>' + escapeHtml(g.vendor) + '</td>'
+      + '<td>' + escapeHtml(g.model) + snSpan + '</td>'
+      + '<td>' + qty + '</td>'
+      + '<td>' + escapeHtml(g.cpu) + '</td>'
+      + '<td class="stat-config">' + escapeHtml([...g.ram].join(' / ') || '—') + '</td>'
+      + '<td class="stat-config">' + escapeHtml([...g.disk].join(' / ') || '—') + '</td>'
+      + '<td class="stat-config">' + escapeHtml([...g.gpu].join(' / ') || '—') + '</td>'
+      + '</tr>';
+  });
+  if (!list.length) html += '<tr><td colspan="7" class="stat-empty">当前日期和供应商下没有档案</td></tr>';
+  html += '<tr class="stat-total"><td colspan="2">合计</td><td>' + total + '</td><td colspan="4">—</td></tr></tbody></table></div>';
+  const tip = (s || e) ? (s || '…') + ' ~ ' + (e || '…') : '全部时间';
+  const vTip = vf ? '【' + escapeHtml(vf) + '】' : '';
+  document.getElementById('statResult').innerHTML =
+    '<div class="stat-tip">' + tip + vTip + ' 共 ' + total + ' 台（型号/CPU/内存/硬盘容量一致即合并，×N 为台数）</div>' + html;
+}
+
+/* ==================== 大图查看（[2026-10-02] 滚轮/双指缩放、单指拖动、双击放大
+   [2026-10-08] 电脑端鼠标拖动：放大后按住拖动查看左右上下边缘） ==================== */
+let _vScale = 1, _vTx = 0, _vTy = 0, _vPinch = 0, _vLast = null;
+let _vDrag = false, _vDragStart = null;
+let _vRot = 0;                                   // [2026-10-12 ROTATE] 旋转角度（90 倍数）
+/* [2026-10-13] 变换作用于媒体容器（图片+文字层一起动） */
+function viewerApply(){
+  document.getElementById('viewerMedia').style.transform =
+    'translate(' + _vTx + 'px,' + _vTy + 'px) scale(' + _vScale + ') rotate(' + _vRot + 'deg)';
+}
+/** 光标随缩放状态切换：未放大 zoom-in（提示可放大），已放大 grab（提示可拖动） */
+function viewerCursor(){
+  document.getElementById('viewerImg').style.cursor = _vScale > 1 ? 'grab' : 'zoom-in';
+}
+function openViewer(src){
+  const img = document.getElementById('viewerImg');
+  img.dataset.retried = '';           // 重置换 token 重试标记
+  img.src = src;
+  _vScale = 1; _vTx = 0; _vTy = 0; _vRot = 0; viewerApply(); viewerCursor();
+  document.getElementById('imgViewer').classList.remove('hidden');
+}
+
+/* [2026-10-13 REMOVED] 「提取文字」识别功能已按用户要求移除（识别体验不佳），仅保留旋转查看 */
+/** [2026-10-12 ROTATE] 旋转 ±90°（竖拍照片看正），双击复位时一并归零 */
+function viewerRotate(delta){
+  _vRot = (_vRot + delta) % 360;
+  viewerApply();
+}
+
+/** [2026-10-12 IMG-RETRY] 大图 401（token 轮换）时换新 token 重试一次 */
+function retryViewerImg(img){
+  if (img.dataset.retried || !img.src.includes('parts-image')) { return; }
+  img.dataset.retried = '1';
+  const m = img.src.match(/[?&]path=([^&]+)/);
+  if (!m) return;
+  img.src = '/api/parts-image?path=' + m[1] + '&token=' + encodeURIComponent(getToken() || '');
+}
+function closeViewer(){
+  document.getElementById('viewerImg').src = '';
+  document.getElementById('viewerMedia').style.transform = '';   // [2026-10-13] 变换在媒体容器上
+  document.getElementById('imgViewer').classList.add('hidden');
+}
+/** 缩放/拖动事件绑定（init 时调用一次） */
+function bindViewerZoom(){
+  const viewer = document.getElementById('imgViewer');
+  const img = document.getElementById('viewerImg');
+  img.draggable = false;   // 禁原生图片拖拽（ghost 拖影会干扰鼠标拖动）
+  // 点图片本身不关闭（点暗色背景才关闭）
+  img.addEventListener('click', e => e.stopPropagation());
+  // [2026-10-12 IMG-RETRY] 加载失败（token 轮换 401）自动换新 token 重试一次
+  img.addEventListener('error', () => retryViewerImg(img));
+  // 滚轮缩放
+  viewer.addEventListener('wheel', e => {
+    e.preventDefault();
+    const f = e.deltaY < 0 ? 1.25 : 1 / 1.25;
+    _vScale = Math.min(8, Math.max(1, _vScale * f));
+    if (_vScale === 1){ _vTx = 0; _vTy = 0; }
+    viewerApply(); viewerCursor();
+  }, {passive:false});
+  // [2026-10-08] 鼠标拖动：放大后按住左键拖动（电脑端查看边缘细节）
+  viewer.addEventListener('mousedown', e => {
+    if (_vScale <= 1 || e.button !== 0) return;
+    _vDrag = true;
+    _vDragStart = {x: e.clientX - _vTx, y: e.clientY - _vTy};
+    img.style.cursor = 'grabbing';
+    e.preventDefault();                     // 防选中文本/触发原生拖拽
+  });
+  viewer.addEventListener('mousemove', e => {
+    if (!_vDrag) return;
+    _vTx = e.clientX - _vDragStart.x;
+    _vTy = e.clientY - _vDragStart.y;
+    viewerApply();
+  });
+  const endDrag = () => { _vDrag = false; viewerCursor(); };
+  viewer.addEventListener('mouseup', endDrag);
+  viewer.addEventListener('mouseleave', endDrag);
+  // 双击：放大 / 复位
+  img.addEventListener('dblclick', e => {
+    e.stopPropagation();
+    if (_vScale > 1){ _vScale = 1; _vTx = 0; _vTy = 0; }
+    else { _vScale = 2.5; _vTx = 0; _vTy = 0; }
+    _vRot = 0;                                   // [2026-10-12 ROTATE] 双击一并复位旋转
+    viewerApply(); viewerCursor();
+  });
+  // 双指捏合缩放 + 单指拖动
+  img.addEventListener('touchstart', e => {
+    if (e.touches.length === 2){
+      _vPinch = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                           e.touches[0].clientY - e.touches[1].clientY);
+    } else if (e.touches.length === 1){
+      _vLast = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+    }
+  }, {passive:true});
+  img.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (e.touches.length === 2 && _vPinch > 0){
+      const d = Math.hypot(e.touches[0].clientX - e.touches[1].clientX,
+                           e.touches[0].clientY - e.touches[1].clientY);
+      _vScale = Math.min(8, Math.max(1, _vScale * d / _vPinch));
+      _vPinch = d;
+      if (_vScale === 1){ _vTx = 0; _vTy = 0; }
+      viewerApply();
+    } else if (e.touches.length === 1 && _vScale > 1 && _vLast){
+      _vTx += e.touches[0].clientX - _vLast.x;
+      _vTy += e.touches[0].clientY - _vLast.y;
+      _vLast = {x: e.touches[0].clientX, y: e.touches[0].clientY};
+      viewerApply();
+    }
+  }, {passive:false});
+  img.addEventListener('touchend', e => {
+    if (e.touches.length < 2) _vPinch = 0;
+    if (e.touches.length === 0) _vLast = null;
+  }, {passive:true});
+}
+
+/* ==================== [2026-10-13 DELETE-ADMIN] 删除档案（管理员密码二次确认） ====================
+   卡片「🗑 删除」→ confirm 确认（提示档案信息，不可恢复）→ prompt 输入管理员密码
+   → DELETE /api/parts-archive?folder=xx&admin=密码 → 刷新列表。 */
+async function deleteRecord(folder){
+  const r = records.find(x => x.folder === folder);
+  if (!r) return;
+  const label = (r.sn || '未填编号') + '（' + (r.uploadedAt || '时间未知') + '）';
+  if (!confirm('确定永久删除这条档案？\n\n' + label
+    + '\n照片和参数将一并删除，不可恢复！')) return;
+  const pwd = prompt('请输入管理员密码：');
+  if (pwd === null) return;                    // 取消
+  if (!pwd){ toast('密码不能为空'); return; }
+  try{
+    await apiFetch('/api/parts-archive?folder=' + encodeURIComponent(folder)
+      + '&admin=' + encodeURIComponent(pwd), { method: 'DELETE' });
+    toast('🗑 已删除档案 ' + label);
+    await loadRecords();
+  }catch(e){
+    toast(e.message || '删除失败');
+  }
+}
+
+/* ==================== 上传 ==================== */
+/* 动态生成各配件类目区块（字段 + 照片选择） */
+function buildPartSections(){
+  const wrap = document.getElementById('partSections');
+  wrap.innerHTML = PART_TYPES.map(t => {
+    const fieldHtml = t.field
+      ? '<textarea id="f_' + t.key + '" maxlength="500" placeholder="' + t.label + '识别参数（可选，拍照自动识别后确认）"></textarea>'
+      : '';
+    return '<div>'
+      + '<label>' + t.label + '（最多 6 张）</label>'
+      + '<div class="file-box">'
+      +   '<button class="btn-pick" type="button" data-pick="' + t.key + '">选择图片</button>'
+      +   '<span class="file-hint">' + t.hint + '</span>'
+      +   '<input type="file" id="pick_' + t.key + '" hidden multiple accept="image/jpeg,image/png,image/webp" capture="environment">'
+      + '</div>'
+      + '<div class="pick-thumbs" id="thumbs_' + t.key + '"></div>'
+      + fieldHtml
+      + '</div>';
+  }).join('');
+  wrap.querySelectorAll('[data-pick]').forEach(btn => {
+    btn.addEventListener('click', () => document.getElementById('pick_' + btn.dataset.pick).click());
+  });
+  PART_TYPES.forEach(t => {
+    document.getElementById('pick_' + t.key).addEventListener('change', e => {
+      pending[t.key] = pending[t.key].concat(Array.from(e.target.files || [])).slice(0, 6);
+      e.target.value = '';
+      renderPickThumbs();
+    });
+  });
+}
+function openUploadModal(){
+  ['fSn','fMachineModel','fCpuModel','fCpuBatch','fCpuCode','fNote'].forEach(id => document.getElementById(id).value = '');
+  PART_TYPES.forEach(t => {
+    pending[t.key] = [];
+    const ta = document.getElementById('f_' + t.key);
+    if (ta) ta.value = '';
+  });
+  renderPickThumbs();
+  document.getElementById('overwriteWarn').classList.add('hidden');
+  document.getElementById('cpuDupWarn').classList.add('hidden');
+  document.getElementById('upErr').classList.add('hidden');
+  document.getElementById('upProgressWrap').classList.add('hidden');
+  document.getElementById('upSubmitBtn').disabled = false;
+  document.getElementById('uploadModal').classList.remove('hidden');
+}
+function closeUploadModal(){
+  document.getElementById('uploadModal').classList.add('hidden');
+}
+function renderPickThumbs(){
+  PART_TYPES.forEach(t => {
+    const el = document.getElementById('thumbs_' + t.key);
+    if (!el) return;
+    el.innerHTML = pending[t.key].map((f, i) =>
+      '<div class="pick-thumb">'
+      + '<img src="' + URL.createObjectURL(f) + '">'
+      + '<div class="rm" onclick="removePick(\'' + t.key + '\',' + i + ')">✕</div>'
+      + '</div>').join('');
+  });
+}
+function removePick(key, idx){
+  pending[key].splice(idx, 1);
+  renderPickThumbs();
+}
+document.getElementById('fSn').addEventListener('input', e => {
+  const sn = e.target.value.trim();
+  const warn = document.getElementById('overwriteWarn');
+  const count = records.filter(r => r.sn === sn).length;
+  if (sn && count > 0){
+    warn.textContent = 'ℹ 该主机已有 ' + count + ' 条档案，本次上传将新增一条新档案（历史记录不会被覆盖）';
+    warn.classList.remove('hidden');
+  } else {
+    warn.classList.add('hidden');
+  }
+});
+/* CPU 三元组实时查重：型号+批号+编号 全部填写且与已有档案一致 → 提示该 CPU 曾装在哪些主机上 */
+function checkCpuDup(){
+  const warn = document.getElementById('cpuDupWarn');
+  const key = cpuKeyOf(
+    document.getElementById('fCpuModel').value,
+    document.getElementById('fCpuBatch').value,
+    document.getElementById('fCpuCode').value);
+  if (!key){
+    warn.classList.add('hidden');
+    return;
+  }
+  const hits = records.filter(r => cpuKeyOfRecord(r) === key);
+  if (hits.length){
+    const snList = hits.map(r => r.sn + '（' + (r.uploadedAt || '时间未知') + '）').join('、');
+    warn.textContent = '⚠ 该 CPU（型号+批号+编号 一致）已录入过 ' + hits.length + ' 次：' + snList
+      + '。若这是误识别或 CPU 复用，请核实；本次上传将完整新增一条记录，不影响历史。';
+    warn.classList.remove('hidden');
+  } else {
+    warn.classList.add('hidden');
+  }
+}
+['fCpuModel', 'fCpuBatch', 'fCpuCode'].forEach(id =>
+  document.getElementById(id).addEventListener('input', checkCpuDup));
+async function submitUpload(){
+  const sn = document.getElementById('fSn').value.trim();
+  /* [2026-10-13 OPTIONAL-SN] 所有参数都不必填——只要求至少一张照片；
+     SN 有值时才校验格式（字母数字-_），为空由服务端生成 NOSN-时间 兜底文件夹名 */
+  if (sn && !/^[A-Za-z0-9_-]{1,64}$/.test(sn)){
+    showUpErr('主机编号仅允许字母、数字、-、_（可留空）');
+    return;
+  }
+  const picCount = PART_TYPES.reduce((n, t) => n + pending[t.key].length, 0);
+  if (!picCount){
+    showUpErr('请至少选择一张照片（不选照片无法建档）');
+    return;
+  }
+  const fd = new FormData();
+  fd.append('sn', sn);
+  fd.append('machineModel', document.getElementById('fMachineModel').value.trim());
+  fd.append('cpuModel', document.getElementById('fCpuModel').value.trim());
+  fd.append('cpuBatch', document.getElementById('fCpuBatch').value.trim());
+  fd.append('cpuCode', document.getElementById('fCpuCode').value.trim());
+  fd.append('note', document.getElementById('fNote').value.trim());
+  PART_TYPES.forEach(t => {
+    const ta = document.getElementById('f_' + t.key);
+    if (t.field && ta) fd.append(t.field, ta.value.trim());
+    pending[t.key].forEach(f => fd.append(t.key + 'File', f, f.name || t.key + '.jpg'));
+  });
+
+  const btn = document.getElementById('upSubmitBtn');
+  const wrap = document.getElementById('upProgressWrap');
+  const bar = document.getElementById('upProgressBar');
+  btn.disabled = true;
+  wrap.classList.remove('hidden');
+  document.getElementById('upErr').classList.add('hidden');
+  bar.style.width = '5%';
+
+  await new Promise(resolve => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/parts-archive');
+    xhr.setRequestHeader('Authorization', 'Bearer ' + (getToken() || ''));
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) bar.style.width = Math.max(5, Math.round(e.loaded / e.total * 95)) + '%';
+    };
+    xhr.onload = async () => {
+      try{
+        const data = JSON.parse(xhr.responseText || '{}');
+        if (xhr.status >= 200 && xhr.status < 300 && data.ok){
+          bar.style.width = '100%';
+          toast('上传成功：' + sn);
+          closeUploadModal();
+          await loadRecords();
+        } else if (xhr.status === 401){
+          clearToken(); showAuth();
+          showUpErr('登录已过期，请重新验证后再上传');
+        } else {
+          showUpErr(data.message || ('上传失败 ' + xhr.status));
+        }
+      } catch(err){
+        showUpErr('响应解析失败：' + err.message);
+      }
+      resolve();
+    };
+    xhr.onerror = () => { showUpErr('网络错误，上传失败'); resolve(); };
+    xhr.send(fd);
+  });
+  btn.disabled = false;
+}
+function showUpErr(msg){
+  const el = document.getElementById('upErr');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  document.getElementById('upProgressWrap').classList.add('hidden');
+}
+
+/* ==================== 其他 ==================== */
+let toastTimer = null;
+function toast(msg){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+/* [2026-10-02] 默认视图状态：日期框=近一个月，列表只展开最近 3 天；
+   搜索 / 修改日期 → 按所选范围全量显示；「✕ 清除」恢复默认视图。 */
+let _defaultView = true;
+function _fmtDay(d){
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function applyDefaultDates(){
+  const t = new Date();
+  const s = new Date(t.getFullYear(), t.getMonth(), t.getDate() - 30);   // 打开日期往前 1 个月
+  document.getElementById('dateStart').value = _fmtDay(s);
+  document.getElementById('dateEnd').value = _fmtDay(t);
+}
+document.getElementById('refreshBtn').addEventListener('click', loadRecords);
+document.getElementById('statBtn').addEventListener('click', openStatModal);   // [2026-10-11] 供应商统计
+document.getElementById('searchBtn').addEventListener('click', () => { _defaultView = false; render(); });
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter'){ _defaultView = false; render(); }
+});
+document.getElementById('searchInput').addEventListener('input', () => { _defaultView = false; render(); });
+document.getElementById('dateStart').addEventListener('change', () => { _defaultView = false; render(); });
+document.getElementById('dateEnd').addEventListener('change', () => { _defaultView = false; render(); });
+document.getElementById('clearDateBtn').addEventListener('click', () => {
+  applyDefaultDates();          // 清除 = 恢复默认（日期框近一个月 + 列表最近 3 天）
+  _defaultView = true;
+  render();
+});
+document.getElementById('addBtn').addEventListener('click', openUploadModal);
+
+/* init */
+(async function init(){
+  buildPartSections();
+  applyDefaultDates();      // [2026-10-02] 日期默认：打开日期往前 1 个月 ~ 今天
+  bindViewerZoom();         // 大图缩放 / 拖动
+  if (getToken()){
+    hideAuth();
+    loadRecords();
+  } else {
+    // [v1.06] 无有效 token 但记住过密码 → 静默自动登录（不弹遮罩不输密码）
+    if (await tryAutoLogin()){
+      hideAuth();
+      loadRecords();
+    } else {
+      showAuth();
+    }
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ldtools.parts'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.ldtools.parts"
+        minSdk 24
+        targetSdk 34
+        versionCode 22
+        versionName "1.21"
+        // [v1.08] 只保留中英文资源：androidx 库自带几十种语言的字符串/布局，全部打包平白增大体积
+        resourceConfigurations += ['zh', 'en']
+
+        // [v1.08] 真正的体积大头：ML Kit 识别模型 .so 打了 4 套 ABI（arm64/armv7/x86/x86_64）共 58.5MB。
+        // 手机只加载本机 ABI 的一套 → 只保留 ARM 双架构（覆盖所有安卓手机），x86 是模拟器用的，直接裁掉。
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true          // [v1.08] R8 移除未引用代码/压缩 dex（此前 debug 包 dex 未压缩，体积大头）
+            shrinkResources true        // [v1.08] 移除未引用资源
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            // 用 debug 签名签 release 包：与已装的 debug 版签名一致，可直接覆盖安装
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity:1.9.2'
+
+    // CameraX 拍照/预览/分析
+    def camerax = "1.3.4"
+    implementation "androidx.camera:camera-core:${camerax}"
+    implementation "androidx.camera:camera-camera2:${camerax}"
+    implementation "androidx.camera:camera-lifecycle:${camerax}"
+    implementation "androidx.camera:camera-view:${camerax}"
+
+    // ML Kit 端上识别（离线可用）：拉丁文文本 / 中文文本 / 条形码二维码
+    implementation 'com.google.mlkit:text-recognition:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
+    implementation 'com.google.mlkit:barcode-scanning:17.3.0'
+
+    // HTTP 上传
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+}

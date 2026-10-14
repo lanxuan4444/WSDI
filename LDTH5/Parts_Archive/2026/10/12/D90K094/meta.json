@@ -1,0 +1,47 @@
+{
+  "sn": "D90K094",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "V502G675",
+  "cpuCode": "04025",
+  "ramInfo": "HYNIX 16GB DDR5 5600MHz | SN:80ADO124423859 | PN:HMCG78AGBUA081N",
+  "ssdInfo": "PHISON P0327 NVME 512GB\nCOS00120250128049921",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:52:29",
+  "originalNames": [
+    "cap_cpu_20261012_105200_098.jpg",
+    "cap_host_20261012_105028_330.jpg",
+    "cap_ram_20261012_105050_471.jpg",
+    "cap_ssd_20261012_105106_777.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-105229_1.jpg",
+      "size": 438116,
+      "sha256": "c0ad760e426b890324bb19f6093378629a637f283a6abd50efc6237ba63a2ec4"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-105229_1.jpg",
+      "size": 547775,
+      "sha256": "ae93417483cd61fcb5030650eb6af7cad86c339948baf1655dba0231786d51da"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-105229_1.jpg",
+      "size": 614683,
+      "sha256": "7516c645361699c08c671a7b61485c85447c6d35b1ffce0676fb9e94d197afc0"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-105229_1.jpg",
+      "size": 485280,
+      "sha256": "7f74c4adabfc3c8120613d6ce4daf693fdfc733f51871a2f3ef8a41777a571a1"
+    }
+  ],
+  "editedAt": "2026-10-13 13:56:34"
+}

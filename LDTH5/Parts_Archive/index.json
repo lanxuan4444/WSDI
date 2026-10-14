@@ -1,0 +1,1296 @@
+{
+  "2026/10/11/13C7094": {
+    "folder": "2026/10/11/13C7094",
+    "sn": "13C7094",
+    "machineModel": "0ptPlex Micro 7020",
+    "cpuModel": "",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "",
+    "ssdInfo": "SN:244410803609\nPC SN5000S NVMEM WD 512G8 $SD",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-11 10:29:37",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261011-102937_1.jpg",
+        "size": 442203,
+        "sha256": "a8df64c4d4d441c6a6e0a8ec2ae7189d2c50a154e19592d47e734d1e544d4733"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-102937_1.jpg",
+        "size": 656576,
+        "sha256": "d5734a7da3043e6a3ed079c11671a8beb9a0bad056599b728013c9cddd6ab1f5"
+      }
+    ]
+  },
+  "2026/10/11/3SFHS04": {
+    "folder": "2026/10/11/3SFHS04",
+    "sn": "3SFHS04",
+    "machineModel": "Inspiron 3030S",
+    "cpuModel": "I5-14400",
+    "cpuBatch": "V343H523",
+    "cpuCode": "01971",
+    "ramInfo": "SAMSUNG 16G DDR5 5600BMHz\n80CE01231804AAB817",
+    "ssdInfo": "SK HYNIX NVMe | PN:06NRX4\nP41PL NVME SOLIDIGM 512G\nCN-06NRX4-PESD6-38U-072P-A01",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-11 16:43:07",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-164307_1.jpg",
+        "size": 466416,
+        "sha256": "4e3b76dc3ba73a9c58fd9965000cce193ba63dcb3640054a9dd7b955221098e0"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-164307_2.jpg",
+        "size": 502906,
+        "sha256": "cd7e45b88038a097c8f509ac175ceb10c358bf16bc8efe3776d3fa3c66a1e856"
+      },
+      {
+        "type": "host",
+        "name": "host_20261011-164307_1.jpg",
+        "size": 628023,
+        "sha256": "b428b83ad8d404e7efd5c9622006cc836e1ead9980ef645d4245b8ce0de5f61f"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261011-164307_1.jpg",
+        "size": 712990,
+        "sha256": "da1677b2a2e90777d5440c54a37325f9baf394342695c520de155c7a8b97c2f9"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-164307_1.jpg",
+        "size": 616609,
+        "sha256": "480262a962906e4def161d3f3570240d5109edfc8562c22f26c9ec64597f79a6"
+      }
+    ],
+    "editedAt": "2026-10-13 17:34:04"
+  },
+  "2026/10/11/5NXDP94": {
+    "folder": "2026/10/11/5NXDP94",
+    "sn": "5NXDP94",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "X515H356",
+    "cpuCode": "04504",
+    "ramInfo": "SAMSUNG DDR5 16G\n80CE0224513125E337",
+    "ssdInfo": "WD 512GB NVMe x3 | SN:5000S | SN:200- | SN:25142B803761",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-11 13:55:07",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-135507_1.jpg",
+        "size": 418501,
+        "sha256": ""
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-135507_2.jpg",
+        "size": 424901,
+        "sha256": ""
+      },
+      {
+        "type": "host",
+        "name": "host_20261011-135507_1.jpg",
+        "size": 587012,
+        "sha256": "24dec677340679d0133b040a10b9b12473133561585464d78d3f53a9f35e0f54"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261011-135507_1.jpg",
+        "size": 421275,
+        "sha256": "8f8ce23f338760a87395299d087a6aff6bf26b0db3dbfa20982b4bfe03e7870b"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-135507_1.jpg",
+        "size": 587282,
+        "sha256": "b5ca819fce9bec8dd081b56b6d9a54cac3ce85aa7377404e768c45fedfbdb790"
+      }
+    ]
+  },
+  "2026/10/11/8B9NF64": {
+    "folder": "2026/10/11/8B9NF64",
+    "sn": "8B9NF64",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-12100",
+    "cpuBatch": "X437K273",
+    "cpuCode": "02362",
+    "ramInfo": "SAMSUNG 8GB DDR5 5600MHz\n80CE02241339C0038E",
+    "ssdInfo": "KIOXIA 512 NVMe\nSN 8ECPS774Z0Z2",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-11 16:53:09",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-165309_1.jpg",
+        "size": 493220,
+        "sha256": "4716834066f30c8b4b0e1d8657dee655f852735742ed356d646ef1725d3315a2"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-165309_2.jpg",
+        "size": 494289,
+        "sha256": "81ae886cd784225d7bee63c45169e1431fc227884b3e4ca75447871f7bef00fe"
+      },
+      {
+        "type": "host",
+        "name": "host_20261011-165309_1.jpg",
+        "size": 719063,
+        "sha256": "98b3b23dca0b04e02b7573027a019675fb288804561717a8d0024e150315f181"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261011-165309_1.jpg",
+        "size": 605781,
+        "sha256": "11451682b97da52a4ab05f8afb4d50b3f3ec096abdbdbbbc83e9998b51113e9c"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-165309_1.jpg",
+        "size": 622613,
+        "sha256": "992c05c6b4e302a70dfe8fa7bf5c6aeed4189687501105b712d64063473d61d5"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-165309_2.jpg",
+        "size": 604452,
+        "sha256": "ba8e00ffa1959b78ea49bb05caad5bedf92fce551b2612a9a9f688b5b3aa60fd"
+      }
+    ],
+    "editedAt": "2026-10-13 17:32:25"
+  },
+  "2026/10/11/976RFV3": {
+    "folder": "2026/10/11/976RFV3",
+    "sn": "976RFV3",
+    "machineModel": "Inspiron 3020 MT",
+    "cpuModel": "I5-13400F",
+    "cpuBatch": "X244K070",
+    "cpuCode": "05374",
+    "ramInfo": "SKHYNIX 8GB  PC4-3200AA-UCO\n80AD022229276D7CB4",
+    "ssdInfo": "TOSHIBA 1.0TB SATA HDD  | SN:497KT35MS L1F",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-11 15:57:05",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-155705_1.jpg",
+        "size": 478511,
+        "sha256": "5d8245c356b78417768b995fce7dd0e778fd858e580648a0ed46c17c04209afc"
+      },
+      {
+        "type": "host",
+        "name": "host_20261011-155705_1.jpg",
+        "size": 691493,
+        "sha256": "d2475652fc483db163174a1c403768ecc960cb877e2b55971a22aa81c2f965e8"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261011-155705_1.jpg",
+        "size": 702797,
+        "sha256": "8fa449f4519fe18f23270d1fa9934d9ead52066176ffedd0289fd30cd0c88699"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-155705_1.jpg",
+        "size": 841693,
+        "sha256": "0752b900e9c0e38eb79a9293709b4597024433b3489fc2d7c62a432ebdcb5edc"
+      }
+    ],
+    "editedAt": "2026-10-13 17:36:01"
+  },
+  "2026/10/11/JPNJM54": {
+    "folder": "2026/10/11/JPNJM54",
+    "sn": "JPNJM54",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-12100",
+    "cpuBatch": "X232K217",
+    "cpuCode": "02052",
+    "ramInfo": "SK HYNIX 8GB DDR5 4800MHz | PN:HMCG66MEBUAO81N | SN:80ADO12220554124EF",
+    "ssdInfo": "KIOXIA 512GB NVMe | SN:802PD3MPQ2D1",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-11 15:38:26",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261011-153826_1.jpg",
+        "size": 443638,
+        "sha256": "abff68ba642243c7856488aab09240d25b8c5c1b0917ff44043355a4682de18e"
+      },
+      {
+        "type": "host",
+        "name": "host_20261011-153826_1.jpg",
+        "size": 638814,
+        "sha256": "3030b34e9e7a68fabfdf6af0c389b4f06779b8803a3b914d357bfff6e0c8e1c0"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261011-153826_1.jpg",
+        "size": 690109,
+        "sha256": "ff72e3f6acf9c727525de18ad4a63e603c99704fc5a7624467630388413b1fc0"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261011-153826_1.jpg",
+        "size": 685306,
+        "sha256": "7692425dc407731e263cf1871d7e53f849523a6088d13de3774224dc539e5a42"
+      }
+    ],
+    "editedAt": "2026-10-13 17:37:49"
+  },
+  "2026/10/2/1S13MNZE97CNWBO00JDS": {
+    "folder": "2026/10/2/1S13MNZE97CNWBO00JDS",
+    "sn": "1S13MNZE97CNWBO00JDS",
+    "machineModel": "瑞天80(NPC)D4",
+    "cpuModel": "I5-12400",
+    "cpuBatch": "X629N855",
+    "cpuCode": "05171",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-02 14:52:32",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261002-145232_1.jpg",
+        "size": 444761,
+        "sha256": ""
+      },
+      {
+        "type": "host",
+        "name": "host_20261002-145232_1.jpg",
+        "size": 914557,
+        "sha256": ""
+      }
+    ]
+  },
+  "2026/10/6/5K4NRJ4": {
+    "folder": "2026/10/6/5K4NRJ4",
+    "sn": "5K4NRJ4",
+    "machineModel": "EBT2250",
+    "cpuModel": "U7-256",
+    "cpuBatch": "V610G688",
+    "cpuCode": "00036",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-06 17:30:10",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261006-173010_1.jpg",
+        "size": 575036,
+        "sha256": ""
+      }
+    ]
+  },
+  "2026/10/7/MP2GCQJK": {
+    "folder": "2026/10/7/MP2GCQJK",
+    "sn": "MP2GCQJK",
+    "machineModel": "小新27-IRH",
+    "cpuModel": "",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "SAMSUNG 8GB PC5 80CE02242740AE5B2B\nDOR5 SODIMM 80CED2242740A E5B28",
+    "ssdInfo": "UNION MEMORY 1024G  GEN4 X4 NVME\nRPEYJ1T24MLR1HWQ",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "主机批号: MPNXS4C21003",
+    "uploadedAt": "2026-10-07 15:57:40",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261007-155740_1.jpg",
+        "size": 749505,
+        "sha256": "2cc02fd53497603e5cc38b5de4c8afaafc49632210d520b29011eb160c5663e2"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261007-155740_1.jpg",
+        "size": 459815,
+        "sha256": "3d02543f8c471508b882f588b2d4c7ba05ca3d5ba9e9b351c4ce53a26409b8cc"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261007-155740_1.jpg",
+        "size": 461097,
+        "sha256": "f4719131be231f12e95801dd5eae73017bf822a0822232fd46d1111ee539e4d3"
+      }
+    ],
+    "editedAt": "2026-10-13 17:42:58"
+  },
+  "2026/10/7/YLX64SCF": {
+    "folder": "2026/10/7/YLX64SCF",
+    "sn": "YLX64SCF",
+    "machineModel": "ThinkCentre K70-06",
+    "cpuModel": "ULTRA 5 225",
+    "cpuBatch": "V617G802",
+    "cpuCode": "02138",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "主机批号: YLNOS6522W0C",
+    "uploadedAt": "2026-10-07 09:30:21",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261007-093021_1.jpg",
+        "size": 531315,
+        "sha256": ""
+      },
+      {
+        "type": "host",
+        "name": "host_20261007-093021_1.jpg",
+        "size": 399053,
+        "sha256": ""
+      }
+    ]
+  },
+  "2026/10/8/1F267X3": {
+    "folder": "2026/10/8/1F267X3",
+    "sn": "1F267X3",
+    "machineModel": "Vostro 3020SFF",
+    "cpuModel": "I5-13400",
+    "cpuBatch": "X315J709",
+    "cpuCode": "03539",
+    "ramInfo": "8GB PC4 3200MHz *2\nS802C0F2151336C9586\nS802C0F201928042399",
+    "ssdInfo": "SAMSUNG 512GB NVMe | SN:S65ZNFOT315420 | PN:MZ9LQ512HBLU-008D1",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-08 14:17:46",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261008-141746_1.jpg",
+        "size": 482916,
+        "sha256": "2e1a2766c1b159f1106ddf9504147d3ddd926020b0b9849cfca7990df1077075"
+      },
+      {
+        "type": "host",
+        "name": "host_20261008-141746_1.jpg",
+        "size": 744004,
+        "sha256": "24b9585f1c5df73a599edbe8c39d69057c7fcf8717d785a834d7af70374efc5c"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261008-141746_1.jpg",
+        "size": 754530,
+        "sha256": "75186a3af4356ce18b59fc115d96ac39b9ddc29939c2916ed4fb3e6fe2a77bb2"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261008-141746_1.jpg",
+        "size": 639137,
+        "sha256": "7dd2872f3a40591d6ca2527ddea2a3fc3d64a03d9e999b824a97f2126a0a15e7"
+      }
+    ],
+    "editedAt": "2026-10-13 17:44:51"
+  },
+  "2026/10/8/5ZKJ7W3": {
+    "folder": "2026/10/8/5ZKJ7W3",
+    "sn": "5ZKJ7W3",
+    "machineModel": "Inspiron 3020S",
+    "cpuModel": "I5-13400",
+    "cpuBatch": "V352F713",
+    "cpuCode": "00429",
+    "ramInfo": "MICRON 8GB DDR4 3200MHz 8GB *2\nS802C0F1926227ACA20\nS802C0F1926227ACBAB",
+    "ssdInfo": "MT 512GB M.2 | PN:MTFDKBA512QFM",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-08 15:20:53",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261008-152053_1.jpg",
+        "size": 487647,
+        "sha256": "db0a2b8b05eb97d0e5a490e926928b06ec589858368c46497d8ac0b7eadbd7a2"
+      },
+      {
+        "type": "host",
+        "name": "host_20261008-152053_1.jpg",
+        "size": 762092,
+        "sha256": "d2e198af7f53cd6767c2fbc720336c6179f0c834707b0001bd11b1288fb5738b"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261008-152053_1.jpg",
+        "size": 820830,
+        "sha256": "a8f912f2cc5eeeea82ecf85a833df0f16040c07e1646958376789c6f3e2e446d"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261008-152053_2.jpg",
+        "size": 1069617,
+        "sha256": "f79a7eb7f6636e13b607b662daf28a73e7cfffcf0ecd6415196c85f2993e0c33"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261008-152053_1.jpg",
+        "size": 810717,
+        "sha256": "8cdbf3c07aa69a0c29af8b2ccc31edc7d0ea336a8f669661ab1acf1b5b12c17c"
+      }
+    ],
+    "editedAt": "2026-10-13 17:50:35"
+  },
+  "2026/10/8/7FV5TJ4": {
+    "folder": "2026/10/8/7FV5TJ4",
+    "sn": "7FV5TJ4",
+    "machineModel": "EBT2250",
+    "cpuModel": "",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "DELL 电源750W MODEL NO: L750EPS-O0 05TVR6",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-08 16:35:18",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261008-163518_1.jpg",
+        "size": 731485,
+        "sha256": "1b1577c05917d1e7c979008c001c05b064ea5de29045d3e9c272ee36e45e7721"
+      },
+      {
+        "type": "other",
+        "name": "other_20261008-163518_1.jpg",
+        "size": 705522,
+        "sha256": "6177ff29cb56a79b094c586c1cc247114d8ddd99e704ac6d6d6fb64cfae7cf42"
+      }
+    ],
+    "editedAt": "2026-10-13 17:49:09"
+  },
+  "2026/10/8/G9Y1BV3": {
+    "folder": "2026/10/8/G9Y1BV3",
+    "sn": "G9Y1BV3",
+    "machineModel": "Vostro 3020 SFF",
+    "cpuModel": "I5-13400",
+    "cpuBatch": "V352I034",
+    "cpuCode": "04465",
+    "ramInfo": "SAMSUNG PC4 3200MHz *2\nTOCS00031544FF479E\nT0L60003094465F828",
+    "ssdInfo": "SAMSUNG 512GB NVMe | SN:S509NFOMC65742 | PN:MZ9LQ512HALU-000D1",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-08 14:58:16",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261008-145816_1.jpg",
+        "size": 500834,
+        "sha256": "97a11e21e97043511739618a13e6d7331932ca38c5fc9aa66ff504e5ac5abe0e"
+      },
+      {
+        "type": "host",
+        "name": "host_20261008-145816_1.jpg",
+        "size": 586331,
+        "sha256": "fb631482abbbe101749cfd1ef554a8b1758dc9acc1c57e631c81db49407a43dc"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261008-145816_1.jpg",
+        "size": 797043,
+        "sha256": "123ff58d15c17eea698e652e5ff2dac5cc29a43b13f373012c5e4bc5aad3063d"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261008-145816_1.jpg",
+        "size": 715442,
+        "sha256": "d7f78cfd1b508b808f5d63e9c7c770076c6fefaab18dafa455ea23b05fb97391"
+      }
+    ],
+    "editedAt": "2026-10-13 17:46:25"
+  },
+  "2026/10/9/GM1DDHWJ": {
+    "folder": "2026/10/9/GM1DDHWJ",
+    "sn": "GM1DDHWJ",
+    "machineModel": "P3 Tiny Gen 2",
+    "cpuModel": "ULTRA 3 205",
+    "cpuBatch": "X609M803",
+    "cpuCode": "05378",
+    "ramInfo": "",
+    "ssdInfo": "UM 512GB NVMe\nRPEYJ512MML1QWQ\nPCLE GEN4 X4 NVME",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "",
+    "uploadedAt": "2026-10-09 18:37:05",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261009-183705_1.jpg",
+        "size": 502161,
+        "sha256": "40151c1a9c6fc51899507b0689cdf350026fedbcb987bf6e8c30b525f13cd1be"
+      },
+      {
+        "type": "host",
+        "name": "host_20261009-183705_1.jpg",
+        "size": 463784,
+        "sha256": "4d9e837acde4656df2da3fe2daec64cf635dca3a9bafc44f2625f93f8ca75068"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261009-183705_1.jpg",
+        "size": 652615,
+        "sha256": "b9245da80b7b3c129609005907b29cd136678f63045120f10e6cf3372221a4cc"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261009-183705_2.jpg",
+        "size": 608574,
+        "sha256": "3dc0232083ac1162e794dd5f8fbdc9cfb7e2e70cb1957348af5a031490d97267"
+      }
+    ],
+    "editedAt": "2026-10-13 17:48:26"
+  },
+  "2026/9/29/J16Z144": {
+    "folder": "2026/9/29/J16Z144",
+    "sn": "J16Z144",
+    "machineModel": "",
+    "cpuModel": "I7-14700T",
+    "cpuBatch": "L405E698",
+    "cpuCode": "03009",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "主机型号: OptiPlex Micro 7020",
+    "uploadedAt": "2026-09-29 14:21:12",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20260929-142112_1.jpg",
+        "size": 475026,
+        "sha256": ""
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20260929-142112_2.jpg",
+        "size": 355445,
+        "sha256": ""
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20260929-142112_3.jpg",
+        "size": 443642,
+        "sha256": ""
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20260929-142112_4.jpg",
+        "size": 280277,
+        "sha256": ""
+      },
+      {
+        "type": "host",
+        "name": "host_20260929-142112_1.jpg",
+        "size": 742048,
+        "sha256": ""
+      }
+    ]
+  },
+  "2026/9/30/YLX592EF": {
+    "folder": "2026/9/30/YLX592EF",
+    "sn": "YLX592EF",
+    "machineModel": "天逸510S -08IRR",
+    "cpuModel": "I7-14700",
+    "cpuBatch": "L622L982",
+    "cpuCode": "05526",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "",
+    "note": "主机批号: YLNOS5331WOY",
+    "uploadedAt": "2026-09-30 15:58:36",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20260930-155836_1.jpg",
+        "size": 515718,
+        "sha256": ""
+      },
+      {
+        "type": "host",
+        "name": "host_20260930-155836_1.jpg",
+        "size": 374154,
+        "sha256": ""
+      }
+    ]
+  },
+  "2026/10/12/6B7DBW3": {
+    "folder": "2026/10/12/6B7DBW3",
+    "sn": "6B7DBW3",
+    "machineModel": "Vostro 3910",
+    "cpuModel": "I5-12400",
+    "cpuBatch": "V208E115",
+    "cpuCode": "02348",
+    "ramInfo": "SK HYNIX 8GB DDR4 3200MHz \n80AD02223227A00869",
+    "ssdInfo": "TOSHIBA 1.0TB SATA | SN:497JML7MS",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:12:24",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-101224_1.jpg",
+        "size": 444613,
+        "sha256": "1e7e915803915b17c607142ae22aac9ea5c8c24332ab7c4300ac7b46ae9b6e7f"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-101224_2.jpg",
+        "size": 407997,
+        "sha256": "47ee54a928e9afb7acc9c08e7aca8df031650f8bb57eaa1488cbc4ca158a5ba0"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-101224_1.jpg",
+        "size": 592360,
+        "sha256": "fd91ae6c20e033b7ae76808691149b4e6c48ff291bb44ae7c3b9477a1e8b22a8"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-101224_2.jpg",
+        "size": 801148,
+        "sha256": "ad8635d80690936f6f9929d280428c3eed7db849698ac01e254575a0a931f939"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-101224_1.jpg",
+        "size": 820218,
+        "sha256": "2f1c6e82e762fff108b759665153788a3a029e6f86b588940da75dda60781d67"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-101224_1.jpg",
+        "size": 884717,
+        "sha256": "40a6975230c30b0203147c2243210be7b8453501e11f5e624b82f32233ade5fd"
+      }
+    ],
+    "editedAt": "2026-10-13 17:30:50"
+  },
+  "2026/10/12/1KQR334": {
+    "folder": "2026/10/12/1KQR334",
+    "sn": "1KQR334",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "X352N473",
+    "cpuCode": "03820",
+    "ramInfo": "HYNIX 16GB DDR5 5600MHz | PN:HMCG78AGBUAO84N | SN:80AD01234437BC7A1E",
+    "ssdInfo": "KIOXIA 512GB NVMe | SN:90GPH6O0Q2D",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:35:10",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-103525_1.jpg",
+        "size": 487326,
+        "sha256": "f8bc4f3db40f6f69032add13b5e1e1fe87579f6a750d3371cd578b8e4fb07ce5"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-103525_1.jpg",
+        "size": 665923,
+        "sha256": "a31ba816fb99eb2ca6686fa091f5e7d41fdabbab79ea231be4b4295f4b0e177c"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261013-172406_w2.jpg",
+        "size": 680787,
+        "sha256": "6f17d6ede7a5cd8ff2970a3438350feb6c513fd47023cec7060ea054663a4f0c"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261013-172424_w2.jpg",
+        "size": 649438,
+        "sha256": "502e0e824445802688178a2c8f276501f639caa28c77e40e5b2adb898aa99b08"
+      }
+    ],
+    "editedAt": "2026-10-13 17:25:35"
+  },
+  "2026/10/12/HPT5F74": {
+    "folder": "2026/10/12/HPT5F74",
+    "sn": "HPT5F74",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "X340H654",
+    "cpuCode": "01085",
+    "ramInfo": "HYNIX 16GB DDR5 | PN:HMCG78AGBUAO84N | SN:80ADO12441985F3155",
+    "ssdInfo": "PFPNU512GZ  NVMe | TW-06NRX4-PIWD6-41T-052S-AO1",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:36:44",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-103644_1.jpg",
+        "size": 437966,
+        "sha256": "b751e8dc030a4d757c80feb01c224c822c65c02ec5ca20c21dd0c78e476baaec"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-103644_1.jpg",
+        "size": 714436,
+        "sha256": "4ffaf34d519103545f6bde7118b5f45b5e78bf9eac75ae008d270bacda288390"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-103644_1.jpg",
+        "size": 674148,
+        "sha256": "b1f53d713c1f1c70f92ac4d1d24571b596ac20580dfe5f3ae0ad3994c4b15ab1"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-103644_1.jpg",
+        "size": 622913,
+        "sha256": "f79e449a013e9bb602abc27629f33e38b50ca6859152793265e1ae19e11a573d"
+      }
+    ]
+  },
+  "2026/10/12/CK97T64": {
+    "folder": "2026/10/12/CK97T64",
+    "sn": "CK97T64",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-12100",
+    "cpuBatch": "X440K873",
+    "cpuCode": "02344",
+    "ramInfo": "SAMSUNG 8GB DDR5 5600MHz\n80CE0224264097DA5B",
+    "ssdInfo": "WD 512GB NVMe x3 | SN:5000S | SN:200- | SN:24342R804681",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:38:41",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-103841_1.jpg",
+        "size": 414355,
+        "sha256": "1499eef08b6aab47665d761e41207829ae9a4948a126188512129c62de4012a5"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-103841_2.jpg",
+        "size": 442882,
+        "sha256": "29503f5fab0dd439960a2307dae945b70258e0cb6c8b995aa323cee51ebde67a"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-103841_1.jpg",
+        "size": 714867,
+        "sha256": "467be02d49bd5acf9e6e03b5426ad9a6d4229dad95cb13e96fd52109ffe58bf1"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-103841_1.jpg",
+        "size": 641110,
+        "sha256": "c8d44a8168e04fd49d1aed48497815b420a8027fc560507a04be758319993f69"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-103841_1.jpg",
+        "size": 563616,
+        "sha256": "909d78fcb196d3ad41e08bc232c886cb25df7b756bdda39fa3571e5dd7a2b4c6"
+      }
+    ]
+  },
+  "2026/10/12/32H7414": {
+    "folder": "2026/10/12/32H7414",
+    "sn": "3ZH7414",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "X342N202",
+    "cpuCode": "05051",
+    "ramInfo": "SAMSUNG 8GB DDR5 5600MHz *2\n80CE022441418505CA\n80CE0224414185080E",
+    "ssdInfo": "SOLIDIGM     NVMe | PN:06NRX4\nP41PL NVME SOLIDIGM 512GB\nCN-06NRX4-PESD6-392-078L-A01",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:41:48",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-104148_1.jpg",
+        "size": 388582,
+        "sha256": "aaa29122fd59c2929e81b9bcf32a8b814ac95f869b82522594936beaa2611d14"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-104148_2.jpg",
+        "size": 462038,
+        "sha256": "dbcfe9ad90513971a0ee00c4bb12c1c24acb5ead810a5c731fb63986e5408ff3"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-104148_1.jpg",
+        "size": 744802,
+        "sha256": "50d26ec4f3a1685cf0a48b9bbe40358aec91a7df94a168b327a5f9661dd38926"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-104148_1.jpg",
+        "size": 592634,
+        "sha256": "5ffa6921e6a5fa6d3ebbed6a967599ef763b1fa2111bfbd9f58062fb0e19a3c4"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-104148_1.jpg",
+        "size": 643000,
+        "sha256": "dfbca0dc5c949fbe8a9e8d5373cb9d7ccbb29a02e3d795cb877963c71d89bf46"
+      }
+    ]
+  },
+  "2026/10/12/1COKO94": {
+    "folder": "2026/10/12/1COKO94",
+    "sn": "1COKO94",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "V502G675",
+    "cpuCode": "00732",
+    "ramInfo": "HYNIX  16g DDR5 5600BMHz | SN:80ADO1244238 | PN:HMCG78AGBUA081N",
+    "ssdInfo": "PHISON 512  NVME SSD \nCOS00120250128049827",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:45:48",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-104548_1.jpg",
+        "size": 435227,
+        "sha256": "a637a094d68a0a8ec46af5b2c752a643632f450ecb01b253e1e5cad7abc8d06a"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-104548_2.jpg",
+        "size": 454702,
+        "sha256": "8f5d9f869db379837743e307db2c0013062d3743b8729686c4f9bfbab206b679"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-104548_1.jpg",
+        "size": 568797,
+        "sha256": "22f03839427f9e146d5a56b0aa074c39dd4618f3942b01fbe1f35c367b444d99"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-104548_1.jpg",
+        "size": 618332,
+        "sha256": "296c332608c8ad1707c926dd7ba3a7626baf1ca710860a8115f6257aeb9e7673"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-104548_1.jpg",
+        "size": 531579,
+        "sha256": "96806a343abc47d003002df5a5cf2346479b9f6f99f4123a212a2747a9715758"
+      }
+    ]
+  },
+  "2026/10/12/8N62Z44": {
+    "folder": "2026/10/12/8N62Z44",
+    "sn": "8N62Z44",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "V542H028",
+    "cpuCode": "80105",
+    "ramInfo": "HYNIX 8GB DDR5 5600MHz x2 | PN:HMCG66AGBUAO81N | SN:80ADO1244077381F96 | PN:HMCG66AE | SN:80AD01230297182092",
+    "ssdInfo": "WD 512GB NVMe x2 | SN:SO00S | SN:244571800859",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:49:12",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-104912_1.jpg",
+        "size": 434790,
+        "sha256": "4ed55081d5ba1205f344d30be4ab678aa8a3f33ec4dedb436df8848a6443aa84"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-104912_1.jpg",
+        "size": 621222,
+        "sha256": "b61803b9d19a9e1b92074e5a878577ff2874538ff7c534ab439ae6d2a0c31755"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-104912_1.jpg",
+        "size": 738522,
+        "sha256": "4f359e9a8a32293c5b1f43dec505f6204d5f0b635dec2c778869639d3ffc895d"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-104912_1.jpg",
+        "size": 582477,
+        "sha256": "14c695c6f0b173db7aa07e6c5e45e7c8b87c581d8ff301908b8971472757ede6"
+      }
+    ]
+  },
+  "2026/10/12/D90K094": {
+    "folder": "2026/10/12/D90K094",
+    "sn": "D90K094",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "V502G675",
+    "cpuCode": "04025",
+    "ramInfo": "HYNIX 16GB DDR5 5600MHz | SN:80ADO124423859 | PN:HMCG78AGBUA081N",
+    "ssdInfo": "PHISON P0327 NVME 512GB\nCOS00120250128049921",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:52:29",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-105229_1.jpg",
+        "size": 438116,
+        "sha256": "c0ad760e426b890324bb19f6093378629a637f283a6abd50efc6237ba63a2ec4"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-105229_1.jpg",
+        "size": 547775,
+        "sha256": "ae93417483cd61fcb5030650eb6af7cad86c339948baf1655dba0231786d51da"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-105229_1.jpg",
+        "size": 614683,
+        "sha256": "7516c645361699c08c671a7b61485c85447c6d35b1ffce0676fb9e94d197afc0"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-105229_1.jpg",
+        "size": 485280,
+        "sha256": "7f74c4adabfc3c8120613d6ce4daf693fdfc733f51871a2f3ef8a41777a571a1"
+      }
+    ]
+  },
+  "2026/10/12/JMKRH24": {
+    "folder": "2026/10/12/JMKRH24",
+    "sn": "JMKRH24",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "V415H050",
+    "cpuCode": "00895",
+    "ramInfo": "HYNIX 16GB DDR5 5600MHz | SN:80AD0124217702FEAD | PN:HMCG78AGBUAO81",
+    "ssdInfo": "KIOXIA NVMe | SN:62KPG\nNVME™ KIOXIA 512",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:53:21",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-105321_1.jpg",
+        "size": 455263,
+        "sha256": "aa680a665effe0f0aff163067fce7bace9f60898b1020b741f3067e2a83b246f"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-105321_1.jpg",
+        "size": 368959,
+        "sha256": "75145034fa7b05d1b54c499498f7dfce420d3bc67f3752f2ba16b3d4dc19ddcc"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-105321_1.jpg",
+        "size": 622463,
+        "sha256": "efdd508eeb70bf13c36490e0e228a13c5a8d526065510a6a64ed46fc1e691881"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-105321_1.jpg",
+        "size": 608968,
+        "sha256": "e984a8c2faf44be5cfb5d287a9a80da6a9ffd89ea850b278154d5ac546978912"
+      }
+    ]
+  },
+  "2026/10/12/HC20PW3": {
+    "folder": "2026/10/12/HC20PW3",
+    "sn": "HC20PW3",
+    "machineModel": "Inspiron 3910",
+    "cpuModel": "I5-12400",
+    "cpuBatch": "X305G546",
+    "cpuCode": "02941",
+    "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F201527802E75",
+    "ssdInfo": "TOSHIBA 1.0TB SATA HDD | S/N 62KUN91MS 8TJ",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 10:30:35",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-103035_1.jpg",
+        "size": 403634,
+        "sha256": "d57bd74703720c1ed3880f76fe165a1a0a7c1631c12d7127b73d2b6f373e6f11"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-103035_1.jpg",
+        "size": 744531,
+        "sha256": "8048fe8086fe1ba283655fb7cc51aefe3dad62b68cc07b714ca7387e28586aa4"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-103035_1.jpg",
+        "size": 582555,
+        "sha256": "d41b485f8ca8dae4fe976263ecac9ce9042785aabd41b996799f58a71d9003c0"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-103035_1.jpg",
+        "size": 627370,
+        "sha256": "c9069dd1becdfc43c779b9f882b42d8ccc8970adf7f12558292cb40ecc72feb0"
+      }
+    ]
+  },
+  "2026/10/12/12345678": {
+    "folder": "2026/10/12/12345678",
+    "sn": "12345678",
+    "machineModel": "Vostro 3030S",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "16g  DDR5",
+    "ssdInfo": "512GB  NVME",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 11:51:57",
+    "files": []
+  },
+  "2026/10/12/JCXG7V3": {
+    "folder": "2026/10/12/JCXG7V3",
+    "sn": "JCXG7V3",
+    "machineModel": "Vostro 3020sff",
+    "cpuModel": "13100",
+    "cpuBatch": "X302M668",
+    "cpuCode": "01416",
+    "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F201227135030",
+    "ssdInfo": "WD 512GB NVMe x3 SN:244571800859",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-12 14:06:09",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-140609_1.jpg",
+        "size": 454964,
+        "sha256": "4701659cecd9dd03607a52d77e969dbec0cd5a311351d266a36c2e0702f476f4"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-140609_2.jpg",
+        "size": 443850,
+        "sha256": "81ec2f7282797fa3b8199cccbd3b838342f00df1e8c50b4532bac0070e5b4061"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-140609_1.jpg",
+        "size": 475029,
+        "sha256": "85dd152ac65e9079160aab19ae32996440ca828b3c220da1d15ec63b74c4e8f6"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261012-140609_1.jpg",
+        "size": 563461,
+        "sha256": "a97f5374b330a1fe7b5a0e10886974624d515afd9521822f6dfae29788b13076"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-140609_1.jpg",
+        "size": 528041,
+        "sha256": "6a428cb3fdefd580f9fdb578e91790e4933bbf5e760c520583af5cd7a6e01234"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261012-140609_2.jpg",
+        "size": 519102,
+        "sha256": "ac5a6628eb8549d6b390d5455cfb7078160bb4fef671b303da3b2b5e42a36e1c"
+      }
+    ]
+  },
+  "2026/10/12/GM1GB370": {
+    "folder": "2026/10/12/GM1GB370",
+    "sn": "GM1GB370",
+    "machineModel": "ThinkCentre M90a Pro Gen6",
+    "cpuModel": "ULTRA 3 205",
+    "cpuBatch": "V610G806",
+    "cpuCode": "01628",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "主机批号: GM6056814009",
+    "uploadedAt": "2026-10-12 17:40:22",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-174022_1.jpg",
+        "size": 482682,
+        "sha256": "c95174bdc5f79e4a26517469113afb5dfcc1e1dd434c1e624a08f89cd0ff5469"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261012-174022_2.jpg",
+        "size": 488566,
+        "sha256": "dc48b8967f2435d2405e4fcc148b74f7fb2cb29faa869f4e32fca1d8ee1286f6"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-174022_1.jpg",
+        "size": 622807,
+        "sha256": "4e38702e1d35d9149fecd5ebab58c752c8533baa35fe28c2eaecdf4e91506bd2"
+      },
+      {
+        "type": "host",
+        "name": "host_20261012-174022_2.jpg",
+        "size": 709762,
+        "sha256": "9785d327b4c9eb149e1e77caeccc908201c265a8881d55364969718d669f91a9"
+      }
+    ]
+  },
+  "2026/10/13/GM13WSLG": {
+    "folder": "2026/10/13/GM13WSLG",
+    "sn": "GM13WSLG",
+    "machineModel": "扬天T4900k-171RR",
+    "cpuModel": "I5-13400",
+    "cpuBatch": "X527K906",
+    "cpuCode": "01317",
+    "ramInfo": "",
+    "ssdInfo": "512GB NVMe | SN:YMA65 | PN:YMSS2 | PN:SSS1D71543",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "主机批号: GM606591000C",
+    "uploadedAt": "2026-10-13 15:30:40",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261013-153040_1.jpg",
+        "size": 514894,
+        "sha256": "e241971b30a1eb491a38a9eae41120208963634b2fee15609276a3127867082b"
+      },
+      {
+        "type": "host",
+        "name": "host_20261013-153040_1.jpg",
+        "size": 681522,
+        "sha256": "6ba40b39d78820d67d18febf20a85c4bff1611a0704737d64fb9c1907827d953"
+      }
+    ]
+  },
+  "2026/10/13/GM137KVX": {
+    "folder": "2026/10/13/GM137KVX",
+    "sn": "GM137KVX",
+    "machineModel": "ThinkCentre M90a Gen 5-A122",
+    "cpuModel": "I5-14500",
+    "cpuBatch": "V527D686",
+    "cpuCode": "03937",
+    "ramInfo": "SAMSUNG 16GB DDR5 5600BMHz SN:80CE02244241A2B85F",
+    "ssdInfo": "512GB NVMe | PN:YMSS2CB06D25MC | SN:YMA5512RA2504202DK",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "主机批号: GMNO55823009",
+    "uploadedAt": "2026-10-13 15:43:59",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261013-154359_1.jpg",
+        "size": 494246,
+        "sha256": "8f95b3cde61bec765765cae73cbf8e97394e8318be45184a4da43251f22ada8a"
+      },
+      {
+        "type": "host",
+        "name": "host_20261013-154359_1.jpg",
+        "size": 691279,
+        "sha256": "82aabbe69401445a53398bb87ca10c5ca8a4a481d8269d7de5e208542c44c40e"
+      },
+      {
+        "type": "host",
+        "name": "host_20261013-154359_2.jpg",
+        "size": 607777,
+        "sha256": "c3d7626712791b046022330e10800a1d1f4a050692dfc420d72d7c212cb510d4"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261013-154359_1.jpg",
+        "size": 786913,
+        "sha256": "8789ab4d52a1fbf89cb07e7fddca439f3821b86e0c9aefc2d276c06e5db35fd7"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261013-154359_2.jpg",
+        "size": 766955,
+        "sha256": "3c2d6c8c829fd5c14891a017c98a1a575045233db5886f457ddac2664c01aa9c"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261013-154359_1.jpg",
+        "size": 755297,
+        "sha256": "73e34e933ad193385f942bd24de9c734e9ad20af0853b5f40a7432b02334cc97"
+      }
+    ],
+    "editedAt": "2026-10-13 17:54:34"
+  }
+}

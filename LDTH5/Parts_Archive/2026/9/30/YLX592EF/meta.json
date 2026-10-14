@@ -1,0 +1,31 @@
+{
+  "sn": "YLX592EF",
+  "machineModel": "天逸510S -08IRR",
+  "cpuModel": "I7-14700",
+  "cpuBatch": "L622L982",
+  "cpuCode": "05526",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "主机批号: YLNOS5331WOY",
+  "uploadedAt": "2026-09-30 15:58:36",
+  "originalNames": [
+    "cap_cpu_20260930_154610_189.jpg",
+    "cap_host_20260930_154703_990.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20260930-155836_1.jpg",
+      "size": 5105802,
+      "sha256": "49e32abe121299f3390004e92aa87ae2c9685fc8f30a68f2cd4552a76f273c21"
+    },
+    {
+      "type": "host",
+      "name": "host_20260930-155836_1.jpg",
+      "size": 3742818,
+      "sha256": "d7b50d595ff546fd43b1fdebc5afa3aa8caccd12c6e56346e979856bdf9fca71"
+    }
+  ]
+}

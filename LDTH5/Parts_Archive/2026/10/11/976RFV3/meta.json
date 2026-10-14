@@ -1,0 +1,47 @@
+{
+  "sn": "976RFV3",
+  "machineModel": "Inspiron 3020 MT",
+  "cpuModel": "I5-13400F",
+  "cpuBatch": "X244K070",
+  "cpuCode": "05374",
+  "ramInfo": "SKHYNIX 8GB  PC4-3200AA-UCO\n80AD022229276D7CB4",
+  "ssdInfo": "TOSHIBA 1.0TB SATA HDD  | SN:497KT35MS L1F",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-11 15:57:05",
+  "originalNames": [
+    "cap_cpu_20261011_155407_913.jpg",
+    "cap_host_20261011_155321_718.jpg",
+    "cap_ram_20261011_155559_314.jpg",
+    "cap_ssd_20261011_155622_913.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-155705_1.jpg",
+      "size": 478511,
+      "sha256": "5d8245c356b78417768b995fce7dd0e778fd858e580648a0ed46c17c04209afc"
+    },
+    {
+      "type": "host",
+      "name": "host_20261011-155705_1.jpg",
+      "size": 691493,
+      "sha256": "d2475652fc483db163174a1c403768ecc960cb877e2b55971a22aa81c2f965e8"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261011-155705_1.jpg",
+      "size": 702797,
+      "sha256": "8fa449f4519fe18f23270d1fa9934d9ead52066176ffedd0289fd30cd0c88699"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-155705_1.jpg",
+      "size": 841693,
+      "sha256": "0752b900e9c0e38eb79a9293709b4597024433b3489fc2d7c62a432ebdcb5edc"
+    }
+  ],
+  "vendor": "建钰",
+  "editedAt": "2026-10-13 17:36:01"
+}

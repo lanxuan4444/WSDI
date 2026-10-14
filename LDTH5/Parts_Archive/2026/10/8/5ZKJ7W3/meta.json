@@ -1,0 +1,54 @@
+{
+  "sn": "5ZKJ7W3",
+  "machineModel": "Inspiron 3020S",
+  "cpuModel": "I5-13400",
+  "cpuBatch": "V352F713",
+  "cpuCode": "00429",
+  "ramInfo": "MICRON 8GB DDR4 3200MHz 8GB *2\nS802C0F1926227ACA20\nS802C0F1926227ACBAB",
+  "ssdInfo": "MT 512GB M.2 | PN:MTFDKBA512QFM",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-08 15:20:53",
+  "originalNames": [
+    "cap_cpu_20261008_152038_498.jpg",
+    "cap_host_20261008_151748_083.jpg",
+    "cap_ram_20261008_151547_277.jpg",
+    "cap_ram_20261008_151608_311.jpg",
+    "cap_ssd_20261008_151717_739.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261008-152053_1.jpg",
+      "size": 487647,
+      "sha256": "db0a2b8b05eb97d0e5a490e926928b06ec589858368c46497d8ac0b7eadbd7a2"
+    },
+    {
+      "type": "host",
+      "name": "host_20261008-152053_1.jpg",
+      "size": 762092,
+      "sha256": "d2e198af7f53cd6767c2fbc720336c6179f0c834707b0001bd11b1288fb5738b"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261008-152053_1.jpg",
+      "size": 820830,
+      "sha256": "a8f912f2cc5eeeea82ecf85a833df0f16040c07e1646958376789c6f3e2e446d"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261008-152053_2.jpg",
+      "size": 1069617,
+      "sha256": "f79a7eb7f6636e13b607b662daf28a73e7cfffcf0ecd6415196c85f2993e0c33"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261008-152053_1.jpg",
+      "size": 810717,
+      "sha256": "8cdbf3c07aa69a0c29af8b2ccc31edc7d0ea336a8f669661ab1acf1b5b12c17c"
+    }
+  ],
+  "editedAt": "2026-10-13 17:50:35",
+  "vendor": ""
+}

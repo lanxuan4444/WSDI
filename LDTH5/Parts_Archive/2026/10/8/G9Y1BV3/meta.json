@@ -1,0 +1,47 @@
+{
+  "sn": "G9Y1BV3",
+  "machineModel": "Vostro 3020 SFF",
+  "cpuModel": "I5-13400",
+  "cpuBatch": "V352I034",
+  "cpuCode": "04465",
+  "ramInfo": "SAMSUNG PC4 3200MHz *2\nTOCS00031544FF479E\nT0L60003094465F828",
+  "ssdInfo": "SAMSUNG 512GB NVMe | SN:S509NFOMC65742 | PN:MZ9LQ512HALU-000D1",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-08 14:58:16",
+  "originalNames": [
+    "cap_cpu_20261008_145208_241.jpg",
+    "cap_host_20261008_145749_542.jpg",
+    "cap_ram_20261008_145701_475.jpg",
+    "cap_ssd_20261008_145718_944.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261008-145816_1.jpg",
+      "size": 500834,
+      "sha256": "97a11e21e97043511739618a13e6d7331932ca38c5fc9aa66ff504e5ac5abe0e"
+    },
+    {
+      "type": "host",
+      "name": "host_20261008-145816_1.jpg",
+      "size": 586331,
+      "sha256": "fb631482abbbe101749cfd1ef554a8b1758dc9acc1c57e631c81db49407a43dc"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261008-145816_1.jpg",
+      "size": 797043,
+      "sha256": "123ff58d15c17eea698e652e5ff2dac5cc29a43b13f373012c5e4bc5aad3063d"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261008-145816_1.jpg",
+      "size": 715442,
+      "sha256": "d7f78cfd1b508b808f5d63e9c7c770076c6fefaab18dafa455ea23b05fb97391"
+    }
+  ],
+  "editedAt": "2026-10-13 17:46:25",
+  "vendor": ""
+}

@@ -1,9 +1,12 @@
 ﻿<#
-WSDI Client Core v5.0
+WSDI Client Core v5.1
 新流程（不依赖SDI日志）：
   1. 下载 SDI 便捷版 + 7z + 解压
-  2. 用 WMI 直接获取本机所有设备 HWID
-  3. 上传 HWID 到服务器 → 服务器用 .bin 索引精确匹配
+  2. 用 WMI 直接获取本机所有设备 HWID（含正常设备，带 is_problem 标志）
+  3. 上传到服务器 → 服务器用 .bin 索引精确匹配：
+     - 黄叹号设备 / 微软通用驱动设备(基本显示适配器、Generic Bluetooth
+       Radio 等) → 必需安装
+     - 已装正常驱动的设备 → 可选更新（用户自行选择）
   4. 下载匹配到的 .7z + .bin
   5. SDI 正常启动，用户点击安装
 #>
@@ -389,28 +392,36 @@ try {
         $baseHwid = Get-BaseHwid $hwid
         if (!$baseHwid) { continue }
 
-        if ($current % 25 -eq 0 -or $current -eq $totalCount) {
+        if ($current % 50 -eq 0 -or $current -eq $totalCount) {
             Write-Info "扫描设备 ($current/$totalCount)..."
         }
 
-        # Only include devices with real yellow-bang: ConfigManagerErrorCode != 0
         $errCode = $dev.ConfigManagerErrorCode
-        if ($errCode -eq 0) { continue }
-
         $name = if ($dev.Name) { $dev.Name } else { $dev.Description }
-        $problemCount++
+        $isProblem = ($errCode -ne 0)
+
+        # 正常设备（无黄叹号）跳过纯虚拟总线（SWD\ / ROOT\），
+        # 它们不对应任何驱动包。其余真实设备全部上传：
+        # 服务端会把"黄叹号 / 微软通用驱动(基本显示适配器、Generic
+        # Bluetooth Radio 等)"归为必需，把已装正常驱动的归为可选更新。
+        if (-not $isProblem) {
+            $pfx = $baseHwid.ToUpper()
+            if ($pfx.StartsWith('SWD\') -or $pfx.StartsWith('ROOT\')) { continue }
+        }
+
+        if ($isProblem) { $problemCount++ }
 
         $devObj = @{
             Name = $name
             Hwids = @($baseHwid)
-            IsProblem = $true
+            IsProblem = $isProblem
             ErrorCode = $errCode
             Status = $dev.Status
         }
         $allDevices += $devObj
         $allHwids += $baseHwid
     }
-    Write-OK "找到 $problemCount 个黄色感叹号设备 (共扫描 $totalCount 个 PnP 设备)"
+    Write-OK "黄色感叹号设备: $problemCount 个 | 上传设备: $($allDevices.Count) 个 (含正常设备, 用于检测可更新驱动)"
 }
 catch {
     Write-Err "WMI 查询失败，尝试 Get-PnpDevice + Get-PnpDeviceProperty..."
@@ -431,23 +442,35 @@ catch {
             $hwid = "$prefix\$($parts[1])"
             $baseHwid = Get-BaseHwid $hwid
 
-            # Read DEVPKEY_Device_ProblemCode (numeric, excludes phantom devices)
-            $probProp = Get-PnpDeviceProperty -InstanceId $instId -KeyName 'DEVPKEY_Device_ProblemCode' -ErrorAction SilentlyContinue
+            # phantom（已拔掉的历史设备）Status 为 Unknown，直接跳过
+            if ($dev.Status -eq 'Unknown') { continue }
+
+            # Read DEVPKEY_Device_ProblemCode (numeric, excludes phantom devices).
+            # 只有状态异常的设备才查（避免对 300+ 设备逐个 WMI 查询拖慢速度）
             $errCode = 0
-            if ($probProp -and $probProp.Data) { $errCode = [int]$probProp.Data }
-            if ($errCode -eq 0) { continue }
+            if ($dev.Status -and $dev.Status -ne 'OK') {
+                $probProp = Get-PnpDeviceProperty -InstanceId $instId -KeyName 'DEVPKEY_Device_ProblemCode' -ErrorAction SilentlyContinue
+                if ($probProp -and $probProp.Data) { $errCode = [int]$probProp.Data }
+            }
+            $isProblem = ($errCode -ne 0)
+
+            # 正常设备跳过纯虚拟总线（SWD\ / ROOT\）
+            if (-not $isProblem) {
+                $pfx = $baseHwid.ToUpper()
+                if ($pfx.StartsWith('SWD\') -or $pfx.StartsWith('ROOT\')) { continue }
+            }
 
             $devObj = @{
                 Name = $dev.FriendlyName
                 Hwids = @($baseHwid)
-                IsProblem = $true
+                IsProblem = $isProblem
                 ErrorCode = $errCode
                 Status = $dev.Status
             }
             $allDevices += $devObj
             $allHwids += $baseHwid
         }
-        Write-OK "获取到 $($allDevices.Count) 个需要驱动的设备"
+        Write-OK "获取到 $($allDevices.Count) 个设备 (含正常设备, 用于检测可更新驱动)"
     }
     catch {
         Write-Err "设备枚举失败: $($_.Exception.Message)"
@@ -512,6 +535,9 @@ if ($response.drivers) {
     Write-Host "  缺失驱动 (必需安装)" -ForegroundColor Cyan
     Write-Host "============================================" -ForegroundColor Cyan
     Write-Host ""
+    if ($response.diagnostics -and $response.diagnostics.generic_devices -gt 0) {
+        Write-Host ("  其中 {0} 个设备在用微软通用驱动(基本显示适配器/通用蓝牙等), 已按缺失处理" -f $response.diagnostics.generic_devices) -ForegroundColor DarkYellow
+    }
     $idx = 0
     foreach ($drv in $response.drivers) {
         $idx++

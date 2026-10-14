@@ -1,0 +1,61 @@
+{
+  "sn": "GM137KVX",
+  "machineModel": "ThinkCentre M90a Gen 5-A122",
+  "cpuModel": "I5-14500",
+  "cpuBatch": "V527D686",
+  "cpuCode": "03937",
+  "ramInfo": "SAMSUNG 16GB DDR5 5600BMHz SN:80CE02244241A2B85F",
+  "ssdInfo": "512GB NVMe | PN:YMSS2CB06D25MC | SN:YMA5512RA2504202DK",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "主机批号: GMNO55823009",
+  "uploadedAt": "2026-10-13 15:43:59",
+  "originalNames": [
+    "cap_cpu_20261013_154029_688.jpg",
+    "cap_host_20261013_153938_854.jpg",
+    "cap_host_20261013_153949_155.jpg",
+    "cap_ram_20261013_154059_799.jpg",
+    "cap_ram_20261013_154108_817.jpg",
+    "cap_ssd_20261013_154229_416.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261013-154359_1.jpg",
+      "size": 494246,
+      "sha256": "8f95b3cde61bec765765cae73cbf8e97394e8318be45184a4da43251f22ada8a"
+    },
+    {
+      "type": "host",
+      "name": "host_20261013-154359_1.jpg",
+      "size": 691279,
+      "sha256": "82aabbe69401445a53398bb87ca10c5ca8a4a481d8269d7de5e208542c44c40e"
+    },
+    {
+      "type": "host",
+      "name": "host_20261013-154359_2.jpg",
+      "size": 607777,
+      "sha256": "c3d7626712791b046022330e10800a1d1f4a050692dfc420d72d7c212cb510d4"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261013-154359_1.jpg",
+      "size": 786913,
+      "sha256": "8789ab4d52a1fbf89cb07e7fddca439f3821b86e0c9aefc2d276c06e5db35fd7"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261013-154359_2.jpg",
+      "size": 766955,
+      "sha256": "3c2d6c8c829fd5c14891a017c98a1a575045233db5886f457ddac2664c01aa9c"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261013-154359_1.jpg",
+      "size": 755297,
+      "sha256": "73e34e933ad193385f942bd24de9c734e9ad20af0853b5f40a7432b02334cc97"
+    }
+  ],
+  "editedAt": "2026-10-13 17:54:34"
+}

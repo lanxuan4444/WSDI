@@ -1,0 +1,47 @@
+{
+  "sn": "HC20PW3",
+  "machineModel": "Inspiron 3910",
+  "cpuModel": "I5-12400",
+  "cpuBatch": "X305G546",
+  "cpuCode": "02941",
+  "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F201527802E75",
+  "ssdInfo": "TOSHIBA 1.0TB SATA HDD | S/N 62KUN91MS 8TJ",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-12 10:30:35",
+  "originalNames": [
+    "cap_cpu_20261012_102910_799.jpg",
+    "cap_host_20261012_102616_631.jpg",
+    "cap_ram_20261012_102638_120.jpg",
+    "cap_ssd_20261012_102645_512.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-103035_1.jpg",
+      "size": 403634,
+      "sha256": "d57bd74703720c1ed3880f76fe165a1a0a7c1631c12d7127b73d2b6f373e6f11"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-103035_1.jpg",
+      "size": 744531,
+      "sha256": "8048fe8086fe1ba283655fb7cc51aefe3dad62b68cc07b714ca7387e28586aa4"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261012-103035_1.jpg",
+      "size": 582555,
+      "sha256": "d41b485f8ca8dae4fe976263ecac9ce9042785aabd41b996799f58a71d9003c0"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261012-103035_1.jpg",
+      "size": 627370,
+      "sha256": "c9069dd1becdfc43c779b9f882b42d8ccc8970adf7f12558292cb40ecc72feb0"
+    }
+  ],
+  "editedAt": "2026-10-13 14:11:34"
+}

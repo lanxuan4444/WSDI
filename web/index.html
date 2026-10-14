@@ -474,6 +474,21 @@
             white-space: nowrap;
         }
 
+        /* 可选更新条目 */
+        .driver-item.opt {
+            border: 1px dashed rgba(210, 153, 29, 0.35);
+            background: rgba(210, 153, 29, 0.04);
+        }
+
+        .driver-item.opt:hover {
+            border-color: rgba(210, 153, 29, 0.6);
+        }
+
+        .driver-cat.opt {
+            background: rgba(210, 153, 29, 0.15);
+            color: var(--yellow);
+        }
+
         .driver-name {
             color: var(--text);
             font-size: 14px;
@@ -1614,11 +1629,15 @@ function showResult(msg, success) {
 // 算法与 JKGuard App 的 UnlockAlgorithm 完全一致：
 //   input = 配对密钥(seed) + 解锁码(unlockCode)
 //   hash  = SHA256(input)
-//   取 hash 前 8 字节按大端拼成 64 位无符号整数
+//   取 hash 前 8 字节按大端拼成 64 位整数
 //   密码   = (num mod 1000000) 格式化 6 位补零
 //
+// 关键：Android 端用 Kotlin Long（有符号 64 位）保存这 8 字节，因此网页端
+// 也要按有符号 64 位解释。若直接当无符号 BigInt 取模，当 hash[0] >= 0x80
+// 时结果会与 Android 不一致。
+//
 // 注意：不使用 crypto.subtle（Web Crypto），因为它在 HTTP 非安全上下文下
-// 为 undefined，会报 "Cannot read properties of undefined (reading 'digest')"。
+// 为 undefined，会报 "Cannot read properties of undefined (reading 'digest')".
 // 这里内嵌纯 JS 标准 SHA-256 实现，任意环境下均可运行。
 
 /* SHA-256 纯 JS 实现（基于公共领域代码实现标准算法） */
@@ -1726,12 +1745,22 @@ var sha256 = (function () {
 function computeUnlockPassword(seed, unlockCode) {
     var input = seed + unlockCode;
     var hash = sha256(input);   // Uint8Array(32)
-    // 取前 8 字节，按大端拼成 64 位无符号整数（必须用 BigInt 避免精度丢失）
+    // 取前 8 字节，按大端拼成 64 位整数（必须用 BigInt 避免精度丢失）
     var num = 0n;
     for (var i = 0; i < 8; i++) {
         num = (num << 8n) | BigInt(hash[i]);
     }
-    num = num % 1000000n;
+    // 与 Android Kotlin 的 Long 行为一致：按有符号 64 位解释
+    if (typeof BigInt.asIntN === 'function') {
+        num = BigInt.asIntN(64, num);
+    } else {
+        var TWO63 = (1n << 63n);
+        var TWO64 = (1n << 64n);
+        if (num >= TWO63) num -= TWO64;
+    }
+    // Kotlin 的 Math.floorMod：结果始终非负
+    var M = 1000000n;
+    num = ((num % M) + M) % M;
     return String(num).padStart(6, '0');
 }
 
@@ -1822,8 +1851,8 @@ document.getElementById('btnManualAnalyze').addEventListener('click', async () =
         return;
     }
 
-    const hwids = parseHwids(text);
-    if (hwids.length === 0) {
+    const parsed = parseHwids(text);
+    if (parsed.hwids.length === 0) {
         showToast('未能解析到硬件信息，请检查格式', 'error');
         return;
     }
@@ -1835,10 +1864,12 @@ document.getElementById('btnManualAnalyze').addEventListener('click', async () =
         const resp = await fetch(`${API_BASE}/api/analyze`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ hwids })
+            // devices 带 description，服务端可据此识别微软通用驱动设备
+            // （基本显示适配器 / Generic Bluetooth Radio 等）
+            body: JSON.stringify({ hwids: parsed.hwids, devices: parsed.devices })
         });
         const data = await resp.json();
-        displayResults(data, hwids);
+        displayResults(data, parsed.hwids);
         if (data.matched) {
             showToast(`分析完成！匹配到 ${data.drivers.length} 个驱动包`, 'success');
         } else {
@@ -1853,37 +1884,48 @@ document.getElementById('btnManualAnalyze').addEventListener('click', async () =
 
 // ============ 解析硬件 ID ============
 // 支持从 pnputil 输出 / hardware.json / 纯 HWID 列表中提取 Instance ID
+// 同时解析 pnputil 的 Device Description，构造 devices[] 供服务端
+// 识别"微软通用驱动设备"（如"微软基本显示适配器"）
 function parseHwids(text) {
     const hwids = [];
+    const devices = [];
     const lines = text.split('\n');
-    let inJson = false;
     try {
         const obj = JSON.parse(text);
         if (Array.isArray(obj)) {
             obj.forEach(d => {
-                if (typeof d === 'string') hwids.push(d);
-                else if (d && d.hwid) hwids.push(d.hwid);
+                if (typeof d === 'string') { hwids.push(d); devices.push({ hwid: d, description: '', is_problem: true }); }
+                else if (d && d.hwid) { hwids.push(d.hwid); devices.push({ hwid: d.hwid, description: d.description || d.name || '', is_problem: true }); }
             });
-            return hwids;
         } else if (obj && obj.hwids) {
-            return obj.hwids;
+            (obj.hwids || []).forEach(h => { hwids.push(h); devices.push({ hwid: h, description: '', is_problem: true }); });
         }
     } catch (e) { /* not json, fall through */ }
 
-    for (const line of lines) {
-        const trimmed = line.trim();
-        // pnputil 格式: "Instance ID: PCI\VEN_..."
-        if (/^Instance ID:/i.test(trimmed)) {
-            const v = trimmed.replace(/^Instance ID:/i, '').trim();
-            if (v) hwids.push(v);
-        }
-        // 纯 HWID 行: 含反斜杠且像硬件 ID
-        else if (/^[A-Za-z0-9_]+\\/.test(trimmed)) {
-            hwids.push(trimmed);
+    if (hwids.length === 0) {
+        let lastDesc = '';
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (/^Device Description:/i.test(trimmed)) {
+                lastDesc = trimmed.replace(/^Device Description:/i, '').trim();
+            }
+            // pnputil 格式: "Instance ID: PCI\VEN_..."
+            else if (/^Instance ID:/i.test(trimmed)) {
+                const v = trimmed.replace(/^Instance ID:/i, '').trim();
+                if (v) { hwids.push(v); devices.push({ hwid: v, description: lastDesc || '', is_problem: true }); }
+            }
+            // 纯 HWID 行: 含反斜杠且像硬件 ID
+            else if (/^[A-Za-z0-9_]+\\/.test(trimmed)) {
+                hwids.push(trimmed);
+                devices.push({ hwid: trimmed, description: lastDesc || '', is_problem: true });
+            }
         }
     }
     // 去重
-    return [...new Set(hwids)];
+    const unique = [...new Set(hwids)];
+    const devMap = {};
+    devices.forEach(d => { if (d && d.hwid && !devMap[d.hwid]) devMap[d.hwid] = d; });
+    return { hwids: unique, devices: unique.map(h => devMap[h] || { hwid: h, description: '', is_problem: true }) };
 }
 
 // ============ 显示结果 ============
@@ -1897,11 +1939,22 @@ function displayResults(data, hwids) {
     panel.classList.add('active');
 
     const matchedCount = data.drivers ? data.drivers.length : 0;
+    const optCount = data.optional_drivers ? data.optional_drivers.length : 0;
     title.textContent = `提交 ${hwids.length} 个设备，匹配 ${matchedCount} 个驱动包`;
     summary.innerHTML = `
         <span class="summary-badge">驱动包: ${matchedCount}</span>
         <span class="summary-badge">总大小: ~${data.total_size_mb || 0} MB</span>
+        ${optCount ? `<span class="summary-badge">可选更新: ${optCount} 个包 (~${data.optional_size_mb || 0} MB)</span>` : ''}
     `;
+
+    if (data.diagnostics && data.diagnostics.generic_devices > 0) {
+        const gLine = document.createElement('div');
+        gLine.className = 'unmatched-item';
+        gLine.style.marginBottom = '10px';
+        gLine.innerHTML = `<b style="color:var(--yellow)">检测到 ${data.diagnostics.generic_devices} 个设备正在使用微软通用驱动</b><br>` +
+            `（如"微软基本显示适配器"、"Generic Bluetooth Radio"等）— 这些设备没有黄色感叹号，但等同未安装专用驱动，已按缺失驱动处理。`;
+        list.appendChild(gLine);
+    }
 
     if (data.gpu_notices && data.gpu_notices.length) {
         const gpuBox = document.createElement('div');
@@ -1933,6 +1986,38 @@ function displayResults(data, hwids) {
                 <span class="driver-size">${drv.size_mb} MB</span>
                 <a href="${dlUrl}" class="btn-dl" target="_blank">下载包</a>
                 ${idxUrl ? `<a href="${idxUrl}" class="btn-dl" target="_blank">索引</a>` : ''}
+            `;
+            list.appendChild(item);
+        });
+    }
+
+    // 可选更新（设备已能正常工作，但服务器索引中有对应驱动包）
+    if (optCount > 0) {
+        const optHeader = document.createElement('div');
+        optHeader.className = 'unmatched';
+        optHeader.style.cssText = 'margin-top:16px;border-color:rgba(210,153,29,0.35);background:rgba(210,153,29,0.05);';
+        optHeader.innerHTML = `<h4 style="color:var(--yellow)">可选更新 (${optCount} 个包，自行决定是否下载)</h4>` +
+            `<div class="unmatched-item">以下设备的驱动已能正常工作，服务器索引中存在对应驱动包（可能版本更新）。</div>`;
+        list.appendChild(optHeader);
+        data.optional_drivers.forEach(drv => {
+            const item = document.createElement('div');
+            item.className = 'driver-item opt';
+            const dlUrl = drv.url || `${API_BASE}/api/download_pkg/${encodeURIComponent(drv.pkg)}`;
+            const idxUrl = drv.index_url || (drv.index
+                ? `${API_BASE}/api/download_index/${encodeURIComponent(drv.index)}`
+                : '');
+            const devNames = (drv.for_devices && drv.for_devices.length)
+                ? drv.for_devices.slice(0, 3).join('、') + (drv.for_devices.length > 3 ? ` 等 ${drv.for_devices.length} 个设备` : '')
+                : '';
+            item.innerHTML = `
+                <div class="driver-info">
+                    <span class="driver-cat opt">可选</span>
+                    <span class="driver-name">${drv.pkg}</span>
+                </div>
+                <span class="driver-size">${drv.size_mb} MB</span>
+                <a href="${dlUrl}" class="btn-dl" target="_blank">下载包</a>
+                ${idxUrl ? `<a href="${idxUrl}" class="btn-dl" target="_blank">索引</a>` : ''}
+                ${devNames ? `<span class="driver-size" style="flex-basis:100%;white-space:normal;font-size:12px;">设备: ${devNames}</span>` : ''}
             `;
             list.appendChild(item);
         });

@@ -46,5 +46,17 @@
         "sha256": ""
       }
     ]
+  },
+  "TESTDOC01": {
+    "folder": "OSCA_20261002-024939_TESTDOC01",
+    "uploadedAt": "2026-10-02 02:49:39",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261002-024939.jpg",
+        "size": 122,
+        "sha256": ""
+      }
+    ]
   }
 }

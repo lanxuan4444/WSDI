@@ -1,0 +1,47 @@
+{
+  "sn": "GM1GB370",
+  "machineModel": "ThinkCentre M90a Pro Gen6",
+  "cpuModel": "ULTRA 3 205",
+  "cpuBatch": "V610G806",
+  "cpuCode": "01628",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "主机批号: GM6056814009",
+  "uploadedAt": "2026-10-12 17:40:22",
+  "originalNames": [
+    "cap_cpu_20261012_173312_409.jpg",
+    "cap_cpu_20261012_173332_612.jpg",
+    "cap_host_20261012_173229_359.jpg",
+    "cap_host_20261012_174008_438.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-174022_1.jpg",
+      "size": 482682,
+      "sha256": "c95174bdc5f79e4a26517469113afb5dfcc1e1dd434c1e624a08f89cd0ff5469"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261012-174022_2.jpg",
+      "size": 488566,
+      "sha256": "dc48b8967f2435d2405e4fcc148b74f7fb2cb29faa869f4e32fca1d8ee1286f6"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-174022_1.jpg",
+      "size": 622807,
+      "sha256": "4e38702e1d35d9149fecd5ebab58c752c8533baa35fe28c2eaecdf4e91506bd2"
+    },
+    {
+      "type": "host",
+      "name": "host_20261012-174022_2.jpg",
+      "size": 709762,
+      "sha256": "9785d327b4c9eb149e1e77caeccc908201c265a8881d55364969718d669f91a9"
+    }
+  ],
+  "editedAt": "2026-10-12 17:40:55"
+}

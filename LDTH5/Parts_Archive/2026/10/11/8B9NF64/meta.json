@@ -1,0 +1,61 @@
+{
+  "sn": "8B9NF64",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-12100",
+  "cpuBatch": "X437K273",
+  "cpuCode": "02362",
+  "ramInfo": "SAMSUNG 8GB DDR5 5600MHz\n80CE02241339C0038E",
+  "ssdInfo": "KIOXIA 512 NVMe\nSN 8ECPS774Z0Z2",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-11 16:53:09",
+  "originalNames": [
+    "cap_cpu_20261011_165043_838.jpg",
+    "cap_cpu_20261011_165059_509.jpg",
+    "cap_host_20261011_164843_448.jpg",
+    "cap_ram_20261011_165138_795.jpg",
+    "cap_ssd_20261011_165157_608.jpg",
+    "cap_ssd_20261011_165233_098.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-165309_1.jpg",
+      "size": 493220,
+      "sha256": "4716834066f30c8b4b0e1d8657dee655f852735742ed356d646ef1725d3315a2"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-165309_2.jpg",
+      "size": 494289,
+      "sha256": "81ae886cd784225d7bee63c45169e1431fc227884b3e4ca75447871f7bef00fe"
+    },
+    {
+      "type": "host",
+      "name": "host_20261011-165309_1.jpg",
+      "size": 719063,
+      "sha256": "98b3b23dca0b04e02b7573027a019675fb288804561717a8d0024e150315f181"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261011-165309_1.jpg",
+      "size": 605781,
+      "sha256": "11451682b97da52a4ab05f8afb4d50b3f3ec096abdbdbbbc83e9998b51113e9c"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-165309_1.jpg",
+      "size": 622613,
+      "sha256": "992c05c6b4e302a70dfe8fa7bf5c6aeed4189687501105b712d64063473d61d5"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-165309_2.jpg",
+      "size": 604452,
+      "sha256": "ba8e00ffa1959b78ea49bb05caad5bedf92fce551b2612a9a9f688b5b3aa60fd"
+    }
+  ],
+  "editedAt": "2026-10-13 17:32:25"
+}

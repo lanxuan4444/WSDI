@@ -1,0 +1,54 @@
+{
+  "sn": "3SFHS04",
+  "machineModel": "Inspiron 3030S",
+  "cpuModel": "I5-14400",
+  "cpuBatch": "V343H523",
+  "cpuCode": "01971",
+  "ramInfo": "SAMSUNG 16G DDR5 5600BMHz\n80CE01231804AAB817",
+  "ssdInfo": "SK HYNIX NVMe | PN:06NRX4\nP41PL NVME SOLIDIGM 512G\nCN-06NRX4-PESD6-38U-072P-A01",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-11 16:43:07",
+  "originalNames": [
+    "cap_cpu_20261011_164125_002.jpg",
+    "cap_cpu_20261011_164139_425.jpg",
+    "cap_host_20261011_164053_865.jpg",
+    "cap_ram_20261011_164238_889.jpg",
+    "cap_ssd_20261011_164320_173.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-164307_1.jpg",
+      "size": 466416,
+      "sha256": "4e3b76dc3ba73a9c58fd9965000cce193ba63dcb3640054a9dd7b955221098e0"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-164307_2.jpg",
+      "size": 502906,
+      "sha256": "cd7e45b88038a097c8f509ac175ceb10c358bf16bc8efe3776d3fa3c66a1e856"
+    },
+    {
+      "type": "host",
+      "name": "host_20261011-164307_1.jpg",
+      "size": 628023,
+      "sha256": "b428b83ad8d404e7efd5c9622006cc836e1ead9980ef645d4245b8ce0de5f61f"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261011-164307_1.jpg",
+      "size": 712990,
+      "sha256": "da1677b2a2e90777d5440c54a37325f9baf394342695c520de155c7a8b97c2f9"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-164307_1.jpg",
+      "size": 616609,
+      "sha256": "480262a962906e4def161d3f3570240d5109edfc8562c22f26c9ec64597f79a6"
+    }
+  ],
+  "editedAt": "2026-10-13 17:34:04"
+}

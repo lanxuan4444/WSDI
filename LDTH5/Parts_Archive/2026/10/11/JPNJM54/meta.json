@@ -1,0 +1,47 @@
+{
+  "sn": "JPNJM54",
+  "machineModel": "Vostro 3030S",
+  "cpuModel": "I3-12100",
+  "cpuBatch": "X232K217",
+  "cpuCode": "02052",
+  "ramInfo": "SK HYNIX 8GB DDR5 4800MHz | PN:HMCG66MEBUAO81N | SN:80ADO12220554124EF",
+  "ssdInfo": "KIOXIA 512GB NVMe | SN:802PD3MPQ2D1",
+  "nicInfo": "",
+  "otherInfo": "",
+  "note": "",
+  "uploadedAt": "2026-10-11 15:38:26",
+  "originalNames": [
+    "cap_cpu_20261011_153712_350.jpg",
+    "cap_host_20261011_153651_919.jpg",
+    "cap_ram_20261011_153747_473.jpg",
+    "cap_ssd_20261011_153845_702.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261011-153826_1.jpg",
+      "size": 443638,
+      "sha256": "abff68ba642243c7856488aab09240d25b8c5c1b0917ff44043355a4682de18e"
+    },
+    {
+      "type": "host",
+      "name": "host_20261011-153826_1.jpg",
+      "size": 638814,
+      "sha256": "3030b34e9e7a68fabfdf6af0c389b4f06779b8803a3b914d357bfff6e0c8e1c0"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261011-153826_1.jpg",
+      "size": 690109,
+      "sha256": "ff72e3f6acf9c727525de18ad4a63e603c99704fc5a7624467630388413b1fc0"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261011-153826_1.jpg",
+      "size": 685306,
+      "sha256": "7692425dc407731e263cf1871d7e53f849523a6088d13de3774224dc539e5a42"
+    }
+  ],
+  "vendor": "建钰",
+  "editedAt": "2026-10-13 17:37:49"
+}
