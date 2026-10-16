@@ -1,0 +1,47 @@
+{
+  "sn": "YLX5Z3EX",
+  "machineModel": "ThinkCentre neo P600IRH-02",
+  "cpuModel": "板载CPU",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "8SSM31T97737R1AA61H02MT\n16GB DDR5 4800MHz  SODIMM",
+  "ssdInfo": "PC41Q 512GB\nPCle Gen4 x4\nSN:YMA6512JA25525046C",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "主机批号: YLNOS6206W10",
+  "uploadedAt": "2026-10-15 14:40:20",
+  "originalNames": [
+    "cap_host_20261015_143844_870.jpg",
+    "cap_host_20261015_143855_746.jpg",
+    "cap_ram_20261015_143942_671.jpg",
+    "cap_ssd_20261015_143956_140.jpg"
+  ],
+  "files": [
+    {
+      "type": "host",
+      "name": "host_20261015-144020_1.jpg",
+      "size": 765375,
+      "sha256": "7fbf78440cc7905a8164ee9fbc77876d70d0bddcff40fdc77be1a7fede72ef42"
+    },
+    {
+      "type": "host",
+      "name": "host_20261015-144020_2.jpg",
+      "size": 735038,
+      "sha256": "1b1599b967638cc78af608b1f0489536e3f1597d31727e54f7b204ce3d5f4c79"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261015-144020_1.jpg",
+      "size": 712178,
+      "sha256": "ce52a97e33e4b8ca59c204401b48e7524ee1114e6b58439b6b4f965043ad0164"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261015-144020_1.jpg",
+      "size": 590915,
+      "sha256": "e03cec193e5ecc80e1aa68027b104b2340a54820d063a7c270bf2d0dda6603e4"
+    }
+  ],
+  "editedAt": "2026-10-15 15:52:25"
+}

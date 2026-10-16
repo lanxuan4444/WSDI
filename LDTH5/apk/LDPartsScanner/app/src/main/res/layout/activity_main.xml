@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:singleLine="true"
-                android:text="LDParts v1.21"
+                android:text="LDParts v1.22"
                 android:textColor="@color/text_main"
                 android:textSize="20sp"
                 android:textStyle="bold" />

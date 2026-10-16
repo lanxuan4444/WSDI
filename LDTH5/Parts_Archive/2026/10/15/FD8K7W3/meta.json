@@ -1,0 +1,40 @@
+{
+  "sn": "FD8K7W3",
+  "machineModel": "3000MT",
+  "cpuModel": "I3-12100",
+  "cpuBatch": "X248K453",
+  "cpuCode": "03451",
+  "ramInfo": "8g 台式机DDR4\nKingston\nK9CXF2-MIF 2492593C",
+  "ssdInfo": "1TBHDD\nWD10EZEX1TB\nSATA 6Gb/s\nS/N:WCC3F2088424MDL:WD1OEZEX-0OWN4AO",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "戴尔",
+  "note": "",
+  "uploadedAt": "2026-10-15 14:35:50",
+  "originalNames": [
+    "IMG_20261015_143650_6608.jpg",
+    "IMG_20261015_143707_6609.jpg",
+    "IMG_20261015_143713_6610.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261015-152840_w1.jpg",
+      "size": 476596,
+      "sha256": "0a711dc232cc717c0c859c825546b3a095452f5dc4d32e13a1815144583b86cc"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261015-152846_w1.jpg",
+      "size": 237751,
+      "sha256": "b4f5c5442ad1db683c91a0d7214a65745294b3df4368f27f90d3d89e7f7aadd5"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261015-152855_w1.jpg",
+      "size": 402933,
+      "sha256": "3b594f471f039826fb4d8927c15570a57c7cd2d8c554c602cecb4988fe164b61"
+    }
+  ],
+  "editedAt": "2026-10-15 15:36:01"
+}

@@ -1,0 +1,40 @@
+{
+  "sn": "YLXSZ3CD",
+  "machineModel": "ThinkCentre neo P600IRH-02",
+  "cpuModel": "板载CPU",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "RAMAXEL 16GB PC5-4800B-SA0-1311-XT\nDDR5 SODIMM\n8SSM31T97737R1AA61J01PF",
+  "ssdInfo": "PC41Q-512GB\nFW:LN110344\nSN:YMA6512JA255250HRM",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "主机批号: YWOS6206W10",
+  "uploadedAt": "2026-10-15 11:46:34",
+  "originalNames": [
+    "pick_1792035911238.jpg",
+    "pick_1792035948951.jpg",
+    "f58176d17d546cef0029593616ba0748_origin(1).jpg"
+  ],
+  "files": [
+    {
+      "type": "host",
+      "name": "host_20261015-114634_1.jpg",
+      "size": 371128,
+      "sha256": "11076b0d35195d50dc2eb3ee52d1dc28ca09279d8f33aa620479cb92a77736ac"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261015-114634_1.jpg",
+      "size": 371128,
+      "sha256": "11076b0d35195d50dc2eb3ee52d1dc28ca09279d8f33aa620479cb92a77736ac"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261015-115410_w1.jpg",
+      "size": 366734,
+      "sha256": "5710df265964136debfbe2a32b989c69e651d1cf85dfdf1a5fb05a07f91fd093"
+    }
+  ],
+  "editedAt": "2026-10-15 15:35:30"
+}

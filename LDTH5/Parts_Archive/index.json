@@ -73,8 +73,7 @@
         "size": 616609,
         "sha256": "480262a962906e4def161d3f3570240d5109edfc8562c22f26c9ec64597f79a6"
       }
-    ],
-    "editedAt": "2026-10-13 17:34:04"
+    ]
   },
   "2026/10/11/5NXDP94": {
     "folder": "2026/10/11/5NXDP94",
@@ -174,8 +173,7 @@
         "size": 604452,
         "sha256": "ba8e00ffa1959b78ea49bb05caad5bedf92fce551b2612a9a9f688b5b3aa60fd"
       }
-    ],
-    "editedAt": "2026-10-13 17:32:25"
+    ]
   },
   "2026/10/11/976RFV3": {
     "folder": "2026/10/11/976RFV3",
@@ -216,8 +214,7 @@
         "size": 841693,
         "sha256": "0752b900e9c0e38eb79a9293709b4597024433b3489fc2d7c62a432ebdcb5edc"
       }
-    ],
-    "editedAt": "2026-10-13 17:36:01"
+    ]
   },
   "2026/10/11/JPNJM54": {
     "folder": "2026/10/11/JPNJM54",
@@ -258,8 +255,7 @@
         "size": 685306,
         "sha256": "7692425dc407731e263cf1871d7e53f849523a6088d13de3774224dc539e5a42"
       }
-    ],
-    "editedAt": "2026-10-13 17:37:49"
+    ]
   },
   "2026/10/2/1S13MNZE97CNWBO00JDS": {
     "folder": "2026/10/2/1S13MNZE97CNWBO00JDS",
@@ -346,8 +342,7 @@
         "size": 461097,
         "sha256": "f4719131be231f12e95801dd5eae73017bf822a0822232fd46d1111ee539e4d3"
       }
-    ],
-    "editedAt": "2026-10-13 17:42:58"
+    ]
   },
   "2026/10/7/YLX64SCF": {
     "folder": "2026/10/7/YLX64SCF",
@@ -417,8 +412,7 @@
         "size": 639137,
         "sha256": "7dd2872f3a40591d6ca2527ddea2a3fc3d64a03d9e999b824a97f2126a0a15e7"
       }
-    ],
-    "editedAt": "2026-10-13 17:44:51"
+    ]
   },
   "2026/10/8/5ZKJ7W3": {
     "folder": "2026/10/8/5ZKJ7W3",
@@ -465,8 +459,7 @@
         "size": 810717,
         "sha256": "8cdbf3c07aa69a0c29af8b2ccc31edc7d0ea336a8f669661ab1acf1b5b12c17c"
       }
-    ],
-    "editedAt": "2026-10-13 17:50:35"
+    ]
   },
   "2026/10/8/7FV5TJ4": {
     "folder": "2026/10/8/7FV5TJ4",
@@ -495,8 +488,7 @@
         "size": 705522,
         "sha256": "6177ff29cb56a79b094c586c1cc247114d8ddd99e704ac6d6d6fb64cfae7cf42"
       }
-    ],
-    "editedAt": "2026-10-13 17:49:09"
+    ]
   },
   "2026/10/8/G9Y1BV3": {
     "folder": "2026/10/8/G9Y1BV3",
@@ -537,8 +529,7 @@
         "size": 715442,
         "sha256": "d7f78cfd1b508b808f5d63e9c7c770076c6fefaab18dafa455ea23b05fb97391"
       }
-    ],
-    "editedAt": "2026-10-13 17:46:25"
+    ]
   },
   "2026/10/9/GM1DDHWJ": {
     "folder": "2026/10/9/GM1DDHWJ",
@@ -579,8 +570,7 @@
         "size": 608574,
         "sha256": "3dc0232083ac1162e794dd5f8fbdc9cfb7e2e70cb1957348af5a031490d97267"
       }
-    ],
-    "editedAt": "2026-10-13 17:48:26"
+    ]
   },
   "2026/9/29/J16Z144": {
     "folder": "2026/9/29/J16Z144",
@@ -709,8 +699,7 @@
         "size": 884717,
         "sha256": "40a6975230c30b0203147c2243210be7b8453501e11f5e624b82f32233ade5fd"
       }
-    ],
-    "editedAt": "2026-10-13 17:30:50"
+    ]
   },
   "2026/10/12/1KQR334": {
     "folder": "2026/10/12/1KQR334",
@@ -751,8 +740,7 @@
         "size": 649438,
         "sha256": "502e0e824445802688178a2c8f276501f639caa28c77e40e5b2adb898aa99b08"
       }
-    ],
-    "editedAt": "2026-10-13 17:25:35"
+    ]
   },
   "2026/10/12/HPT5F74": {
     "folder": "2026/10/12/HPT5F74",
@@ -1290,7 +1278,348 @@
         "size": 755297,
         "sha256": "73e34e933ad193385f942bd24de9c734e9ad20af0853b5f40a7432b02334cc97"
       }
+    ]
+  },
+  "2026/10/14/CHNBNY3": {
+    "folder": "2026/10/14/CHNBNY3",
+    "sn": "CHNBNY3",
+    "machineModel": "0ptiPlex 5000 Tower",
+    "cpuModel": "I5-12500",
+    "cpuBatch": "X325J958",
+    "cpuCode": "24793",
+    "ramInfo": "",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "无",
+    "note": "",
+    "uploadedAt": "2026-10-14 17:57:34",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-175734_1.jpg",
+        "size": 582657,
+        "sha256": "d8a16341aa26c89386f2934515a4c9f6bec3b9d590f17b18d3b4a14ea40c432b"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-175734_2.jpg",
+        "size": 586839,
+        "sha256": "ba672f607e5d34de8cb64c88481ffbcf5492bad4f05cfa338f52ec302b513df3"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-175734_3.jpg",
+        "size": 475062,
+        "sha256": "2a8ff1b78556c110eb93fff11da6130c66ec01b8918fbc8816c9bb0686077e0c"
+      },
+      {
+        "type": "host",
+        "name": "host_20261014-175734_1.jpg",
+        "size": 534413,
+        "sha256": "0163ccc3a0f4a32383cc25e05126648d1d3559818c494fbecf50267d2522cc9a"
+      }
+    ]
+  },
+  "2026/10/14/YLX63JP": {
+    "folder": "2026/10/14/YLX63JP",
+    "sn": "YLX63JP",
+    "machineModel": "扬天",
+    "cpuModel": "ULTRA 3 205",
+    "cpuBatch": "V607F996",
+    "cpuCode": "00356",
+    "ramInfo": "SK Hynix 16GB DDR5  5600B UDIMM\n80AD0124423859E609",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "",
+    "uploadedAt": "2026-10-14 18:05:10",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-180510_1.jpg",
+        "size": 434420,
+        "sha256": "15f407ef32e135fd43d70f3736ff78b60dae7dde9a15aaa7824f8fd9b1a9c007"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-180510_2.jpg",
+        "size": 488264,
+        "sha256": "7ee1b7c711393813745054628255cd938d0f3539f7a687303e67fb9b024332ff"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261014-180510_3.jpg",
+        "size": 484969,
+        "sha256": "edfa6db7d06e59246db1c65ae0ddccb08bcaf5e049ed6329a2d7d7e542758cd3"
+      },
+      {
+        "type": "host",
+        "name": "host_20261014-180510_1.jpg",
+        "size": 96677,
+        "sha256": "a82656232a5f585fc1378df8d97b8dd247c0c085b8b3f0bf55ae0da73ab1da52"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261014-180510_1.jpg",
+        "size": 158584,
+        "sha256": "ebff54d64b85783f190ddcd77d4262f171840e5e2a3d9bbdb78ae77589074e29"
+      }
+    ]
+  },
+  "2026/10/15/YUX5Z3D": {
+    "folder": "2026/10/15/YUX5Z3D",
+    "sn": "YLXSZ3CD",
+    "machineModel": "ThinkCentre neo P600IRH-02",
+    "cpuModel": "板载CPU",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "RAMAXEL 16GB PC5-4800B-SA0-1311-XT\nDDR5 SODIMM\n8SSM31T97737R1AA61J01PF",
+    "ssdInfo": "PC41Q-512GB\nFW:LN110344\nSN:YMA6512JA255250HRM",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "主机批号: YWOS6206W10",
+    "uploadedAt": "2026-10-15 11:46:34",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261015-114634_1.jpg",
+        "size": 371128,
+        "sha256": "11076b0d35195d50dc2eb3ee52d1dc28ca09279d8f33aa620479cb92a77736ac"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261015-114634_1.jpg",
+        "size": 371128,
+        "sha256": "11076b0d35195d50dc2eb3ee52d1dc28ca09279d8f33aa620479cb92a77736ac"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261015-115410_w1.jpg",
+        "size": 366734,
+        "sha256": "5710df265964136debfbe2a32b989c69e651d1cf85dfdf1a5fb05a07f91fd093"
+      }
+    ]
+  },
+  "2026/10/15/FD8K7W3": {
+    "folder": "2026/10/15/FD8K7W3",
+    "sn": "FD8K7W3",
+    "machineModel": "3000MT",
+    "cpuModel": "I3-12100",
+    "cpuBatch": "X248K453",
+    "cpuCode": "03451",
+    "ramInfo": "8g 台式机DDR4\nKingston\nK9CXF2-MIF 2492593C",
+    "ssdInfo": "1TBHDD\nWD10EZEX1TB\nSATA 6Gb/s\nS/N:WCC3F2088424MDL:WD1OEZEX-0OWN4AO",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "戴尔",
+    "note": "",
+    "uploadedAt": "2026-10-15 14:35:50",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261015-152840_w1.jpg",
+        "size": 476596,
+        "sha256": "0a711dc232cc717c0c859c825546b3a095452f5dc4d32e13a1815144583b86cc"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261015-152846_w1.jpg",
+        "size": 237751,
+        "sha256": "b4f5c5442ad1db683c91a0d7214a65745294b3df4368f27f90d3d89e7f7aadd5"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261015-152855_w1.jpg",
+        "size": 402933,
+        "sha256": "3b594f471f039826fb4d8927c15570a57c7cd2d8c554c602cecb4988fe164b61"
+      }
+    ]
+  },
+  "2026/10/15/YLX5Z3EX": {
+    "folder": "2026/10/15/YLX5Z3EX",
+    "sn": "YLX5Z3EX",
+    "machineModel": "ThinkCentre neo P600IRH-02",
+    "cpuModel": "板载CPU",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "8SSM31T97737R1AA61H02MT\n16GB DDR5 4800MHz  SODIMM",
+    "ssdInfo": "PC41Q 512GB\nPCle Gen4 x4\nSN:YMA6512JA25525046C",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "联想",
+    "note": "主机批号: YLNOS6206W10",
+    "uploadedAt": "2026-10-15 14:40:20",
+    "files": [
+      {
+        "type": "host",
+        "name": "host_20261015-144020_1.jpg",
+        "size": 765375,
+        "sha256": "7fbf78440cc7905a8164ee9fbc77876d70d0bddcff40fdc77be1a7fede72ef42"
+      },
+      {
+        "type": "host",
+        "name": "host_20261015-144020_2.jpg",
+        "size": 735038,
+        "sha256": "1b1599b967638cc78af608b1f0489536e3f1597d31727e54f7b204ce3d5f4c79"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261015-144020_1.jpg",
+        "size": 712178,
+        "sha256": "ce52a97e33e4b8ca59c204401b48e7524ee1114e6b58439b6b4f965043ad0164"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261015-144020_1.jpg",
+        "size": 590915,
+        "sha256": "e03cec193e5ecc80e1aa68027b104b2340a54820d063a7c270bf2d0dda6603e4"
+      }
+    ]
+  },
+  "2026/10/16/GVV2HR3": {
+    "folder": "2026/10/16/GVV2HR3",
+    "sn": "GVV2HR3",
+    "machineModel": "Vostro 3910 MT",
+    "cpuModel": "I3-12100",
+    "cpuBatch": "X314J325",
+    "cpuCode": "02632",
+    "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F2203314FT4K6",
+    "ssdInfo": "SEAGATE 1TB SATA HDD | SN:W9AP077S | PN:1S8102-023",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-16 10:21:30",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261016-102130_1.jpg",
+        "size": 448870,
+        "sha256": "390223fff34a1e09277f8cce677d067af046f735a8780fca48c87b07b6f99e13"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261016-102130_2.jpg",
+        "size": 638665,
+        "sha256": "ecc416a7ef5e6345895f2e9c143f33c87e0d4fa38bf26ebcfa2c4cf4d099fba7"
+      },
+      {
+        "type": "host",
+        "name": "host_20261016-102130_1.jpg",
+        "size": 489794,
+        "sha256": "bed0c05285908e0571a5a8490ab43354b01c4285d7f638c290189712b2082872"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261016-102130_1.jpg",
+        "size": 739737,
+        "sha256": "7e812305419ab2e3d9b1a94fb88b6246bc0b4b83e5428292f31e43169cc565eb"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261016-102130_1.jpg",
+        "size": 526421,
+        "sha256": "2a0124de9a7aec613288cab3de6e9a0c2d5973779e078b4e726e16e8091c8914"
+      }
     ],
-    "editedAt": "2026-10-13 17:54:34"
+    "editedAt": "2026-10-16 13:36:13"
+  },
+  "2026/10/16/4WT9HG4": {
+    "folder": "2026/10/16/4WT9HG4",
+    "sn": "4WT9HG4",
+    "machineModel": "ECS1250",
+    "cpuModel": "I3-14100",
+    "cpuBatch": "X545J989",
+    "cpuCode": "00886",
+    "ramInfo": "SK HYNIX 8GB DDR5 5600MHz | PN:HMCG66AGBUAD84N | SN:80AD0225342CF48BC9\nHYNIX 8GB DDR5 5600MHz | PN:HMCG66AGBUA081N | SN:80AD01222996785117",
+    "ssdInfo": "SANDISK  512 NVMe x2 | SN:SO005 | SN:25467H401592",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "",
+    "uploadedAt": "2026-10-16 10:29:41",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261016-102941_1.jpg",
+        "size": 476891,
+        "sha256": "08dbeb2e94494249e6facb9d12a799e56e7dfed68a52f520903826ef102f532d"
+      },
+      {
+        "type": "cpu",
+        "name": "cpu_20261016-102941_2.jpg",
+        "size": 661893,
+        "sha256": "b7e28fa9dff8de80c01d0b82b481a97d3fafab62debec900055b19b764c05413"
+      },
+      {
+        "type": "host",
+        "name": "host_20261016-102941_1.jpg",
+        "size": 699496,
+        "sha256": "aa2bcd70a801338202c013547c79cc6ed387d70e892453f332b1f3dbb2df4e7b"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261016-102941_1.jpg",
+        "size": 646211,
+        "sha256": "8d4fac28684045ecd8445ac85779b4b7cfe645c718f60d80624e3d189501ed94"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261016-102941_2.jpg",
+        "size": 755485,
+        "sha256": "9e9f20b87baeb77af147b8f9f517469d9709c8c84b67003441bb3623b93d5621"
+      },
+      {
+        "type": "ssd",
+        "name": "ssd_20261016-102941_1.jpg",
+        "size": 718728,
+        "sha256": "4557d024fbade6eed99864f389afd3f54f2e2b4cfc77ead449293d335d1b968a"
+      }
+    ],
+    "editedAt": "2026-10-16 13:40:15"
+  },
+  "2026/10/16/M70L37EY": {
+    "folder": "2026/10/16/M70L37EY",
+    "sn": "M70L37EY",
+    "machineModel": "天逸510PRO-14ACN",
+    "cpuModel": "RYZEN 5 5600G",
+    "cpuBatch": "",
+    "cpuCode": "",
+    "ramInfo": "DDR4 3000MHz",
+    "ssdInfo": "",
+    "nicInfo": "",
+    "otherInfo": "",
+    "vendor": "建钰",
+    "note": "主机批号: M7NO31713049",
+    "uploadedAt": "2026-10-16 14:03:05",
+    "files": [
+      {
+        "type": "cpu",
+        "name": "cpu_20261016-140305_1.jpg",
+        "size": 426854,
+        "sha256": "e73e314f0fb0c12b6279121a4116f5ecaf5a179e298c3402e41f8a0875cb3925"
+      },
+      {
+        "type": "host",
+        "name": "host_20261016-140305_1.jpg",
+        "size": 701230,
+        "sha256": "b00c33dc926833150de502d322ef31012e5ce49aacd3668d4f3a38631d5bfd16"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261016-140305_1.jpg",
+        "size": 758448,
+        "sha256": "5279075b49e1d7c2746529e637182fe773447d4791d532d12d7efcb8a6f3175c"
+      },
+      {
+        "type": "ram",
+        "name": "ram_20261016-140305_2.jpg",
+        "size": 693411,
+        "sha256": "1ad3ea6a15bde720c7f8c695cd42a845f1b803c1c9b764989b560529631ffb48"
+      }
+    ]
   }
 }

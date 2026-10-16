@@ -1,0 +1,54 @@
+{
+  "sn": "GVV2HR3",
+  "machineModel": "Vostro 3910 MT",
+  "cpuModel": "I3-12100",
+  "cpuBatch": "X314J325",
+  "cpuCode": "02632",
+  "ramInfo": "MICRON 8GB DDR4 3200MHz\nS802C0F2203314FT4K6",
+  "ssdInfo": "SEAGATE 1TB SATA HDD | SN:W9AP077S | PN:1S8102-023",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-16 10:21:30",
+  "originalNames": [
+    "cap_cpu_20261016_101936_250.jpg",
+    "cap_cpu_20261016_102003_100.jpg",
+    "cap_host_20261016_101821_109.jpg",
+    "cap_ram_20261016_101910_246.jpg",
+    "cap_ssd_20261016_101903_397.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261016-102130_1.jpg",
+      "size": 448870,
+      "sha256": "390223fff34a1e09277f8cce677d067af046f735a8780fca48c87b07b6f99e13"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261016-102130_2.jpg",
+      "size": 638665,
+      "sha256": "ecc416a7ef5e6345895f2e9c143f33c87e0d4fa38bf26ebcfa2c4cf4d099fba7"
+    },
+    {
+      "type": "host",
+      "name": "host_20261016-102130_1.jpg",
+      "size": 489794,
+      "sha256": "bed0c05285908e0571a5a8490ab43354b01c4285d7f638c290189712b2082872"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261016-102130_1.jpg",
+      "size": 739737,
+      "sha256": "7e812305419ab2e3d9b1a94fb88b6246bc0b4b83e5428292f31e43169cc565eb"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261016-102130_1.jpg",
+      "size": 526421,
+      "sha256": "2a0124de9a7aec613288cab3de6e9a0c2d5973779e078b4e726e16e8091c8914"
+    }
+  ],
+  "editedAt": "2026-10-16 13:36:13"
+}

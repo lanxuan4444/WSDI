@@ -10,8 +10,8 @@ android {
         applicationId "com.ldtools.parts"
         minSdk 24
         targetSdk 34
-        versionCode 22
-        versionName "1.21"
+        versionCode 23
+        versionName "1.22"
         // [v1.08] 只保留中英文资源：androidx 库自带几十种语言的字符串/布局，全部打包平白增大体积
         resourceConfigurations += ['zh', 'en']
 

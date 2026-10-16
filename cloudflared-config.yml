@@ -22,6 +22,12 @@ originRequest:
   noHappyEyeballs: false
 
 ingress:
+  # JK守护云端 WebSocket：yanhong.online/jkws -> 本地 8765（家长远程锁定/解锁通道）
+  # 注意：带 path 的规则必须放在同 hostname 通用规则之前（cloudflared 按顺序匹配，path 为正则）
+  - hostname: yanhong.online
+    path: ^/jkws$
+    service: http://localhost:8765
+
   # yanhong.online -> 本地 80 端口
   - hostname: yanhong.online
     service: http://localhost:80

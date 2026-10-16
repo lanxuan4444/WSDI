@@ -606,8 +606,8 @@ body.stat-open{overflow:hidden;}
   <div id="recList"></div>
 </div>
 
-<!-- 新建/上传弹层 -->
-<div class="modal-overlay hidden" id="uploadModal" onclick="if(event.target===this)closeUploadModal()">
+<!-- 新建/上传弹层（[2026-10-15 EDIT-GUARD] 遮罩关闭同改 JS 管理，防拖选误关） -->
+<div class="modal-overlay hidden" id="uploadModal">
   <div class="modal-card">
     <div class="modal-head">
       <h3 id="uploadTitle">📦 新建主机配件档案</h3>
@@ -653,8 +653,9 @@ body.stat-open{overflow:hidden;}
 </div>
 
 <!-- [2026-10-08 EDIT] 档案参数编辑弹层：CPU 编号录错等纠错场景（照片不动，只改参数）
-     [2026-10-12] 移除 AI 识别（识别率不成熟）——看图识字改为大图查看器的 📋 按钮（微信式） -->
-<div class="modal-overlay hidden" id="editModal" onclick="if(event.target===this)closeEditModal()">
+     [2026-10-12] 移除 AI 识别（识别率不成熟）
+     [2026-10-15 EDIT-GUARD] 遮罩关闭改为 JS 统一管理（拖选文字不误关 + 未保存确认） -->
+<div class="modal-overlay hidden" id="editModal">
   <div class="modal-card">
     <div class="modal-head">
       <h3>✏️ 修改档案参数</h3>
@@ -1111,6 +1112,50 @@ const EDIT_PHOTO_GROUPS = [['host', '主机标签'], ['cpu', 'CPU 顶盖'], ['ra
 let editingFolder = null;
 let editingRecord = null;
 let editSaving = false;
+
+/* ==================== [2026-10-15 EDIT-GUARD] 编辑弹窗保护 ====================
+   ① Ctrl+S 保存表单（拦截浏览器「保存网页」默认行为）
+   ② 防误关：拖选文字松开在遮罩上不再触发关闭（click 目标是 mousedown/mouseup
+      共同祖先，恰好是遮罩 → 旧逻辑误关弹窗丢数据；改为 mousedown+mouseup 都在
+      遮罩上才关）；编辑有未保存修改时关闭需确认。 */
+const EDIT_FIELD_IDS = ['eSn', 'eMachineModel', 'eVendor', 'eCpuModel', 'eCpuBatch',
+                        'eCpuCode', 'eRamInfo', 'eSsdInfo', 'eOtherInfo', 'eNote'];
+let editOriginalSnapshot = {};
+function takeEditSnapshot(){
+  editOriginalSnapshot = {};
+  EDIT_FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) editOriginalSnapshot[id] = el.value;
+  });
+}
+function hasEditChanges(){
+  return EDIT_FIELD_IDS.some(id => {
+    const el = document.getElementById(id);
+    return el && (el.value || '') !== (editOriginalSnapshot[id] || '');
+  });
+}
+/** 弹窗遮罩安全关闭绑定：mousedown 与 mouseup 都发生在遮罩上才允许点遮罩关闭 */
+function bindOverlaySafeClose(overlayId, closeFn){
+  const ov = document.getElementById(overlayId);
+  let mdownOnOverlay = false;
+  ov.addEventListener('mousedown', e => { mdownOnOverlay = (e.target === ov); });
+  ov.addEventListener('click', e => {
+    if (e.target !== ov || !mdownOnOverlay) return;   // 拖选文字（mousedown 在表单内）不关
+    mdownOnOverlay = false;
+    closeFn();
+  });
+}
+/** Ctrl+S：编辑/上传弹窗打开时触发表单保存（拦截浏览器「保存网页」） */
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && !e.shiftKey && (e.key === 's' || e.key === 'S')){
+    const editOpen = !document.getElementById('editModal').classList.contains('hidden');
+    const upOpen = !document.getElementById('uploadModal').classList.contains('hidden');
+    if (!editOpen && !upOpen) return;                 // 没有弹窗时交给浏览器默认
+    e.preventDefault();                               // 弹窗打开时一律拦截「保存网页」
+    if (editOpen && !editSaving) submitEdit();
+    else if (upOpen && !document.getElementById('upSubmitBtn').disabled) submitUpload();
+  }
+});
 function openEditModal(folder){
   if (editSaving) return;
   const r = records.find(x => x.folder === folder);
@@ -1132,6 +1177,7 @@ function openEditModal(folder){
   const err = document.getElementById('editErr');
   err.textContent = ''; err.classList.add('hidden');
   renderEditPhotobar();
+  takeEditSnapshot();                    // [2026-10-15] 打开时快照，关闭前比对未保存修改
   document.getElementById('editModal').classList.remove('hidden');
   document.body.classList.add('edit-open');
 }
@@ -1190,12 +1236,16 @@ function retryImgToken(img, path){
   img.dataset.retried = '1';
   img.src = '/api/parts-image?path=' + encodeURIComponent(path) + '&token=' + encodeURIComponent(getToken() || '');
 }
-function closeEditModal(){
+function closeEditModal(force){
   if (editSaving) return;
+  // [2026-10-15] 未保存确认：字段与打开时快照有差异 → 关闭前确认（保存路径 force=true 跳过）
+  if (!force && hasEditChanges()
+      && !confirm('有未保存的修改，关闭后将丢失。\n确定要关闭编辑窗口吗？')) return;
   document.getElementById('editModal').classList.add('hidden');
   document.body.classList.remove('edit-open');
   editingFolder = null;
   editingRecord = null;
+  editOriginalSnapshot = {};
 }
 function showEditErr(msg){
   const el = document.getElementById('editErr');
@@ -1227,7 +1277,7 @@ async function submitEdit(){
       body: JSON.stringify({ folder: editingFolder, fields })
     });
     toast('✅ 已保存修改');
-    closeEditModal();
+    closeEditModal(true);               // [2026-10-15] 保存成功跳过未保存确认
     await loadRecords();
   }catch(e){
     showEditErr(e.message || '保存失败');
@@ -1815,6 +1865,8 @@ document.getElementById('addBtn').addEventListener('click', openUploadModal);
   buildPartSections();
   applyDefaultDates();      // [2026-10-02] 日期默认：打开日期往前 1 个月 ~ 今天
   bindViewerZoom();         // 大图缩放 / 拖动
+  bindOverlaySafeClose('editModal', closeEditModal);      // [2026-10-15] 遮罩拖选不误关+未保存确认
+  bindOverlaySafeClose('uploadModal', closeUploadModal); // [2026-10-15] 上传弹窗防拖选误关
   if (getToken()){
     hideAuth();
     loadRecords();

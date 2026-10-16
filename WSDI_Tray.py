@@ -47,6 +47,13 @@ SERVICES = {
         "color": "#27ae60",
         "log_max": 30000,
     },
+    "JKGuard": {
+        "title": "JK守护云端 (端口 8765)",
+        "cmd": [str(PYTHON), "D:/JK/server/server.py"],
+        "cwd": "D:/JK/server",
+        "color": "#e74c3c",
+        "log_max": 30000,
+    },
     "Tunnel": {
         "title": "Cloudflare Tunnel",
         "cmd": [str(CLOUDFLARED), "tunnel", "--config", str(CONFIG), "run"],

@@ -60,6 +60,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "& { try { $r = Invoke-We
 echo.
 powershell -NoProfile -ExecutionPolicy Bypass -Command "& { $p = @(Get-Process python,pythonw -ErrorAction SilentlyContinue); $c = @(Get-Process cloudflared -ErrorAction SilentlyContinue); Write-Host ('[INFO] Running: ' + ($p.Count + $c.Count) + ' process(es) - ' + $p.Count + ' Python + ' + $c.Count + ' cloudflared') }"
 
+REM ============================================================
+REM [3/3] 主域名 DNS 自愈检测
+REM      yanhong.online 主域名记录若在 Cloudflare 侧丢失(NODATA)，
+REM      自动用 cert.pem 重建隧道 CNAME（正常时 1 秒即过，不拖慢重启）
+REM ============================================================
+echo [3/3] DNS 自愈检测 (yanhong.online)...
+powershell -NoProfile -ExecutionPolicy Bypass -File "D:\WSDI\tools\dns_selfheal.ps1"
+
 echo.
 echo ============================================
 echo   重启完成！

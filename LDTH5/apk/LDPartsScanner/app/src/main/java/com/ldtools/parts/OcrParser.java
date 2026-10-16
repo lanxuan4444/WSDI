@@ -310,14 +310,15 @@ public final class OcrParser {
         for (int i = 0; i < lines.size(); i++) {
             String line = normalize(lines.get(i)).trim();
             String next = i + 1 < lines.size() ? normalize(lines.get(i + 1)).trim() : "";
-            // d) 行内 SN 值是 80AD/80CE 开头且下一行是纯短串 → ML Kit 截断续行，拼接恢复完整 SN
+            // d) 行内 SN 值是 80AD/80CE 开头且下一行是 SN 尾段（字母数字混合短串）→ 拼接恢复完整 SN
+            //    [v1.22] 门槛收紧：纯字母（GB/KOREA）与纯数字（512）不拼（isSnTail）
             Matcher mInline = RE_SERIAL.matcher(line);
             while (mInline.find()) {
                 String tag = mInline.group(1).replace("/", "").equals("PN") ? "PN" : "SN";
                 String rawVal = mInline.group(2);
                 String val = fixRamSnDigitO(rawVal);
                 if ("SN".equals(tag) && RE_RAM_SN_BARE_VAL.matcher(val).matches()
-                        && next.matches("[A-Z0-9]{2,6}")) {
+                        && isSnTail(next)) {
                     String joined = val + next;
                     if (!serials.containsValue(joined)) {
                         // 拼接成功 → 清掉截断短值（原始值与纠偏值两种 key 形态都删）
@@ -404,6 +405,20 @@ public final class OcrParser {
         return m.group(2) == null ? gen : gen + " " + m.group(2) + "MHz";
     }
 
+    /** [v1.22] SN 截断续行判定：2-6 位、字母数字混合（含字母且含数字）的独立短串。
+     *  ML Kit 把长 SN 截成两行时，第二段通常形如 "D1268"；
+     *  纯字母（GB/KOREA/BA）、纯数字（512）与容量词（512GB/1TB）都排除，防止误拼进 SN。 */
+    private static boolean isSnTail(String s) {
+        if (s == null || !s.matches("[A-Z0-9]{2,6}")) return false;
+        if (s.matches("\\d{1,4}(GB|TB)")) return false;   // 容量词（字母数字混合形态）
+        boolean hasLetter = false, hasDigit = false;
+        for (char c : s.toCharArray()) {
+            if (Character.isDigit(c)) hasDigit = true;
+            else hasLetter = true;
+        }
+        return hasLetter && hasDigit;
+    }
+
     /** [v1.12] 内存 PN 前缀推断品牌（标签只印零件号不印品牌字样时） */
     private static String brandFromRamPn(String line) {
         for (String[] p : RAM_PN_PREFIXES) {
@@ -485,6 +500,33 @@ public final class OcrParser {
                 String tag = ms.group(1).replace("/", "").equals("PN") ? "PN" : "SN";
                 serials.add(tag + ":" + ms.group(2));
             }
+        }
+        // [v1.22] 固态 SN 截断拼接（与内存同款问题）：ML Kit 把长 SN 截成两行时，
+        // 行内 SN 值（≥10 位）+ 下一行是字母数字混合短串（D1268 形态）→ 拼接恢复完整 SN；
+        // 纯字母（GB/KOREA）与纯数字（512）不拼，防误伤。serials 是 set，替换需先删截断短值。
+        {
+            java.util.LinkedHashSet<String> merged = new java.util.LinkedHashSet<>();
+            java.util.LinkedHashSet<String> consumed = new java.util.LinkedHashSet<>();
+            for (int i = 0; i < lines.size(); i++) {
+                String line = normalize(lines.get(i)).trim();
+                String next = i + 1 < lines.size() ? normalize(lines.get(i + 1)).trim() : "";
+                String rawSn = null;
+                Matcher mSn = RE_SERIAL.matcher(line);
+                while (mSn.find()) {
+                    if ("SN".equals(mSn.group(1).replace("/", "")) && mSn.group(2).length() >= 10) {
+                        rawSn = mSn.group(2);
+                    }
+                }
+                if (rawSn != null && isSnTail(next)) {
+                    String joined = rawSn + next;
+                    if (!serials.contains("SN:" + joined)) {
+                        consumed.add("SN:" + rawSn);
+                        merged.add("SN:" + joined);
+                    }
+                }
+            }
+            serials.removeAll(consumed);
+            serials.addAll(merged);
         }
         // [v1.19] 机械盘形态：识别到 HDD/RPM 时输出 "SATA HDD"（无接口时也补上 SATA 默认值）
         if (isHdd) kind = "SATA HDD";

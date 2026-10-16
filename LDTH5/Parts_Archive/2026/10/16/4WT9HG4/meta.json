@@ -1,0 +1,61 @@
+{
+  "sn": "4WT9HG4",
+  "machineModel": "ECS1250",
+  "cpuModel": "I3-14100",
+  "cpuBatch": "X545J989",
+  "cpuCode": "00886",
+  "ramInfo": "SK HYNIX 8GB DDR5 5600MHz | PN:HMCG66AGBUAD84N | SN:80AD0225342CF48BC9\nHYNIX 8GB DDR5 5600MHz | PN:HMCG66AGBUA081N | SN:80AD01222996785117",
+  "ssdInfo": "SANDISK  512 NVMe x2 | SN:SO005 | SN:25467H401592",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "",
+  "uploadedAt": "2026-10-16 10:29:41",
+  "originalNames": [
+    "cap_cpu_20261016_102520_106.jpg",
+    "cap_cpu_20261016_102527_332.jpg",
+    "cap_host_20261016_102332_677.jpg",
+    "cap_ram_20261016_102352_268.jpg",
+    "cap_ram_20261016_102424_006.jpg",
+    "cap_ssd_20261016_102439_080.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261016-102941_1.jpg",
+      "size": 476891,
+      "sha256": "08dbeb2e94494249e6facb9d12a799e56e7dfed68a52f520903826ef102f532d"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261016-102941_2.jpg",
+      "size": 661893,
+      "sha256": "b7e28fa9dff8de80c01d0b82b481a97d3fafab62debec900055b19b764c05413"
+    },
+    {
+      "type": "host",
+      "name": "host_20261016-102941_1.jpg",
+      "size": 699496,
+      "sha256": "aa2bcd70a801338202c013547c79cc6ed387d70e892453f332b1f3dbb2df4e7b"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261016-102941_1.jpg",
+      "size": 646211,
+      "sha256": "8d4fac28684045ecd8445ac85779b4b7cfe645c718f60d80624e3d189501ed94"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261016-102941_2.jpg",
+      "size": 755485,
+      "sha256": "9e9f20b87baeb77af147b8f9f517469d9709c8c84b67003441bb3623b93d5621"
+    },
+    {
+      "type": "ssd",
+      "name": "ssd_20261016-102941_1.jpg",
+      "size": 718728,
+      "sha256": "4557d024fbade6eed99864f389afd3f54f2e2b4cfc77ead449293d335d1b968a"
+    }
+  ],
+  "editedAt": "2026-10-16 13:40:15"
+}

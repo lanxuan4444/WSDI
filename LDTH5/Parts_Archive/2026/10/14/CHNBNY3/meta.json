@@ -1,0 +1,46 @@
+{
+  "sn": "CHNBNY3",
+  "machineModel": "0ptiPlex 5000 Tower",
+  "cpuModel": "I5-12500",
+  "cpuBatch": "X325J958",
+  "cpuCode": "24793",
+  "ramInfo": "",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "无",
+  "note": "",
+  "uploadedAt": "2026-10-14 17:57:34",
+  "originalNames": [
+    "cap_cpu_20261014_174636_927.jpg",
+    "pick_1791971208977.jpg",
+    "cap_cpu_20261014_174657_820.jpg",
+    "cap_host_20261014_174628_995.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-175734_1.jpg",
+      "size": 582657,
+      "sha256": "d8a16341aa26c89386f2934515a4c9f6bec3b9d590f17b18d3b4a14ea40c432b"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-175734_2.jpg",
+      "size": 586839,
+      "sha256": "ba672f607e5d34de8cb64c88481ffbcf5492bad4f05cfa338f52ec302b513df3"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-175734_3.jpg",
+      "size": 475062,
+      "sha256": "2a8ff1b78556c110eb93fff11da6130c66ec01b8918fbc8816c9bb0686077e0c"
+    },
+    {
+      "type": "host",
+      "name": "host_20261014-175734_1.jpg",
+      "size": 534413,
+      "sha256": "0163ccc3a0f4a32383cc25e05126648d1d3559818c494fbecf50267d2522cc9a"
+    }
+  ]
+}

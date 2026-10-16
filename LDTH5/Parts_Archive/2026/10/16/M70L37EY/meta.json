@@ -1,0 +1,46 @@
+{
+  "sn": "M70L37EY",
+  "machineModel": "天逸510PRO-14ACN",
+  "cpuModel": "RYZEN 5 5600G",
+  "cpuBatch": "",
+  "cpuCode": "",
+  "ramInfo": "DDR4 3000MHz",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "建钰",
+  "note": "主机批号: M7NO31713049",
+  "uploadedAt": "2026-10-16 14:03:05",
+  "originalNames": [
+    "cap_cpu_20261016_140232_420.jpg",
+    "cap_host_20261016_140016_356.jpg",
+    "cap_ram_20261016_140117_867.jpg",
+    "cap_ram_20261016_140132_226.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261016-140305_1.jpg",
+      "size": 426854,
+      "sha256": "e73e314f0fb0c12b6279121a4116f5ecaf5a179e298c3402e41f8a0875cb3925"
+    },
+    {
+      "type": "host",
+      "name": "host_20261016-140305_1.jpg",
+      "size": 701230,
+      "sha256": "b00c33dc926833150de502d322ef31012e5ce49aacd3668d4f3a38631d5bfd16"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261016-140305_1.jpg",
+      "size": 758448,
+      "sha256": "5279075b49e1d7c2746529e637182fe773447d4791d532d12d7efcb8a6f3175c"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261016-140305_2.jpg",
+      "size": 693411,
+      "sha256": "1ad3ea6a15bde720c7f8c695cd42a845f1b803c1c9b764989b560529631ffb48"
+    }
+  ]
+}

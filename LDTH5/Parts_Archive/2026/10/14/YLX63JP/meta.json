@@ -1,0 +1,54 @@
+{
+  "sn": "YLX63JP",
+  "machineModel": "扬天",
+  "cpuModel": "ULTRA 3 205",
+  "cpuBatch": "V607F996",
+  "cpuCode": "00356",
+  "ramInfo": "SK Hynix 16GB DDR5  5600B UDIMM\n80AD0124423859E609",
+  "ssdInfo": "",
+  "nicInfo": "",
+  "otherInfo": "",
+  "vendor": "联想",
+  "note": "",
+  "uploadedAt": "2026-10-14 18:05:10",
+  "originalNames": [
+    "cap_cpu_20261014_180432_288.jpg",
+    "cap_cpu_20261014_180444_494.jpg",
+    "cap_cpu_20261014_180503_612.jpg",
+    "pick_1791972178106.jpg",
+    "pick_1791972246620.jpg"
+  ],
+  "files": [
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-180510_1.jpg",
+      "size": 434420,
+      "sha256": "15f407ef32e135fd43d70f3736ff78b60dae7dde9a15aaa7824f8fd9b1a9c007"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-180510_2.jpg",
+      "size": 488264,
+      "sha256": "7ee1b7c711393813745054628255cd938d0f3539f7a687303e67fb9b024332ff"
+    },
+    {
+      "type": "cpu",
+      "name": "cpu_20261014-180510_3.jpg",
+      "size": 484969,
+      "sha256": "edfa6db7d06e59246db1c65ae0ddccb08bcaf5e049ed6329a2d7d7e542758cd3"
+    },
+    {
+      "type": "host",
+      "name": "host_20261014-180510_1.jpg",
+      "size": 96677,
+      "sha256": "a82656232a5f585fc1378df8d97b8dd247c0c085b8b3f0bf55ae0da73ab1da52"
+    },
+    {
+      "type": "ram",
+      "name": "ram_20261014-180510_1.jpg",
+      "size": 158584,
+      "sha256": "ebff54d64b85783f190ddcd77d4262f171840e5e2a3d9bbdb78ae77589074e29"
+    }
+  ],
+  "editedAt": "2026-10-15 11:43:56"
+}
