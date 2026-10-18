@@ -1,0 +1,88 @@
+﻿
+SamLab Driver Installer (64bit)
+Opening 'sdi.cfg'
+Args:["-drp_dir:Drivers" "-index_dir:Index\SDI" "-output_dir:Index\SDI\txt" "-data_dir:Tools\SDI" "-log_dir:logs" "-finish_cmd:" "-finishrb_cmd:" "-finish_upd_cmd:" "-lang:English" "-theme:Metallic_Color" -hintdelay:500 -license:1 -wndwx:1094 -wndwy:690 -wndsc:1 -scale:256 -filters:6 -port:0 -minport:0 -maxport:0 -downlimit:0 -uplimit:0 -connections:0 -expertmode -showconsole -norestorepnt -checkupdates  ]
+Args:["D:\WSDI\tmp_sdi_scan\SDI\SDI\SDI_x64_R2606.exe" -help]
+Unknown argument '-help'
+ERROR in log_start(): Write-protected,'logs\2026_10_16__17_38_40__DESKTOP-49J0UHU_log.txt'
+Settings
+  drp_dir=Drivers
+  index_dir=Index\SDI
+  output_dir=Index\SDI\txt
+  data_dir=Tools\SDI
+  log_dir=C:\Users\Administrator\AppData\Local\Temp\SDI_logs
+  extractdir=
+  lang=English
+  theme=Metallic_Color
+  scale=256
+  expertmode=1
+  filters=6
+    Show Not Installed
+    Show Newer
+  autoinstall=0
+  autoclose=0
+  failsafe=0
+  delextrainfs=0
+  checkupdates=1
+  norestorepnt=1
+  disableinstall=0
+  nostop=0
+
+
+Windows v11.0.22631
+ERROR in image_loadFile(): file 'Tools\SDI\themes\metallic\unchecked.webp' not found
+ERROR in image_loadFile(): file 'Tools\SDI\themes\metallic\checked.webp' not found
+*** START *** 1,0 [15]
+Windows v11.0.22631
+ERROR with unicode2ansi():[7a]'���ݸ�ϵͳ���õ���������̫С��
+
+'
+ERROR: sect not found 'IntcAudModel (Nu)'
+ERROR with unicode2ansi():[7a]'���ݸ�ϵͳ���õ���������̫С��
+
+'
+ERROR: sect not found 'ibtusb (j�)'
+ERROR: sect not found 'IclsClientInstallSection.NTamd64.21342 (�j)'
+Marker: 'Lenovo_nb'
+*** FINISH primary ***
+
+{Sync...
+}Sync
+{2Sync
+Times
+  devicescan:     516 (2 errors)
+  indexes:         16
+  sysinfo:         47
+  matcher:         16
+  chkupdate:        0
+  startup:        750 (155)
+  indexsave:        0
+  indexprint:       0
+  total:          750
+  test:           532
+Saving state in 'C:\Users\Administrator\AppData\Local\Temp\SDI_logs\2026_10_16__17_38_41__DESKTOP-49J0UHU_state.snp'...OK
+*** FINISH secondary ***
+
+}2Sync
+Listen port: 56112 (connected)
+Download limit: 0Kb
+Upload limit: 0Kb
+Min outgoing port: 0
+Max outgoing port: 0
+Torrent: http://sdi.com.ru/SDI_Update.torrent
+Waiting for torrent.................................................................................DONE
+Latest Version: R608. Up to date.
+Updated DriverPacks available: 68
+Closing torrent session...DONE
+}thread_download
+Times
+  devicescan:     516 (2 errors)
+  indexes:         16
+  sysinfo:         47
+  matcher:         16
+  chkupdate:     8906
+  startup:        750 (155)
+  indexsave:        0
+  indexprint:       0
+  total:      1445781
+  test:           532

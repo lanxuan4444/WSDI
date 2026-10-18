@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WSDI_Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c7bdc9a91068c8d81a39dddb531f68f5ecfe2782")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+475bb556fd5fcf8ce72ba78da035146cdcf28974")]
 [assembly: System.Reflection.AssemblyProductAttribute("WSDI_Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WSDI_Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
