@@ -2,8 +2,8 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-set PYTHON=C:\Users\Administrator\AppData\Local\Programs\Python\Python315\python.exe
-set PYTHONW=C:\Users\Administrator\AppData\Local\Programs\Python\Python315\pythonw.exe
+set PYTHON=C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe
+set PYTHONW=C:\Users\Administrator\AppData\Local\Programs\Python\Python313\pythonw.exe
 set TRAY_SCRIPT=D:\WSDI\WSDI_Tray.py
 
 echo ============================================

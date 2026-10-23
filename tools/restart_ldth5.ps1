@@ -13,7 +13,7 @@ if ($conn) {
 }
 
 Write-Host "Starting LDTH5..." -ForegroundColor Cyan
-Start-Process -FilePath 'C:\Users\Administrator\AppData\Local\Programs\Python\Python315\pythonw.exe' `
+Start-Process -FilePath 'C:\Users\Administrator\AppData\Local\Programs\Python\Python313\pythonw.exe' `
     -ArgumentList 'D:\WSDI\LDTH5\server.py' `
     -WorkingDirectory 'D:\WSDI\LDTH5' `
     -WindowStyle Hidden

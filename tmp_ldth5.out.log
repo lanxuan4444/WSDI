@@ -1,0 +1,2 @@
+缺少依赖 pycryptodome，请先安装：
+    pip install pycryptodome

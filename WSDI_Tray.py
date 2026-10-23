@@ -24,8 +24,8 @@ from PIL import Image, ImageDraw
 
 # ==================== 配置 ====================
 BASE_DIR = Path("D:/WSDI")
-PYTHON = Path("C:/Users/Administrator/AppData/Local/Programs/Python/Python315/python.exe")
-CLOUDFLARED = Path("D:/Cloudflar/cloudflared.exe")
+PYTHON = Path("C:/Users/Administrator/AppData/Local/Programs/Python/Python313/python.exe")
+CLOUDFLARED = BASE_DIR / "Cloudflar" / "cloudflared.exe"
 CONFIG = BASE_DIR / "cloudflared-config.yml"
 
 # 日志窗口默认大小

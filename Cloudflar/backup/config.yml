@@ -1,0 +1,14 @@
+tunnel: 2967bed7-9021-4ed4-bf20-9b2658ba516c
+credentials-file: C:\Users\Administrator\.cloudflared\2967bed7-9021-4ed4-bf20-9b2658ba516c.json
+no-autoupdate: true
+
+ingress:
+  - hostname: yanhong.online
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+  - hostname: mydata.yanhong.online
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404

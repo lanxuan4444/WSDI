@@ -1,0 +1,15 @@
+﻿cloudflared.exe : You did not specify any valid additional argument to the cloudflared tunnel command.
+At D:\Cloudflar\do_cert.ps1:10 char:1
++ & 'D:\Cloudflar\cloudflared.exe' origin cert create 2>&1 | Out-File - ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (You did not spe...tunnel command.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+If you are trying to run a Quick Tunnel then you need to explicitly pass the --url flag.
+Eg. cloudflared tunnel --url localhost:8080/.
+
+Please note that Quick Tunnels are meant to be ephemeral and should only be used for testing purposes.
+For production usage, we recommend creating Named Tunnels. (https://developers.cloudflare.com/cloudflare-one/connection
+s/connect-apps/install-and-setup/tunnel-guide/)
+

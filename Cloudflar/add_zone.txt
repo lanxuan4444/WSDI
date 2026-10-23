@@ -1,0 +1,4 @@
+﻿
+[15:56:08] Trying to add yanhong.online zone...
+[15:56:09] Request: {"account":{"id":"3b9d1ff67a3cf35cd29c14cb4e8d2fed"},"jump_start":true,"name":"yanhong.online","type":"full"}
+[15:56:09] ERR: The remote server returned an error: (403) Forbidden.

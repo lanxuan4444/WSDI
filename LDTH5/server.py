@@ -820,7 +820,7 @@ def _parse_multipart_multi(body, content_type):
 #   DELETE /api/parts-archive?folder=<dir>   → 永久删除档案文件夹
 #   GET    /api/parts-image?path=<rel>       → 图片按需下载（支持 ?token=，<img> 标签用）
 # 回滚标记：删除本段（至本段结束）+ do_GET/do_POST/do_DELETE 路由 + handle_parts_* 方法 + main() 启动对齐块。
-PARTS_ARCHIVE_DIR        = os.path.join(SCRIPT_DIR, "Parts_Archive")
+PARTS_ARCHIVE_DIR        = r"D:\Users\Administrator\Desktop\ETNLOGO\Parts_Archive"  # [2026-10-23 MOVED] 数据外置到 ETNLOGO（重装系统后合并新旧数据）
 PARTS_INDEX_FILE         = os.path.join(PARTS_ARCHIVE_DIR, "index.json")
 PARTS_MAX_IMAGE_BYTES    = 35 * 1024 * 1024     # 单张 35MB 上限
 PARTS_MAX_FILES_PER_TYPE = 6                    # 每类最多 6 张

@@ -1,0 +1,14 @@
+[14:19:40] ===== 启动配置 =====
+[14:19:40] [1/4] 检查现有隧�?..
+[14:19:40] URL: https://api.cloudflare.com/client/v4/accounts/3b9d1ff67a3cf35cd29c14cb4e8d2fed/cfd_tunnel?name=mytunnel
+[14:19:42] Response: {"success":true,"errors":[],"messages":[],"result":[],"result_info":{"page":1,"per_page":1000,"count":0,"total_count":0}}
+[14:19:42] No existing tunnel
+[14:19:42] [2/4] 创建新隧�?..
+[14:19:43] Create response: {"success":true,"errors":[],"messages":[],"result":{"id":"0fc7e3be-84c0-4a12-b549-c038ed1d0fc0","account_tag":"3b9d1ff67a3cf35cd29c14cb4e8d2fed","created_at":"2026-07-01T06:20:17.017385Z","deleted_at":null,"name":"mytunnel","connections":[],"conns_active_at":null,"conns_inactive_at":"2026-07-01T06:20:17.017385Z","tun_type":"cfd_tunnel","metadata":{},"status":"inactive","remote_config":true,"config_src":"cloudflare","credentials_file":{"AccountTag":"3b9d1ff67a3cf35cd29c14cb4e8d2fed","TunnelID":"0fc7e3be-84c0-4a12-b549-c038ed1d0fc0","TunnelName":"mytunnel","TunnelSecret":"eAbnxAPSTxQDirsNw51+FF2UxFlfVRaqEzeNel1FVdmDGnre6X+Cq851IVX7CYVWwIBo4Tr5jgc32Orp72psLw=="},"token":"eyJhIjoiM2I5ZDFmZjY3YTNjZjM1Y2QyOWMxNGNiNGU4ZDJmZWQiLCJ0IjoiMGZjN2UzYmUtODRjMC00YTEyLWI1NDktYzAzOGVkMWQwZmMwIiwicyI6ImVBYm54QVBTVHhRRGlyc053NTErRkYyVXhGbGZWUmFxRXplTmVsMUZWZG1ER25yZTZYK0NxODUxSVZYN0NZVld3SUJvNFRyNWpnYzMyT3JwNzJwc0x3PT0ifQ=="}}
+[14:19:43] NEW_TUNNEL_ID: 0fc7e3be-84c0-4a12-b549-c038ed1d0fc0
+[14:19:43] [3/4] 获取隧道凭据...
+[14:19:43] Token response (first 200 chars): {"success":true,"errors":[],"messages":[],"result":"eyJhIjoiM2I5ZDFmZjY3YTNjZjM1Y2QyOWMxNGNiNGU4ZDJmZWQiLCJ0IjoiMGZjN2UzYmUtODRjMC00YTEyLWI1NDktYzAzOGVkMWQwZmMwIiwicyI6ImVBYm54QVBTVHhRRGlyc053NTErRkYyVXhGbGZWUmFxRXplTmVsMUZWZG1ER25yZTZYK0NxODUxSVZYN0NZVld3SUJvNFRyNWpnYzMyT3JwNzJwc0x3PT0ifQ=="}
+[14:19:43] Credentials written to: C:\Users\Administrator\.cloudflared\0fc7e3be-84c0-4a12-b549-c038ed1d0fc0.json
+[14:19:43] [4/4] 生成 config.yml...
+[14:19:43] config.yml written
+[14:19:43] ===== 配置结束 =====

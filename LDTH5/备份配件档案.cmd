@@ -12,7 +12,7 @@ for /f %%d in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss
 if not exist "Backups" mkdir "Backups"
 
 echo [1/2] Packing Parts_Archive (photos + meta, exclude .thumbs cache and tmp) ...
-"%SEVENZIP%" a -t7z -mx=9 -p%PASS% -mhe=on "Backups\Parts_%TS%.7z" ".\Parts_Archive" -xr!".thumbs" -xr!".tmp_*"
+"%SEVENZIP%" a -t7z -mx=9 -p%PASS% -mhe=on "Backups\Parts_%TS%.7z" "D:\Users\Administrator\Desktop\ETNLOGO\Parts_Archive" -xr!".thumbs" -xr!".tmp_*"
 if errorlevel 1 (
   echo.
   echo [X] Backup FAILED.

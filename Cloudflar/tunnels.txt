@@ -1,0 +1,5 @@
+﻿
+[10:08:44] Listing all tunnels in account 3b9d1ff67a3cf35cd29c14cb4e8d2fed...
+[10:08:45] Tunnel: mytunnel ID: 0fc7e3be-84c0-4a12-b549-c038ed1d0fc0 Status: healthy
+[10:08:45] Tunnel: yanhong ID: 05fbd0f4-6259-49ff-92c8-2950500a9b06 Status: healthy
+[10:08:45] Total: 2

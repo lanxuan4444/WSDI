@@ -2,8 +2,8 @@
 chcp 65001 >nul
 title WSDI Service Panel
 
-set PYTHON=C:\Users\Administrator\AppData\Local\Programs\Python\Python315\python.exe
-set CLOUDFLARED=D:\Cloudflar\cloudflared.exe
+set PYTHON=C:\Users\Administrator\AppData\Local\Programs\Python\Python313\python.exe
+set CLOUDFLARED=D:\WSDI\Cloudflar\cloudflared.exe
 set SERVER_DIR=D:\WSDI\server
 set CONFIG=D:\WSDI\cloudflared-config.yml
 

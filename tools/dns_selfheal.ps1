@@ -8,7 +8,7 @@
 #   2. If NODATA (tunnel CNAME record lost at Cloudflare side),
 #      recreate it with: cloudflared tunnel route dns <tunnel> <domain>
 #      using the cert.pem (restored 2026-10-16, backup at
-#      D:\Cloudflar\backup\.cloudflared\cert.pem)
+#      D:\WSDI\Cloudflar\backup\.cloudflared\cert.pem)
 #   3. Verify resolution after the fix
 #
 # NOTE: intentionally ASCII-only (no Chinese) - PS 5.1 reads BOM-less
@@ -19,7 +19,7 @@ $ErrorActionPreference = 'SilentlyContinue'
 
 $domain      = 'yanhong.online'
 $tunnelId    = '2967bed7-9021-4ed4-bf20-9b2658ba516c'
-$cloudflared = 'D:\Cloudflar\cloudflared.exe'
+$cloudflared = 'D:\WSDI\Cloudflar\cloudflared.exe'
 $certPath    = Join-Path $env:USERPROFILE '.cloudflared\cert.pem'
 
 function Test-ApexDns {
@@ -41,15 +41,15 @@ if (Test-ApexDns) {
 Write-Host '[WARN] yanhong.online apex DNS record MISSING (NODATA) - self-healing...'
 
 if (-not (Test-Path $cloudflared)) {
-    Write-Host '[FAIL] cloudflared.exe not found at D:\Cloudflar\cloudflared.exe'
+    Write-Host '[FAIL] cloudflared.exe not found at D:\WSDI\Cloudflar\cloudflared.exe'
     exit 1
 }
 $cert = Get-Item $certPath -ErrorAction SilentlyContinue
 if (-not $cert -or $cert.Length -lt 100) {
     $size = 0
     if ($cert) { $size = $cert.Length }
-    Write-Host "[FAIL] cert.pem invalid ($size bytes). Restore it from D:\Cloudflar\backup\.cloudflared\cert.pem"
-    Write-Host "       or run: D:\Cloudflar\cloudflared.exe login  (browser auth, then copy cert.pem)"
+    Write-Host "[FAIL] cert.pem invalid ($size bytes). Restore it from D:\WSDI\Cloudflar\backup\.cloudflared\cert.pem"
+    Write-Host "       or run: D:\WSDI\Cloudflar\cloudflared.exe login  (browser auth, then copy cert.pem)"
     exit 1
 }
 

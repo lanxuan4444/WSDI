@@ -1,0 +1,10 @@
+tunnel: your-tunnel-id
+credentials-file: D:\Cloudflar\credentials.json
+
+ingress:
+  # 在线驱动安装服务 (Python 后端)
+  - hostname: yanhong.online
+    service: http://localhost:5000
+
+  # 保底：如果上面都不匹配，返回 404
+  - service: http_status:404

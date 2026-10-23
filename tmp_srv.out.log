@@ -1,0 +1,16 @@
+[+] B2 file list refreshed: 213 files in B2
+[+] B2 background refresh thread started (interval=600s)
+
+¨X¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨[
+¨U       WSDI Server - Remote Driver   ¨U
+¨U       Installer Backend             ¨U
+¨d¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨g
+¨U  Drivers : D:\SDI\Drivers
+¨U  Index   : D:\SDI\Index\SDI
+¨U  SDI Lite: D:\WSDI\cache\sdi_lite\SDI_R2601.7z
+¨U  7z Zip  : D:\WSDI\cache\tools\7z_portable.zip
+¨U  Port    : 80
+¨U  COS     : OFF  https://wsdi-drivers-2026-1449166909.cos.ap-guangzhou.myqcloud.com
+¨^¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨a
+
+[*] Listening on http://0.0.0.0:80 (threaded)
